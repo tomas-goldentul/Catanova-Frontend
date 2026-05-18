@@ -1,0 +1,29 @@
+.stat-card {
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+}
+
+.stat-card__label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+.stat-card__value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #00c9a7;
+    font-family: 'DM Mono', monospace;
+}
