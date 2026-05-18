@@ -1,3 +1,4 @@
+import './DashboardCard.css';
 function DashboardCard({ icon, title, description }) {
   return (
     <div className="card">
