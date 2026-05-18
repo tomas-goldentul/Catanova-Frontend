@@ -1,0 +1,160 @@
+/* ── Variables globales (podés moverlas a tu index.css o :root global) ── */
+:root {
+    --color-teal:        #00c9a7;
+    --color-teal-dark:   #00a88c;
+    --color-navy:        #0f1923;
+    --color-bg:          #f5f6f8;
+    --color-border:      #e5e7eb;
+    --color-text:        #1a1a2e;
+    --color-text-muted:  #6b7280;
+    --radius:            10px;
+    --font-mono:         'DM Mono', monospace;
+}
+ 
+/* ── Layout principal ── */
+.galeria {
+    flex: 1;
+    padding: 36px 48px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+}
+ 
+/* ── Encabezado ── */
+.galeria__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+ 
+.galeria__titulo {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--color-text);
+}
+ 
+.galeria__acciones {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+ 
+/* Botón buscar */
+.galeria__btn-buscar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1.5px solid var(--color-border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13.5px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+ 
+.galeria__btn-buscar:hover {
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.12);
+}
+ 
+/* Botón filtrar */
+.galeria__btn-filtrar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #ffffff;
+    border: 1.5px solid var(--color-border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13.5px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+ 
+.galeria__btn-filtrar:hover {
+    border-color: var(--color-teal);
+}
+ 
+/* Botón nuevo producto */
+.galeria__btn-nuevo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-navy);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.15s;
+}
+ 
+.galeria__btn-nuevo:hover {
+    background: #2a3547;
+    transform: translateY(-1px);
+}
+ 
+/* ── Stats ── */
+.galeria__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+}
+ 
+/* ── Grid de tarjetas ── */
+.galeria__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 32px;
+}
+ 
+/* Stagger de animación en las tarjetas hijas */
+.galeria__grid > :nth-child(1) { animation-delay: 0.05s; }
+.galeria__grid > :nth-child(2) { animation-delay: 0.10s; }
+.galeria__grid > :nth-child(3) { animation-delay: 0.15s; }
+.galeria__grid > :nth-child(4) { animation-delay: 0.20s; }
+.galeria__grid > :nth-child(5) { animation-delay: 0.25s; }
+.galeria__grid > :nth-child(6) { animation-delay: 0.30s; }
+ 
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .galeria {
+        padding: 24px 20px;
+    }
+ 
+    .galeria__stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+ 
+    .galeria__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+ 
+@media (max-width: 600px) {
+    .galeria__titulo {
+        font-size: 24px;
+    }
+ 
+    .galeria__grid {
+        grid-template-columns: 1fr;
+    }
+ 
+    .galeria__stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
