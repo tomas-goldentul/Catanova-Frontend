@@ -544,39 +544,3 @@ body {
   box-shadow:
     0 10px 20px rgba(0,201,167,0.25);
 }
-
-.chat-bubble {
-  position: fixed;
-
-  bottom: 120px;
-
-  right: 30px;
-
-  background:
-    linear-gradient(135deg, #00b894, #00d2a8);
-
-  color: white;
-
-  width: 62px;
-  height: 62px;
-
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-weight: 700;
-  font-size: 24px;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 14px 28px rgba(0,184,148,0.30);
-
-  transition: 0.25s;
-}
-
-.chat-bubble:hover {
-  transform: scale(1.08);
-} 

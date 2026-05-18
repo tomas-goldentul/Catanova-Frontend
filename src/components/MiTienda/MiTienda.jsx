@@ -1,4 +1,10 @@
 import './MiTienda.css';
+import Navbar from '../Navbar/Navbar';
+import StoreHeader from '../StoreHeader/StoreHeader';
+import DashboardCard from '../DashboardCard/DashboardCard';
+import Footer from '../Footer/Footer';
+import BurbujaChatanova from '../BurbujaChatanova/BurbujaChatanova';
+
 const cards = [
   {
     icon: "📦",
@@ -37,31 +43,29 @@ const cards = [
   }
 ];
 
-<div className="app-container">
-
+function MiTienda() {
+  return (
+    <>
       <Navbar />
 
       <main className="main">
-
         <StoreHeader />
 
         <div className="grid-container">
-
           {cards.map((card, index) => (
             <DashboardCard
               key={index}
               {...card}
             />
           ))}
-
         </div>
-
       </main>
 
       <Footer />
 
-      <div className="chat-bubble">
-        C
-      </div>
+      <BurbujaChatanova />
+    </>
+  );
+}
 
-    </div>
+export default MiTienda;

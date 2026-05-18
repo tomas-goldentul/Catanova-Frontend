@@ -65,9 +65,9 @@ function GaleriaProductos() {
                 <div className="galeria__header">
                     <h1 className="galeria__titulo">Galería de Productos:</h1>
                     <div className="galeria__acciones">
-                        <button className="galeria__btn-buscar">
-                            <IconoBuscar /> Busca un producto
-                        </button>
+                        
+                        <div><IconoBuscar /></div><input type="text" className="galeria__btn-buscar" placeholder="Busca un producto" />
+
                         <button className="galeria__btn-filtrar">
                             <IconoFiltrar /> Filtrar
                         </button>
