@@ -1,8 +1,8 @@
 import './App.css';
-import Navbar from './Navbar';
-import StoreHeader from './StoreHeader';
-import DashboardCard from './DashboardCard';
-import Footer from './Footer';
+import Navbar from './components/Navbar/Navbar';
+import StoreHeader from './components/StoreHeader/StoreHeader';
+import DashboardCard from './components/DashboardCard/DashboardCard';
+import Footer from './components/Footer/Footer';
 
 const cards = [
   {
