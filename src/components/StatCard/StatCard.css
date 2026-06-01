@@ -1,29 +1,29 @@
-.stat-card {
+.cartaEstadistica {
     background: #ffffff;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 14px 18px;
+    border: 1.5px solid #dddfe4;
+    border-radius: 9px;
+    padding: 6%;
+    padding-left: 7%;
+    padding-right: 7%;
     display: flex;
     flex-direction: column;
     gap: 6px;
     transition: box-shadow 0.2s;
 }
 
-.stat-card:hover {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+.cartaEstadistica:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
-.stat-card__label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+.cartaEstadisticaNombre {
+    font-size: 82%;
+    font-weight: 500;
+    letter-spacing: 1%;
     color: #6b7280;
 }
 
-.stat-card__value {
-    font-size: 28px;
-    font-weight: 700;
+.cartaEstadisticaValor {
+    font-size: 165%;
+    font-weight: 600;
     color: #00c9a7;
-    font-family: 'DM Mono', monospace;
 }
