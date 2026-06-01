@@ -8,15 +8,21 @@ import './GaleriaProductos.css';
 
 // Datos de ejemplo para productos
 const PRODUCTOS_INICIALES = [
-    { id: 1, nombre: 'Remera azul',       talle: 'Talle L', stock: 30, precio: '$28.500',  badge: 'nuevo'     },
-    { id: 2, nombre: 'Pantalon slim fit', talle: 'Talle N', stock: 23, precio: '$45.000',  badge: null        },
-    { id: 3, nombre: 'Zapatillas urbanas',talle: 'Talle 40',stock: 14, precio: '$82.000',  badge: 'stock-bajo'},
-    { id: 4, nombre: 'Buzo con capucha',  talle: 'Talle L', stock: 16, precio: '$55.000',  badge: null        },
-    { id: 5, nombre: 'Campera de cuero',  talle: 'Talle M', stock:  6, precio: '$108.000', badge: null        },
-    { id: 6, nombre: 'Gorra snapback',    talle: 'Único',   stock:  8, precio: '$12.000',  badge: 'stock-bajo'},
+    { id: 1, nombre: 'Remera azul', talle: 'Talle L', stock: 30, precio: '$28.500', activo: true},
+    { id: 2, nombre: 'Pantalon slim fit', talle: 'Talle N', stock: 23, precio: '$45.000', activo: false},
+    { id: 3, nombre: 'Zapatillas urbanas', talle: 'Talle 40',stock: 14, precio: '$82.000', activo: true},
+    { id: 4, nombre: 'Buzo con capucha', talle: 'Talle L', stock: 16, precio: '$55.000', activo: false},
+    { id: 5, nombre: 'Campera de cuero', talle: 'Talle M', stock:  6, precio: '$108.000', activo: true},
+    { id: 6, nombre: 'Gorra snapback', talle: 'Único',   stock:  8, precio: '$12.000', activo: false},
+    { id: 7, nombre: 'Remera verde', talle: 'Talle L', stock: 30, precio: '$28.500', activo: true},
+    { id: 8, nombre: 'Pantalon rojo', talle: 'Talle N', stock: 23, precio: '$45.000', activo: false},
+    { id: 9, nombre: 'Zapatillas nike', talle: 'Talle 40',stock: 14, precio: '$82.000', activo: true},
+    { id: 10, nombre: 'Buzo celeste', talle: 'Talle L', stock: 16, precio: '$55.000', activo: false},
+    { id: 11, nombre: 'Campera para el invierno', talle: 'Talle M', stock:  6, precio: '$108.000', activo: true},
+    { id: 12, nombre: 'Gorra de beisbol', talle: 'Único',   stock:  8, precio: '$12.000', activo: false},
 ];
  
-const PRODUCTOS_POR_PAGINA = 6;
+const PRODUCTOS_POR_PAGINA = 6; //Limite de 6 productos por pagina
  
 const IconoBuscar = () => (
     <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -34,7 +40,7 @@ const IconoMas = () => (
     <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
         <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
     </svg>
-);
+); //Iconos creados por IA para los iconos
  
 function GaleriaProductos() {
     const [productos, setProductos] = useState(PRODUCTOS_INICIALES);
@@ -44,47 +50,50 @@ function GaleriaProductos() {
     const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA;
     const productosPagina = productos.slice(inicio, inicio + PRODUCTOS_POR_PAGINA);
  
-    const enTienda    = productos.filter(p => p.badge !== 'stock-bajo').length;
-    const sinPublicar = productos.length - enTienda;
-    const stockBajo   = productos.filter(p => p.badge === 'stock-bajo').length;
+    const enTienda = productos.filter(productoActual => productoActual.activo).length; //productos en tienda
+    const sinPublicar = productos.filter(productoActual => !productoActual.activo).length; //productos que no estan en tienda
+    const stockBajo = productos.filter(productoActual => productoActual.stock < 10).length; //productos con stock bajo
  
     const handleEliminar = (id) => {
-        setProductos(prev => prev.filter(p => p.id !== id));
+        setProductos(productosPrevios => productosPrevios.filter(productoActual => productoActual.id !== id)); //Usa el estado previo para eliminar el producto por id
     };
  
     const handleAgregar = (id) => {
-        // lógica de agregar a tienda
+        // lógica de agregar a tienda; no esta hecho todavia
         console.log('Agregar producto', id);
     };
  
     return (
         <>
             <Header />
-            <main className="galeria">
+            <div className="galeria">
  
-                <div className="galeria__header">
-                    <h1 className="galeria__titulo">Galería de Productos:</h1>
-                    <div className="galeria__acciones">
+                <div className="divBuscarProductos">
+                    <h1>Galería de Productos:</h1>
+                    <div className="accionesBuscador">
                         
-                        <div><IconoBuscar /></div><input type="text" className="galeria__btn-buscar" placeholder="Busca un producto" />
+                        <div className="galeriaBuscadorContenedor">
+                            <IconoBuscar />
+                            <input type="text" className="galeriaBuscador" placeholder="Busca un producto" />
+                        </div>
 
-                        <button className="galeria__btn-filtrar">
+                        <button className="galeriaFiltrar">
                             <IconoFiltrar /> Filtrar
                         </button>
-                        <button className="galeria__btn-nuevo">
+                        <button className="galeriaCrearNuevoProd">
                             <IconoMas /> Nuevo producto
                         </button>
                     </div>
                 </div>
 
-                <div className="galeria__stats">
-                    <StatCard label="Total productos" value={productos.length} />
-                    <StatCard label="En tienda"        value={enTienda}         />
-                    <StatCard label="Sin publicar"     value={sinPublicar}      />
-                    <StatCard label="Stock bajo"       value={stockBajo}        />
+                <div className="estadisticasGenerales">
+                    <StatCard label="Total productos" value={productos.length}/>
+                    <StatCard label="En tienda" value={enTienda}/>
+                    <StatCard label="Sin publicar" value={sinPublicar}/>
+                    <StatCard label="Stock bajo" value={stockBajo}/>
                 </div>
  
-                <div className="galeria__grid">
+                <div className="productosOrdenados">
                     {productosPagina.map((producto) => (
                         <TarjetaProducto
                             key={producto.id}
@@ -101,7 +110,7 @@ function GaleriaProductos() {
                     onChange={setPaginaActual}
                 />
  
-            </main>
+            </div>
             <Footer />
         </>
     );
