@@ -30,42 +30,59 @@ const IconoMas = () => (
  *   talle: string,
  *   stock: number,
  *   precio: string,
- *   badge?: 'nuevo' | 'stock-bajo' | null,
+ *   activo: boolean,
  *   onAgregar?: () => void,
  *   onEliminar?: () => void,
  * }} props
  */
-function TarjetaProducto({ nombre, talle, stock, precio, badge = null, onAgregar, onEliminar }) {
-    const badgeLabel = badge === 'nuevo' ? 'Nuevo' : badge === 'stock-bajo' ? 'Stock bajo' : null;
+
+function TarjetaProducto({ nombre, talle, stock, precio, activo, onAgregar, onEliminar }) {
+    const datosDistintivos = [];
+    if (!activo) datosDistintivos.push(
+        {
+            tipo: 'no-publicado', label: 'No publicado'
+        }
+    );
+    if (stock < 10) datosDistintivos.push(
+        {
+            tipo: 'stock-bajo', label: 'Stock bajo'
+        }
+    );
 
     return (
-        <article className="tarjeta-producto">
-            {badgeLabel && (
-                <span className={`tarjeta-producto__badge tarjeta-producto__badge--${badge}`}>
-                    {badgeLabel}
-                </span>
-            )}
+        <>
+            <article className="tarjetaProducto">
+                {datosDistintivos.length > 0 && (
+                    <div className="tarjetaProductoDatosDistintivos">
+                        {datosDistintivos.map((dato) => (
+                            <span key={dato.tipo} className={`tarjetaProductoDatoD tarjetaProductoDatoD--${dato.tipo}`}>
+                                {dato.label}
+                            </span>
+                        ))}
+                    </div>
+                )}
 
-            <div className="tarjeta-producto__imagen">
-                <IconoImagen />
-                <span>Imagen</span>
-            </div>
-
-            <div className="tarjeta-producto__body">
-                <p className="tarjeta-producto__nombre">{nombre}</p>
-                <p className="tarjeta-producto__meta">{talle} · Stock: {stock} uds.</p>
-                <p className="tarjeta-producto__precio">{precio}</p>
-
-                <div className="tarjeta-producto__acciones">
-                    <button className="tarjeta-producto__btn-agregar" onClick={onAgregar}>
-                        <IconoMas /> Agregar a tienda
-                    </button>
-                    <button className="tarjeta-producto__btn-eliminar" onClick={onEliminar} aria-label="Eliminar producto">
-                        <IconoEliminar />
-                    </button>
+                <div className="tarjetaProductoImagen">
+                    <IconoImagen />
+                    <span>Imagen</span>
                 </div>
-            </div>
-        </article>
+
+                <div className="tarjetaProductoContenido">
+                    <p className="tarjetaProductoNombre">{nombre}</p>
+                    <p className="tarjetaProductoDatos">{talle} · Stock: {stock} uds.</p>
+                    <p className="tarjetaProductoPrecio">{precio}</p>
+
+                    <div className="tarjetaProductoAcciones">
+                        <button className="tarjetaProductoAgregar" onClick={onAgregar}>
+                            <IconoMas /> Agregar a tienda
+                        </button>
+                        <button className="tarjetaProductoEliminar" onClick={onEliminar} aria-label="Eliminar producto">
+                            <IconoEliminar />
+                        </button>
+                    </div>
+                </div>
+            </article>
+        </>
     );
 }
 
