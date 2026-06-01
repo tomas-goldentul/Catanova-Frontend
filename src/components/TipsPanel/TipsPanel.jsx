@@ -1,6 +1,10 @@
+import './TipsPanel.css';
+import { MdLocalOffer } from "react-icons/md";
+import { HiOutlineCamera } from "react-icons/hi";
+
 const tips = [
-  { icon: "%", title: "Promociones", description: "Creá descuentos atractivos para tus clientes." },
-  { icon: "📷", title: "Fotos de calidad", description: "Subí fotos nítidas y atractivas de tus productos." },
+  { icon: <MdLocalOffer />, title: "Promociones", description: "Creá descuentos atractivos para tus clientes." },
+  { icon: <HiOutlineCamera />, title: "Fotos de calidad", description: "Subí fotos nítidas y atractivas de tus productos." },
 ];
 
 function TipsPanel() {

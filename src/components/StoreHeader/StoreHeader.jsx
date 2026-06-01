@@ -1,4 +1,5 @@
 import './StoreHeader.css';
+
 function StoreHeader() {
   return (
     <div className="store-header">
