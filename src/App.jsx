@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import './App.css';
-import Navbar from './components/Navbar/Navbar';
-import Footer from './components/Footer/Footer';
 import MiTienda from './components/MiTienda/MiTienda';
 import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
+import Catalogo from './components/Catalogo/Catalogo';
 
 function App() {
   const [tab, setTab] = useState('tienda');
@@ -25,9 +24,18 @@ function App() {
         >
           Galería de Productos
         </button>
+        <button
+          type="button"
+          className={tab === 'catalogo' ? 'tab active' : 'tab'}
+          onClick={() => setTab('catalogo')}
+        >
+          Catálogo
+        </button>
       </div>
 
-      {tab === 'tienda' ? <MiTienda /> : <GaleriaProductos />}
+      {tab === 'tienda' && <MiTienda />}
+      {tab === 'galeria' && <GaleriaProductos />}
+      {tab === 'catalogo' && <Catalogo />}
     </div>
   );
 }
