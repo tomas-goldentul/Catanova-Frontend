@@ -1,52 +1,29 @@
 import './Footer.css';
-
-import {
-  FaTiktok,
-  FaFacebookF,
-  FaInstagram,
-  FaYoutube
-} from "react-icons/fa";
-
+import { FaTiktok, FaFacebookF, FaYoutube, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+
+const socials = [
+  { icon: <FaTiktok />, label: "TikTok" },
+  { icon: <FaXTwitter />, label: "X" },
+  { icon: <FaFacebookF />, label: "Facebook" },
+  { icon: <FaYoutube />, label: "YouTube" },
+  { icon: <FaInstagram />, label: "Instagram" },
+];
 
 function Footer() {
   return (
     <footer className="footer">
-
       <div className="footer-buttons">
-        <button className="footer-btn">
-          Soporte
-        </button>
-
-        <button className="footer-btn">
-          Ayuda
-        </button>
+        <button className="footer-btn">Soporte</button>
+        <button className="footer-btn">Ayuda</button>
       </div>
-
       <div className="social-icons">
-
-        <div className="social-icon">
-          <FaTiktok />
-        </div>
-
-        <div className="social-icon">
-          <FaXTwitter />
-        </div>
-
-        <div className="social-icon">
-          <FaFacebookF />
-        </div>
-
-        <div className="social-icon">
-          <FaInstagram />
-        </div>
-
-        <div className="social-icon">
-          <FaYoutube />
-        </div>
-
+        {socials.map((s) => (
+          <div className="social-icon" key={s.label} title={s.label}>
+            {s.icon}
+          </div>
+        ))}
       </div>
-
     </footer>
   );
 }

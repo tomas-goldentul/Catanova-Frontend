@@ -1,0 +1,51 @@
+.store-header {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+.store-title h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 6px;
+}
+
+.store-title p {
+  color: #6b7a99;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stars { color: #f5a623; font-size: 17px; letter-spacing: 1px; }
+.rating-text { font-weight: 700; font-size: 14px; color: #000000; }
+.rating-reviews { color: #9aa3b8; font-size: 13px; }
+
+.btn-ver-tienda {
+  background-color: #00c9a7;
+  color: white;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-ver-tienda:hover {
+  background-color: #00b396;
+  transform: translateY(-1px);
+}

@@ -1,0 +1,74 @@
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px 26px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+}
+
+.card-icon {
+  margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: #f0fdf9;
+  border-radius: 12px;
+  color: #00c9a7;
+}
+.card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tip-badge {
+  display: inline-block;
+  background-color: #f0fdf9;
+  color: #00c9a7;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  width: fit-content;
+  margin-bottom: 2px;
+}
+
+.card h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0d1b38;
+}
+
+.card p {
+  color: #7a8499;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.card-link {
+  color: #00c9a7;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 13px;
+  margin-top: 8px;
+  display: inline-block;
+}
+.card-link:hover { text-decoration: underline; }
