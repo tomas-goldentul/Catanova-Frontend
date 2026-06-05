@@ -3,6 +3,7 @@ import './App.css';
 import MiTienda from './components/MiTienda/MiTienda';
 import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
 import Catalogo from './components/Catalogo/Catalogo';
+import Productos from './components/Productos/productos';
 
 function App() {
   const [tab, setTab] = useState('tienda');
@@ -31,11 +32,19 @@ function App() {
         >
           Catálogo
         </button>
+        <button
+          type="button"
+          className={tab === 'productos' ? 'tab active' : 'tab'}
+          onClick={() => setTab('productos')}
+        >
+          Productos API
+        </button>
       </div>
 
       {tab === 'tienda' && <MiTienda />}
       {tab === 'galeria' && <GaleriaProductos />}
       {tab === 'catalogo' && <Catalogo />}
+      {tab === 'productos' && <Productos />}
     </div>
   );
 }
