@@ -4,6 +4,7 @@ import Footer from '../Footer/Footer';
 import StatCard from '../StatCard/StatCard';
 import TarjetaProducto from '../TarjetaProducto/TarjetaProducto';
 import Paginacion from '../Paginacion/Paginacion';
+import AgregarProducto from '../AgregarProducto/AgregarProducto';
 import './GaleriaProductos.css';
 
 // Datos de ejemplo para productos
@@ -45,6 +46,7 @@ const IconoMas = () => (
 function GaleriaProductos() {
     const [productos, setProductos] = useState(PRODUCTOS_INICIALES);
     const [paginaActual, setPaginaActual] = useState(1);
+    const [mostrarAgregarProducto, setMostrarAgregarProducto] = useState(false);
  
     const totalPaginas = Math.ceil(productos.length / PRODUCTOS_POR_PAGINA);
     const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA;
@@ -61,6 +63,12 @@ function GaleriaProductos() {
     const handleAgregar = (id) => {
         // lógica de agregar a tienda; no esta hecho todavia
         console.log('Agregar producto', id);
+    };
+
+    const handleCrearProducto = (nuevoProducto) => {
+        setProductos(productosPrevios => [nuevoProducto, ...productosPrevios]);
+        setPaginaActual(1);
+        setMostrarAgregarProducto(false);
     };
  
     return (
@@ -80,11 +88,21 @@ function GaleriaProductos() {
                         <button className="galeriaFiltrar">
                             <IconoFiltrar /> Filtrar
                         </button>
-                        <button className="galeriaCrearNuevoProd">
+                        <button
+                            className="galeriaCrearNuevoProd"
+                            onClick={() => setMostrarAgregarProducto(true)}
+                        >
                             <IconoMas /> Nuevo producto
                         </button>
                     </div>
                 </div>
+
+                {mostrarAgregarProducto && (
+                    <AgregarProducto
+                        onCrear={handleCrearProducto}
+                        onCancelar={() => setMostrarAgregarProducto(false)}
+                    />
+                )}
 
                 <div className="estadisticasGenerales">
                     <StatCard label="Total productos" value={productos.length}/>
