@@ -9,25 +9,18 @@ import FiltroProductos from './FiltroProductos';
 import { getTodosLosProductos, updateEstadoProducto } from '../../api/productos';
 import './GaleriaProductos.css';
 
-const PRODUCTOS_INICIALES = await getTodosLosProductos()
-    .then((data) => {
-        const lista = Array.isArray(data)
-            ? data
-            : data?.productos ?? [];
-
-        return lista.map((producto) => ({
-            id: producto.id_producto ?? producto.id ?? producto._id ?? producto.productoId,
-            nombre: producto.nombre ?? 'Sin nombre',
-            talle: producto.talle ?? producto.talla ?? 'Sin talle',
-            stock: Number(producto.stock ?? 0),
-            precio: typeof producto.precio === 'number'
-                ? `$${producto.precio.toLocaleString('es-AR')}`
-                : (typeof producto.precio === 'string'
-                    ? `$${Number(producto.precio).toLocaleString('es-AR')}`
-                    : '$0'),
-            activo: producto.activo ?? producto.estado ?? true,
-        }));
-    });
+const normalizarProducto = (producto) => ({
+    id: producto.id_producto ?? producto.id ?? producto._id ?? producto.productoId,
+    nombre: producto.nombre ?? 'Sin nombre',
+    talle: producto.talle ?? producto.talla ?? 'Sin talle',
+    stock: Number(producto.stock ?? 0),
+    precio: typeof producto.precio === 'number'
+        ? `$${producto.precio.toLocaleString('es-AR')}`
+        : (typeof producto.precio === 'string'
+            ? `$${Number(producto.precio).toLocaleString('es-AR')}`
+            : '$0'),
+    activo: producto.activo ?? producto.estado ?? true,
+});
  
 const PRODUCTOS_POR_PAGINA = 6; //Limite de 6 productos por pagina
 
@@ -55,7 +48,7 @@ const IconoMas = () => (
 ); //Iconos creados por IA para los iconos
  
 function GaleriaProductos() {
-    const [productos, setProductos] = useState(PRODUCTOS_INICIALES);
+    const [productos, setProductos] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
     const [mostrarAgregarProducto, setMostrarAgregarProducto] = useState(false);
     const [mostrarFiltro, setMostrarFiltro] = useState(false);
@@ -63,6 +56,33 @@ function GaleriaProductos() {
     const [busqueda, setBusqueda] = useState('');
     const [soloActivos, setSoloActivos] = useState(false);
     const [orden, setOrden] = useState('todos');
+
+    useEffect(() => {
+        let activo = true;
+
+        const cargarProductos = async () => {
+            try {
+                const data = await getTodosLosProductos();
+                const lista = Array.isArray(data) ? data : data?.productos ?? [];
+
+                if (!activo) return;
+
+                setProductos(lista.map(normalizarProducto));
+            } catch (error) {
+                if (!activo) return;
+
+                console.error('No se pudieron cargar los productos:', error);
+                setMensaje('No se pudieron cargar los productos. Verifica que el backend esté disponible.');
+                setProductos([]);
+            }
+        };
+
+        cargarProductos();
+
+        return () => {
+            activo = false;
+        };
+    }, []);
 
     useEffect(() => {
         if (!mensaje) return undefined;
