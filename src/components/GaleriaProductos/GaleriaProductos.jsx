@@ -1,29 +1,40 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import StatCard from '../StatCard/StatCard';
 import TarjetaProducto from '../TarjetaProducto/TarjetaProducto';
 import Paginacion from '../Paginacion/Paginacion';
 import AgregarProducto from '../AgregarProducto/AgregarProducto';
+import FiltroProductos from './FiltroProductos';
+import { getTodosLosProductos, updateEstadoProducto } from '../../api/productos';
 import './GaleriaProductos.css';
 
-// Datos de ejemplo para productos
-const PRODUCTOS_INICIALES = [
-    { id: 1, nombre: 'Remera azul', talle: 'Talle L', stock: 30, precio: '$28.500', activo: true},
-    { id: 2, nombre: 'Pantalon slim fit', talle: 'Talle N', stock: 23, precio: '$45.000', activo: false},
-    { id: 3, nombre: 'Zapatillas urbanas', talle: 'Talle 40',stock: 14, precio: '$82.000', activo: true},
-    { id: 4, nombre: 'Buzo con capucha', talle: 'Talle L', stock: 16, precio: '$55.000', activo: false},
-    { id: 5, nombre: 'Campera de cuero', talle: 'Talle M', stock:  6, precio: '$108.000', activo: true},
-    { id: 6, nombre: 'Gorra snapback', talle: 'Único',   stock:  8, precio: '$12.000', activo: false},
-    { id: 7, nombre: 'Remera verde', talle: 'Talle L', stock: 30, precio: '$28.500', activo: true},
-    { id: 8, nombre: 'Pantalon rojo', talle: 'Talle N', stock: 23, precio: '$45.000', activo: false},
-    { id: 9, nombre: 'Zapatillas nike', talle: 'Talle 40',stock: 14, precio: '$82.000', activo: true},
-    { id: 10, nombre: 'Buzo celeste', talle: 'Talle L', stock: 16, precio: '$55.000', activo: false},
-    { id: 11, nombre: 'Campera para el invierno', talle: 'Talle M', stock:  6, precio: '$108.000', activo: true},
-    { id: 12, nombre: 'Gorra de beisbol', talle: 'Único',   stock:  8, precio: '$12.000', activo: false},
-];
+const PRODUCTOS_INICIALES = await getTodosLosProductos()
+    .then((data) => {
+        const lista = Array.isArray(data)
+            ? data
+            : data?.productos ?? [];
+
+        return lista.map((producto) => ({
+            id: producto.id_producto ?? producto.id ?? producto._id ?? producto.productoId,
+            nombre: producto.nombre ?? 'Sin nombre',
+            talle: producto.talle ?? producto.talla ?? 'Sin talle',
+            stock: Number(producto.stock ?? 0),
+            precio: typeof producto.precio === 'number'
+                ? `$${producto.precio.toLocaleString('es-AR')}`
+                : (typeof producto.precio === 'string'
+                    ? `$${Number(producto.precio).toLocaleString('es-AR')}`
+                    : '$0'),
+            activo: producto.activo ?? producto.estado ?? true,
+        }));
+    });
  
 const PRODUCTOS_POR_PAGINA = 6; //Limite de 6 productos por pagina
+
+const obtenerPrecioNumerico = (precio) => {
+    const numero = Number(String(precio).replace(/[^\d.-]/g, ''));
+    return Number.isFinite(numero) ? numero : 0;
+};
  
 const IconoBuscar = () => (
     <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -47,11 +58,39 @@ function GaleriaProductos() {
     const [productos, setProductos] = useState(PRODUCTOS_INICIALES);
     const [paginaActual, setPaginaActual] = useState(1);
     const [mostrarAgregarProducto, setMostrarAgregarProducto] = useState(false);
+    const [mostrarFiltro, setMostrarFiltro] = useState(false);
+    const [mensaje, setMensaje] = useState('');
+    const [busqueda, setBusqueda] = useState('');
+    const [soloActivos, setSoloActivos] = useState(false);
+    const [orden, setOrden] = useState('todos');
+
+    useEffect(() => {
+        if (!mensaje) return undefined;
+
+        const timer = window.setTimeout(() => setMensaje(''), 2500);
+        return () => window.clearTimeout(timer);
+    }, [mensaje]);
  
-    const totalPaginas = Math.ceil(productos.length / PRODUCTOS_POR_PAGINA);
+    const productosFiltrados = productos
+        .filter((productoActual) => {
+            const coincideBusqueda = productoActual.nombre.toLowerCase().includes(busqueda.toLowerCase());
+            const coincideEstado = !soloActivos || productoActual.activo;
+            return coincideBusqueda && coincideEstado;
+        })
+        .sort((a, b) => {
+            if (orden === 'barato') {
+                return obtenerPrecioNumerico(a.precio) - obtenerPrecioNumerico(b.precio);
+            }
+            if (orden === 'caro') {
+                return obtenerPrecioNumerico(b.precio) - obtenerPrecioNumerico(a.precio);
+            }
+            return 0;
+        });
+
+    const totalPaginas = Math.max(1, Math.ceil(productosFiltrados.length / PRODUCTOS_POR_PAGINA));
     const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA;
-    const productosPagina = productos.slice(inicio, inicio + PRODUCTOS_POR_PAGINA);
- 
+    const productosPagina = productosFiltrados.slice(inicio, inicio + PRODUCTOS_POR_PAGINA);
+
     const enTienda = productos.filter(productoActual => productoActual.activo).length; //productos en tienda
     const sinPublicar = productos.filter(productoActual => !productoActual.activo).length; //productos que no estan en tienda
     const stockBajo = productos.filter(productoActual => productoActual.stock < 10).length; //productos con stock bajo
@@ -60,9 +99,30 @@ function GaleriaProductos() {
         setProductos(productosPrevios => productosPrevios.filter(productoActual => productoActual.id !== id)); //Usa el estado previo para eliminar el producto por id
     };
  
-    const handleAgregar = (id) => {
-        // lógica de agregar a tienda; no esta hecho todavia
-        console.log('Agregar producto', id);
+    const handleAgregar = async (id) => {
+        const producto = productos.find((item) => item.id === id);
+
+        if (!producto) {
+            setMensaje('No se encontró el producto.');
+            return;
+        }
+
+        if (producto.activo) {
+            setMensaje('Este producto ya está en la tienda.');
+            return;
+        }
+
+        try {
+            await updateEstadoProducto(id, true);
+            setProductos((productosPrevios) =>
+                productosPrevios.map((item) =>
+                    item.id === id ? { ...item, activo: true } : item
+                )
+            );
+            setMensaje(`"${producto.nombre}" se agregó a la tienda.`);
+        } catch (error) {
+            setMensaje(error.message || 'No se pudo agregar el producto a la tienda.');
+        }
     };
 
     const handleCrearProducto = (nuevoProducto) => {
@@ -82,10 +142,25 @@ function GaleriaProductos() {
                         
                         <div className="galeriaBuscadorContenedor">
                             <IconoBuscar />
-                            <input type="text" className="galeriaBuscador" placeholder="Busca un producto" />
+                            <input
+                                type="text"
+                                className="galeriaBuscador"
+                                placeholder="Busca un producto"
+                                value={busqueda}
+                                onChange={(event) => {
+                                    setBusqueda(event.target.value);
+                                    setPaginaActual(1);
+                                }}
+                            />
                         </div>
 
-                        <button className="galeriaFiltrar">
+                        <button
+                            className="galeriaFiltrar"
+                            onClick={() => {
+                                setMostrarFiltro((valorActual) => !valorActual);
+                                setPaginaActual(1);
+                            }}
+                        >
                             <IconoFiltrar /> Filtrar
                         </button>
                         <button
@@ -104,8 +179,30 @@ function GaleriaProductos() {
                     />
                 )}
 
+                {mostrarFiltro && (
+                    <FiltroProductos
+                        orden={orden}
+                        onCambiarOrden={(nuevoOrden) => {
+                            setOrden(nuevoOrden);
+                            setPaginaActual(1);
+                        }}
+                        soloActivos={soloActivos}
+                        onToggleActivos={() => {
+                            setSoloActivos((valorActual) => !valorActual);
+                            setPaginaActual(1);
+                        }}
+                        onCerrar={() => setMostrarFiltro(false)}
+                    />
+                )}
+
+                {mensaje && (
+                    <div className="galeriaToast">
+                        <p className="galeriaToastTexto">{mensaje}</p>
+                    </div>
+                )}
+
                 <div className="estadisticasGenerales">
-                    <StatCard label="Total productos" value={productos.length}/>
+                    <StatCard label="Total productos" value={productosFiltrados.length}/>
                     <StatCard label="En tienda" value={enTienda}/>
                     <StatCard label="Sin publicar" value={sinPublicar}/>
                     <StatCard label="Stock bajo" value={stockBajo}/>
