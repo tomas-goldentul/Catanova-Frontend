@@ -85,6 +85,61 @@
     border-color: #00c9a7;
     box-shadow: 0 0 0 2px rgba(0, 201, 167, 0.12);
 }
+
+.galeriaFiltroPanel {
+    margin-bottom: 16px;
+    padding: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.galeriaFiltroHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.galeriaFiltroHeader h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #111827;
+}
+
+.galeriaFiltroCerrar {
+    border: none;
+    background: #eef2ff;
+    color: #3730a3;
+    border-radius: 999px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.galeriaFiltroOpciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.galeriaFiltroChip {
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+    border-radius: 999px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.galeriaFiltroChip.active {
+    background: #00c9a7;
+    border-color: #00c9a7;
+    color: #ffffff;
+}
  
 /* Botón nuevo producto */
 .galeriaCrearNuevoProd {
@@ -110,6 +165,48 @@
 .galeriaCrearNuevoProd:hover {
     background: #2a3547;
     transform: translateY(-1px);
+}
+
+.galeriaToast {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.galeriaToastTexto {
+    max-width: 420px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #00c9a7, #2a3547);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 14px 30px rgba(12, 18, 28, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    animation: galeriaToastFade 2.5s ease forwards;
+}
+
+@keyframes galeriaToastFade {
+    0% {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    10% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    85% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
 }
 
 .productosOrdenados {
