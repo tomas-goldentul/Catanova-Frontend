@@ -52,7 +52,7 @@ export async function updateEstadoProducto(id, estado) {
 
 export async function actualizarProducto(id, datosProducto) {
   const res = await fetch(`${BASE_URL}/update/${id}`, {
-    method: "GET",
+    method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(datosProducto),
   });
