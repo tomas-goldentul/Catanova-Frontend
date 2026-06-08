@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { insertProducto } from '../../api/productos';
 import './AgregarProducto.css';
 
 const TALLES = ['Talle XS', 'Talle S', 'Talle M', 'Talle L', 'Talle XL', 'Talle 40', 'Único'];
@@ -54,21 +55,34 @@ function AgregarProducto({ onCrear, onCancelar }) {
         return Object.keys(nuevosErrores).length === 0;
     };
 
-    const crearProducto = (event) => {
+    const crearProducto = async (event) => {
         event.preventDefault();
         if (!validarFormulario()) return;
 
-        onCrear({
-            id: Date.now(),
+        const payload = {
             nombre: formulario.nombre.trim(),
             talle: formulario.talle,
             stock: Number(formulario.stock),
-            precio: precioPreview,
+            precio: Number(formulario.precio), // enviar número, no string formateada
             activo: formulario.activo,
             categoria: formulario.categoria,
             descripcion: formulario.descripcion.trim(),
-            imagenNombre,
-        });
+            id_tienda: 1, // ID de tienda fijo por ahora; ajustá según tu lógica
+            imagen: imagenNombre,
+        };
+
+        try {
+            const data = await insertProducto(payload);
+            // Asumo que el backend retorna el producto creado; ajustá según tu API:
+            const productoCreado = data.producto ?? data.data ?? data;
+            onCrear(productoCreado);
+            // opcional: limpiar formulario o cerrar
+        } catch (err) {
+            // Mostrar error; el componente no tiene setMensaje global,
+            // podés pasar un prop onError desde el padre o usar alert:
+            const mensaje = err.message || 'No se pudo crear el producto.';
+            alert(mensaje);
+        }
     };
 
     return (

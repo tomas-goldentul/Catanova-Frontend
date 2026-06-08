@@ -13,13 +13,28 @@ export async function getTodosLosProductos() {
 }
 
 export async function insertProducto(datosProducto) {
+  
+  console.log("Enviando producto:", datosProducto);
+
   const res = await fetch(`${BASE_URL}/insert`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(datosProducto),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    // respuesta no-JSON, dejamos el texto crudo en data._raw
+    data = { _raw: text };
+  }
+
+  if (!res.ok) {
+    const mensaje = data?.message || data?._raw || `Error ${res.status}: ${res.statusText}`;
+    throw new Error(mensaje);
+  }
+
   return data;
 }
 

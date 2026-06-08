@@ -146,7 +146,11 @@ function GaleriaProductos() {
     };
 
     const handleCrearProducto = (nuevoProducto) => {
-        setProductos(productosPrevios => [nuevoProducto, ...productosPrevios]);
+        setProductos(productosPrevios => [
+            normalizarProducto(nuevoProducto),
+            ...productosPrevios
+        ]);
+
         setPaginaActual(1);
         setMostrarAgregarProducto(false);
     };
