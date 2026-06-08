@@ -27,10 +27,11 @@ export async function updateEstadoProducto(id, estado) {
   const res = await fetch(`${BASE_URL}/estado/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ estado }),
+    body: JSON.stringify({ estado: Boolean(estado) }),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
   return data;
 }
 
