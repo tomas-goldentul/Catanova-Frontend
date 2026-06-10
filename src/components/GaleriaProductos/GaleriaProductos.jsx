@@ -6,7 +6,7 @@ import TarjetaProducto from '../TarjetaProducto/TarjetaProducto';
 import Paginacion from '../Paginacion/Paginacion';
 import AgregarProducto from '../AgregarProducto/AgregarProducto';
 import FiltroProductos from './FiltroProductos';
-import { getTodosLosProductos, updateEstadoProducto } from '../../api/productos';
+import { getTodosLosProductos, updateEstadoProducto, borrarProducto } from '../../api/productos';
 import './GaleriaProductos.css';
 
 const normalizarProducto = (producto) => ({
@@ -115,7 +115,8 @@ function GaleriaProductos() {
     const sinPublicar = productos.filter(productoActual => !productoActual.activo).length; //productos que no estan en tienda
     const stockBajo = productos.filter(productoActual => productoActual.stock < 10).length; //productos con stock bajo
  
-    const handleEliminar = (id) => {
+    const handleEliminar = async (id) => {
+        await borrarProducto(id);
         setProductos(productosPrevios => productosPrevios.filter(productoActual => productoActual.id !== id)); //Usa el estado previo para eliminar el producto por id
     };
  

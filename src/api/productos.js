@@ -60,3 +60,17 @@ export async function actualizarProducto(id, datosProducto) {
   if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
   return data;
 }
+
+export async function borrarProducto(id) {
+  const res = await fetch(`${BASE_URL}/delete/${id}`, {
+    method: "PUT",
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
+  }
+
+  return data;
+}

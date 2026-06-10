@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './Catalogo.css';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import BurbujaChatanova from '../BurbujaChatanova/BurbujaChatanova';
+import { getCategorias, getCategoriaPorId } from '../../api/categorias';
 
 const IconoOjo = () => (
   <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
