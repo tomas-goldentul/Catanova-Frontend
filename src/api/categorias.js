@@ -22,4 +22,17 @@ export async function getCategoriaPorId(id) {
   return data;
 }
 
+export async function getProductosDeCategoria(id) {
+  const res = await fetch(`${BASE_URL}/${id}/productos`);
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
+  }
+
+  return data;
+}
+//trae los productos de una categoría
+
 //el futuro agregar crear categoria, editar (elegir que productos poner y sacar) y eliminar
