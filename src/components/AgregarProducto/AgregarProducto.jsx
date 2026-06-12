@@ -1,24 +1,10 @@
 import { useMemo, useState } from 'react';
 import { insertProducto } from '../../api/productos';
+import { IconoImagen, IconoCerrar } from '../Icons/Icons';
 import './AgregarProducto.css';
 
 const TALLES = ['Talle XS', 'Talle S', 'Talle M', 'Talle L', 'Talle XL', 'Talle 40', 'Único'];
 const CATEGORIAS = ['Remeras', 'Pantalones', 'Calzado', 'Abrigos', 'Accesorios'];
-
-const IconoImagen = () => (
-    <svg width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <path d="M3 16l5-5 4 4 3-3 6 6" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-    </svg>
-);
-
-const IconoCerrar = () => (
-    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-);
 
 function AgregarProducto({ onCrear, onCancelar }) {
     const [formulario, setFormulario] = useState({

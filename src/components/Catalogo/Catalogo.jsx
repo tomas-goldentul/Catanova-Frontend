@@ -56,7 +56,7 @@ const CATEGORIAS = [
       { id: 20, nombre: 'Boxers',        ventas: 4,  vistas: 28, favoritos: 8,  stock: 12 },
     ],
   },
-];
+]; 
 
 function Catalogo() {
   const [tabActivo, setTabActivo] = useState(CATEGORIAS[0].id);
