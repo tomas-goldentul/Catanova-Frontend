@@ -7,7 +7,7 @@ export async function getProductosActivos() {
 }
 
 export async function getTodosLosProductos() {
-  const res = await fetch(`${BASE_URL}/all`);
+  const res = await fetch(`${BASE_URL}/get`);
   if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
   return res.json();
 }
