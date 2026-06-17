@@ -74,3 +74,13 @@ export async function borrarProducto(id) {
 
   return data;
 }
+
+export async function getProductosPorCategoria(idCat) {
+  const res = await fetch(`${BASE_URL}/get/categoria/${idCat}`);
+
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+
+  return res.json();
+}
