@@ -1,14 +1,22 @@
 import './DashboardCard.css';
 
-function DashboardCard({ icon, title, description, tip }) {
+const IconArrow = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14"/>
+    <path d="m12 5 7 7-7 7"/>
+  </svg>
+);
+
+function DashboardCard({ icon, title, description, accentBg, accentColor }) {
   return (
-    <div className={`card ${tip ? 'card-tip' : ''}`}>
-      <div className="card-icon">{icon}</div>
-      <div className="card-body">
-        {tip && <span className="tip-badge">Consejo</span>}
-        <h2>{title}</h2>
-        <p>{description}</p>
-        <a href="/" className="card-link">Ir →</a>
+    <div className="dashboard-card">
+      <div className="card-icon-bg" style={{ background: accentBg, color: accentColor }}>
+        {icon}
+      </div>
+      <p className="card-title">{title}</p>
+      <p className="card-description">{description}</p>
+      <div className="card-action">
+        Acceder <IconArrow />
       </div>
     </div>
   );
