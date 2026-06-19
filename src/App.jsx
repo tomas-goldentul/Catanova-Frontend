@@ -4,6 +4,7 @@ import MiTienda from './components/MiTienda/MiTienda';
 import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
 import Catalogo from './components/Catalogo/Catalogo';
 import Productos from './components/Productos/productos';
+import Producto from './components/Producto/Producto';
 
 function App() {
   const [tab, setTab] = useState('tienda');
@@ -39,12 +40,20 @@ function App() {
         >
           Productos API
         </button>
+        <button
+          type="button"
+          className={tab === 'producto' ? 'tab active' : 'tab'}
+          onClick={() => setTab('producto')}
+        >
+          Producto Individual
+        </button>
       </div>
 
       {tab === 'tienda' && <MiTienda />}
       {tab === 'galeria' && <GaleriaProductos />}
       {tab === 'catalogo' && <Catalogo />}
       {tab === 'productos' && <Productos />}
+      {tab === 'producto' && <Producto />}
     </div>
   );
 }
