@@ -6,6 +6,8 @@ import BurbujaChatanova from '../BurbujaChatanova/BurbujaChatanova';
 import Categoria from '../Categoria/Categoria';
 import { getCategorias } from '../../api/categorias';
 import { getProductosPorCategoria } from '../../api/productos';
+import { getNombre, getSlogan } from '../../api/tiendas'; 
+
 import {
   IconoLapiz,
   IconoOjo,
@@ -15,40 +17,63 @@ import {
 function Catalogo() {
   const [categorias, setCategorias] = useState([]);
   const [tabActivo, setTabActivo] = useState(null);
+  const [infoTienda, setInfoTienda] = useState({ 
+    nombre: 'Cargando tienda...', 
+    slogan: 'Cargando slogan...' 
+  });
+
+  // ASÍ SERÍA CON EL ID DINÁMICO DE LA TIENDA DESDE LA URL (Necesitás instalar react-router-dom):
+  // primero corrés: npm install react-router-dom
+  // importás arriba: import { useParams } from 'react-router-dom';
+  // y lo usás acá: const { idTienda } = useParams();
 
   useEffect(() => {
-    cargarCatalogo();
-  }, []);
+    // ACTUAL: ID hardcodeado para pruebas
+    const idTienda = 2; 
 
-  async function cargarCatalogo() {
-    try {
-      const categoriasDB = await getCategorias();
+    async function iniciarCarga() {
+      try {
+        const [categoriasDB, dataNombre, dataSlogan] = await Promise.all([
+          getCategorias(),
+          getNombre(idTienda), // <- Si fuera dinámico usaría el id de useParams
+          getSlogan(idTienda)  // <- Si fuera dinámico usaría el id de useParams
+        ]);
 
-      console.log(categoriasDB);
+        setInfoTienda({
+          nombre: dataNombre?.nombre || 'M51 Jeans',
+          slogan: dataSlogan?.slogan || 'Donde la ropa es la felicidad'
+        });
 
-      const categoriasConProductos = await Promise.all(
-        categoriasDB.map(async (cat) => {
-          const productos = await getProductosPorCategoria(cat.id_categoria);
+        const categoriesConProductos = await Promise.all(
+          categoriasDB.map(async (cat) => {
+            const productos = await getProductosPorCategoria(cat.id_categoria);
+            return {
+              ...cat,
+              productos
+            };
+          })
+        );
 
-          console.log("Categoría:", cat.nombre);
-          console.log("Productos:", productos);
+        setCategorias(categoriesConProductos);
 
-          return {
-            ...cat,
-            productos
-          };
-        })
-      );
+        if (categoriesConProductos.length > 0) {
+          setTabActivo(categoriesConProductos[0].id);
+        }
 
-      setCategorias(categoriasConProductos);
-
-      if (categoriasConProductos.length > 0) {
-        setTabActivo(categoriasConProductos[0].id);
+      } catch (error) {
+        console.error("Error en la carga de datos:", error);
+        setInfoTienda({
+          nombre: "M51 Jeans",
+          slogan: "Donde la ropa es la felicidad"
+        });
       }
-    } catch (error) {
-      console.error(error);
     }
-  }
+
+    // SI USÁS EL ID DINÁMICO, COMENTÁS EL IF DE ABAJO PARA EVITAR EJECUCIONES SIN ID:
+    // if (idTienda) iniciarCarga();
+    
+    iniciarCarga();
+  }, []); // SI EL ID FUERA DINÁMICO, DEBERÍAS AGREGARLO ACÁ: [idTienda]
 
   const irASeccion = (id) => {
     setTabActivo(id);
@@ -61,11 +86,10 @@ function Catalogo() {
       <Navbar />
       <main className="cat-main">
 
-        {/* header */}
         <div className="cat-header">
           <div className="cat-header__tienda">
-            <h1 className="cat-header__nombre">M51 Jeans</h1>
-            <p className="cat-header__tagline">Donde la ropa es la felicidad</p>
+            <h1 className="cat-header__nombre">{infoTienda.nombre}</h1>
+            <p className="cat-header__tagline">{infoTienda.slogan}</p>
             <div className="cat-header__meta">
               <span className="cat-header__est">Est. 2022</span>
               <span className="cat-header__stars">★★★★★</span>
@@ -87,7 +111,6 @@ function Catalogo() {
           </div>
         </div>
 
-        {/* productos */}
         <div className="cat-productos">
           <h2 className="cat-productos__titulo">Productos:</h2>
 
@@ -107,7 +130,6 @@ function Catalogo() {
             <Categoria key={cat.id} {...cat} />
           ))}
 
-          {/* sección final */}
           <div className="cat-crear">
             <div className="cat-crear__card">
               <div className="cat-crear__icon-wrap">
