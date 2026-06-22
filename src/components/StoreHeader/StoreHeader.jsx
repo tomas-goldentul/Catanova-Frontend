@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import './StoreHeader.css';
+import { getNombre } from '../../api/tiendas';
 
 const IconExternalLink = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -9,11 +11,36 @@ const IconExternalLink = () => (
 );
 
 function StoreHeader() {
+  const [nombreTienda, setNombreTienda] = useState('Cargando tienda...');
+
+  // ASÍ SERÍA CON EL ID DINÁMICO DESDE LA URL EN EL FUTURO:
+  // const { idTienda } = useParams();
+
+  useEffect(() => {
+    // ACTUAL: ID hardcodeado para pruebas
+    const idTienda = 1; 
+
+    async function cargarNombre() {
+      try {
+        const dataNombre = await getNombre(idTienda);
+        setNombreTienda(dataNombre?.nombre || 'M51 Jeans');
+      } catch (error) {
+        console.error("Error al cargar el nombre de la tienda:", error);
+        setNombreTienda('M51 Jeans');
+      }
+    }
+
+    // SI USÁS EL ID DINÁMICO, COMENTÁS EL LLAMADO DIRECTO Y USÁS EL IF:
+    // if (idTienda) cargarNombre();
+
+    cargarNombre();
+  }, []); // SI EL ID FUERA DINÁMICO, DEBERÍAS AGREGARLO ACÁ: [idTienda]
+
   return (
     <header className="store-header">
       <div className="store-info">
         <span className="store-panel-label">Panel de administración</span>
-        <h1 className="store-name">M51 Jeans</h1>
+        <h1 className="store-name">{nombreTienda}</h1>
         <div className="store-meta">
           <span className="meta-badge">
             <span className="status-dot" />

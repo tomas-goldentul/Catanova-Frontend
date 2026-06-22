@@ -29,7 +29,7 @@ function Catalogo() {
 
   useEffect(() => {
     // ACTUAL: ID hardcodeado para pruebas
-    const idTienda = 2; 
+    const idTienda = 1; 
 
     async function iniciarCarga() {
       try {
