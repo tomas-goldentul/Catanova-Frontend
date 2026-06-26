@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FaArrowLeft, FaChartLine, FaEye, FaDollarSign, FaHeart, FaTag, FaTrash, FaPen, FaSyncAlt, FaClipboardList, FaChevronDown } from 'react-icons/fa';import Header from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
+import './Producto.css';
 
 function Producto() {
     const producto = {
