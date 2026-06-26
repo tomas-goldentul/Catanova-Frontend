@@ -1,0 +1,471 @@
+.gc-contenedor {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 16px;
+}
+
+/* ── Lista de categorías ── */
+
+.gc-vista-lista {
+    animation: gc-aparecer 0.2s ease both;
+}
+
+.gc-lista-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.gc-lista-titulo {
+    color: #0d1b38;
+    font-size: 28px;
+    margin: 0;
+}
+
+.gc-categorias-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.gc-categoria-item {
+    align-items: center;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 18px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.gc-categoria-item:hover {
+    border-color: #00c9a7;
+    box-shadow: 0 4px 14px rgba(0, 201, 167, 0.10);
+}
+
+.gc-categoria-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.gc-categoria-nombre {
+    color: #0d1b38;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.gc-categoria-count {
+    color: #8a94a8;
+    font-size: 12px;
+}
+
+.gc-vacio {
+    color: #8a94a8;
+    font-size: 15px;
+    margin-top: 32px;
+    text-align: center;
+}
+
+/* ── Panel (Crear / Editar / Borrar) ── */
+
+.gc-panel {
+    animation: gc-aparecer 0.22s ease both;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 18px;
+    box-shadow: 0 10px 32px rgba(15, 23, 42, 0.08);
+    padding: 28px 28px 24px;
+}
+
+.gc-panel--borrar {
+    max-width: 340px;
+    padding: 32px 28px 28px;
+    text-align: center;
+}
+
+.gc-panel__titulo {
+    color: #0d1b38;
+    font-size: 26px;
+    margin: 0 0 22px;
+}
+
+.gc-panel__titulo--borrar {
+    font-size: 20px;
+    line-height: 1.3;
+}
+
+.gc-panel__subtitulo {
+    color: #8a94a8;
+    font-size: 13px;
+    margin: -12px 0 24px;
+}
+
+/* ── Campos ── */
+
+.gc-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gc-campo--nombre {
+    margin-bottom: 20px;
+}
+
+.gc-campo--cantidad {
+    width: 90px;
+    flex-shrink: 0;
+}
+
+.gc-campo__label {
+    color: #2a3547;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.gc-campo__label--destacado {
+    border-bottom: 2px solid #0d1b38;
+    display: inline-block;
+    font-size: 14px;
+    padding-bottom: 1px;
+}
+
+/* ── Input búsqueda ── */
+
+.gc-input-busqueda-wrap {
+    align-items: center;
+    background: #f8fafc;
+    border: 1.5px solid #dfe4ec;
+    border-radius: 10px;
+    display: flex;
+    gap: 8px;
+    padding: 0 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gc-input-busqueda-wrap:focus-within {
+    border-color: #00c9a7;
+    box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.12);
+}
+
+.gc-input-busqueda-icono {
+    color: #8a94a8;
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.gc-input--busqueda {
+    background: transparent;
+    border: none;
+    color: #0d1b38;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    padding: 10px 0;
+    width: 100%;
+}
+
+/* ── Input genérico ── */
+
+.gc-input {
+    background: #ffffff;
+    border: 1.5px solid #dfe4ec;
+    border-radius: 10px;
+    color: #0d1b38;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    padding: 10px 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.gc-input:focus {
+    border-color: #00c9a7;
+    box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.12);
+}
+
+.gc-input--cantidad {
+    text-align: center;
+}
+
+/* ── Select ── */
+
+.gc-select {
+    appearance: none;
+    background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a94a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+    border: 1.5px solid #dfe4ec;
+    border-radius: 10px;
+    color: #0d1b38;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    padding: 10px 36px 10px 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.gc-select:focus {
+    border-color: #00c9a7;
+    box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.12);
+}
+
+/* ── Fila selector + cantidad + botón ── */
+
+.gc-selector-row {
+    align-items: flex-end;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.gc-selector-row .gc-campo {
+    flex: 1;
+    min-width: 160px;
+}
+
+/* ── Botón + Agregar (inline) ── */
+
+.gc-btn-agregar-item {
+    background: #ffffff;
+    border: 1.5px solid #dfe4ec;
+    border-radius: 10px;
+    color: #2a3547;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 14px;
+    transition: border-color 0.2s, color 0.2s, transform 0.15s;
+    white-space: nowrap;
+    align-self: flex-end;
+}
+
+.gc-btn-agregar-item:hover {
+    border-color: #00c9a7;
+    color: #00a88c;
+    transform: translateY(-1px);
+}
+
+/* ── Tabla ── */
+
+.gc-lista-productos {
+    margin-bottom: 20px;
+}
+
+.gc-lista-productos__titulo {
+    color: #8a94a8;
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.gc-tabla {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.gc-tabla__th {
+    color: #8a94a8;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 0 10px 8px;
+    text-align: left;
+}
+
+.gc-tabla__th--centro {
+    text-align: center;
+}
+
+.gc-tabla__fila {
+    border-top: 1px solid #eef1f6;
+}
+
+.gc-tabla__fila:first-child {
+    border-top: none;
+}
+
+.gc-tabla__celda {
+    color: #2a3547;
+    font-size: 14px;
+    padding: 10px 10px;
+}
+
+.gc-tabla__celda--centro {
+    text-align: center;
+}
+
+.gc-tabla__celda--accion {
+    text-align: center;
+    width: 36px;
+}
+
+/* ── Botón quitar (X) ── */
+
+.gc-btn-quitar {
+    align-items: center;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 6px;
+    color: #6b7280;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 11px;
+    height: 26px;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    width: 26px;
+}
+
+.gc-btn-quitar:hover {
+    background: #fee2e2;
+    color: #e8453c;
+}
+
+/* ── Error ── */
+
+.gc-error {
+    color: #e8453c;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 0 12px;
+}
+
+/* ── Acciones ── */
+
+.gc-acciones {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.gc-acciones--derecha {
+    justify-content: flex-end;
+}
+
+.gc-acciones--editar {
+    justify-content: space-between;
+}
+
+/* ── Botones ── */
+
+.gc-btn {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 11px 20px;
+    transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.gc-btn--principal {
+    background: #00c9a7;
+    box-shadow: 0 6px 16px rgba(0, 201, 167, 0.22);
+    color: #ffffff;
+}
+
+.gc-btn--principal:hover {
+    background: #2a3547;
+    transform: translateY(-1px);
+}
+
+.gc-btn--secundario {
+    background: #ffffff;
+    border: 1.5px solid #dfe4ec;
+    color: #6b7280;
+}
+
+.gc-btn--secundario:hover {
+    border-color: #00c9a7;
+    color: #00a88c;
+}
+
+.gc-btn--sm {
+    font-size: 13px;
+    padding: 8px 14px;
+}
+
+.gc-btn--peligro {
+    background: #e8453c;
+    box-shadow: 0 4px 12px rgba(232, 69, 60, 0.20);
+    color: #ffffff;
+}
+
+.gc-btn--peligro:hover {
+    background: #c0392b;
+    transform: translateY(-1px);
+}
+
+.gc-btn--eliminar {
+    background: #e8453c;
+    box-shadow: 0 4px 12px rgba(232, 69, 60, 0.25);
+    color: #ffffff;
+}
+
+.gc-btn--eliminar:hover {
+    background: #c0392b;
+    transform: translateY(-1px);
+}
+
+.gc-btn--volver {
+    background: transparent;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.gc-btn--volver:hover {
+    color: #0d1b38;
+}
+
+/* ── Animación entrada ── */
+
+@keyframes gc-aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 600px) {
+    .gc-contenedor {
+        padding: 20px 12px;
+    }
+
+    .gc-panel {
+        padding: 20px 16px;
+    }
+
+    .gc-selector-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gc-campo--cantidad {
+        width: 100%;
+    }
+
+    .gc-btn-agregar-item {
+        width: 100%;
+        text-align: center;
+    }
+}

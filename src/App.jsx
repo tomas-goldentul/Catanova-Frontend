@@ -5,6 +5,7 @@ import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
 import Catalogo from './components/Catalogo/Catalogo';
 import Productos from './components/Productos/productos';
 import Producto from './components/Producto/Producto';
+import GestionCategorias from './components/GestionCategorias/GestionCategorias';
 
 function App() {
   const [tab, setTab] = useState('tienda');
@@ -47,6 +48,13 @@ function App() {
         >
           Producto Individual
         </button>
+        <button
+          type="button"
+          className={tab === 'categorias' ? 'tab active' : 'tab'}
+          onClick={() => setTab('categorias')}
+        >
+          Categorías
+        </button>
       </div>
 
       {tab === 'tienda' && <MiTienda />}
@@ -54,6 +62,7 @@ function App() {
       {tab === 'catalogo' && <Catalogo />}
       {tab === 'productos' && <Productos />}
       {tab === 'producto' && <Producto />}
+      {tab === 'categorias' && <GestionCategorias />}
     </div>
   );
 }

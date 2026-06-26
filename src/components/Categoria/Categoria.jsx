@@ -2,7 +2,7 @@ import TarjetaCatalogo from '../TarjetaCatalogo/TarjetaCatalogo';
 import { IconoLapiz } from '../Icons/Icons';
 import './Categoria.css';
 
-function Categoria({ id, nombre, productos }) {
+function Categoria({ id, nombre, productos, onEditar }) {
   return (
     <div className="cat-seccion" id={`seccion-${id}`}>
       <div className="cat-seccion__header">
@@ -11,6 +11,7 @@ function Categoria({ id, nombre, productos }) {
         <button
           className="cat-seccion__btn-editar"
           aria-label={`Editar ${nombre}`}
+          onClick={onEditar}
         >
           <IconoLapiz />
         </button>
