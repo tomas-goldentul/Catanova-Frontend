@@ -14,7 +14,6 @@ export default function Login({ onLogin }) {
     setLoading(true);
     setMessage(null);
     try {
-      // Enviamos varias claves por compatibilidad con distintos backends
       const payload = {
         email,
         password,
@@ -22,9 +21,7 @@ export default function Login({ onLogin }) {
         contrasena: password,
         username: email,
       };
-      console.log('Login payload', payload);
       const result = await apiLogin(payload);
-      // Expect result to contain token and user info
       if (result.token) {
         localStorage.setItem('token', result.token);
         const finalUser = result.usuario || result.user || null;
@@ -32,7 +29,6 @@ export default function Login({ onLogin }) {
           if (finalUser) localStorage.setItem('user', JSON.stringify(finalUser));
         } catch (e) {}
         setUserLocal(finalUser);
-        // notify parent app that login was successful
         if (typeof onLogin === 'function') onLogin();
       } else {
         const finalUser = result.usuario || result.user || null;
@@ -40,7 +36,6 @@ export default function Login({ onLogin }) {
           if (finalUser) localStorage.setItem('user', JSON.stringify(finalUser));
         } catch (e) {}
         setUserLocal(finalUser);
-        // no token received — do not mark as authenticated
       }
       setMessage('Login correcto');
     } catch (err) {
@@ -54,42 +49,60 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="login-container">
-      <h2>Iniciar sesión</h2>
-      <form onSubmit={handleSubmit} className="login-form">
-        <label>
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </label>
+    <div className="login-root">
+      <div className="login-left">
+        <div className="login-card">
+          <h1 className="login-title">Preparado para gestionar tu negocio</h1>
 
-        <label>
-          Contraseña
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
+          <form onSubmit={handleSubmit} className="login-form">
+            <label className="field">
+              <span>Email</span>
+              <input
+                type="email"
+                placeholder="Ingresa tu email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
+            <label className="field">
+              <span>Contraseña</span>
+              <input
+                type="password"
+                placeholder="Ingresa tu contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </label>
 
-      {message && <p className="login-message">{message}</p>}
+            <button className="primary" type="submit" disabled={loading}>
+              {loading ? 'Ingresando...' : 'Ingresar'}
+            </button>
+          </form>
 
-      {user && (
-        <div className="login-user">
-          <h3>Usuario</h3>
-          <pre>{JSON.stringify(user, null, 2)}</pre>
+          <div className="divider"><span>o</span></div>
+
+          <div className="socials">
+            <button className="social google">Usar Google</button>
+            <button className="social apple">Usar Apple</button>
+          </div>
+
+          <p className="small">No tenés cuenta? <a href="#">Registrate</a></p>
+
+          {message && <p className="login-message">{message}</p>}
+
+          {user && (
+            <div className="login-user">
+              <h3>Usuario</h3>
+              <pre>{JSON.stringify(user, null, 2)}</pre>
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      <div className="login-right" role="presentation" />
     </div>
   );
 }
