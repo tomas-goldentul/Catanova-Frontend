@@ -5,6 +5,7 @@ import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
 import Catalogo from './components/Catalogo/Catalogo';
 import Productos from './components/Productos/productos';
 import Producto from './components/Producto/Producto';
+import Pedidos from './components/Pedidos/Pedidos';
 
 function App() {
   const [tab, setTab] = useState('tienda');
@@ -47,6 +48,14 @@ function App() {
         >
           Producto Individual
         </button>
+        <button
+          type="button"
+          className={tab === 'pedidos' ? 'tab active' : 'tab'}
+          onClick={() => setTab('pedidos')}
+        >
+          Ver pedidos
+        </button>
+      
       </div>
 
       {tab === 'tienda' && <MiTienda />}
@@ -54,6 +63,7 @@ function App() {
       {tab === 'catalogo' && <Catalogo />}
       {tab === 'productos' && <Productos />}
       {tab === 'producto' && <Producto />}
+      {tab === 'pedidos' && <Pedidos />}
     </div>
   );
 }
