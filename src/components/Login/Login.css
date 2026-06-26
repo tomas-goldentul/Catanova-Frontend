@@ -1,0 +1,15 @@
+.login-container{
+  max-width:420px;
+  margin:20px auto;
+  padding:18px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  background:#fff;
+}
+.login-form{display:flex;flex-direction:column;gap:10px}
+.login-form label{font-size:14px;display:flex;flex-direction:column}
+.login-form input{padding:8px;border-radius:4px;border:1px solid #ccc}
+.login-form button{padding:10px;border-radius:6px;border:none;background:#007bff;color:#fff;cursor:pointer}
+.login-form button:disabled{opacity:0.7;cursor:default}
+.login-message{margin-top:10px;color:#333}
+.login-user{margin-top:12px;background:#f7f7f7;padding:8px;border-radius:6px}
