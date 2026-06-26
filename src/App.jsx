@@ -5,12 +5,8 @@ import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
 import Catalogo from './components/Catalogo/Catalogo';
 import Productos from './components/Productos/productos';
 import Producto from './components/Producto/Producto';
-<<<<<<< HEAD
 import Login from './components/Login/Login';
-=======
 import Pedidos from './components/Pedidos/Pedidos';
->>>>>>> ed92a44acb03498f9e2035b1da37d6be2560df0d
-
 function App() {
   const [tab, setTab] = useState('login');
   const [authenticated, setAuthenticated] = useState(false);
@@ -64,40 +60,37 @@ function App() {
           type="button"
           className={tab === 'producto' ? 'tab active' : 'tab'}
           onClick={() => setTab('producto')}
-          disabled={!authenticated}
-        >
-          Producto Individual
-        </button>
-        <button
-          type="button"
-<<<<<<< HEAD
-          className={tab === 'login' ? 'tab active' : 'tab'}
-          onClick={() => setTab('login')}
-        >
-          Login
-        </button>
-=======
-          className={tab === 'pedidos' ? 'tab active' : 'tab'}
-          onClick={() => setTab('pedidos')}
-        >
-          Ver pedidos
-        </button>
+        disabled={!authenticated}
+      >
+        Producto Individual
+      </button>
       
->>>>>>> ed92a44acb03498f9e2035b1da37d6be2560df0d
-      </div>
+      <button
+        type="button"
+        className={tab === 'login' ? 'tab active' : 'tab'}
+        onClick={() => setTab('login')}
+      >
+        Login
+      </button>
 
-      {tab === 'tienda' && <MiTienda />}
-      {tab === 'galeria' && <GaleriaProductos />}
-      {tab === 'catalogo' && <Catalogo />}
-      {tab === 'productos' && <Productos />}
-      {tab === 'producto' && <Producto />}
-<<<<<<< HEAD
-      {tab === 'login' && <Login onLogin={() => setAuthenticated(true)} />}
-=======
-      {tab === 'pedidos' && <Pedidos />}
->>>>>>> ed92a44acb03498f9e2035b1da37d6be2560df0d
+      <button
+        type="button"
+        className={tab === 'pedidos' ? 'tab active' : 'tab'}
+        onClick={() => setTab('pedidos')}
+      >
+        Ver pedidos
+      </button>
     </div>
-  );
+
+    {tab === 'tienda' && <MiTienda />}
+    {tab === 'galeria' && <GaleriaProductos />}
+    {tab === 'catalogo' && <Catalogo />}
+    {tab === 'productos' && <Productos />}
+    {tab === 'producto' && <Producto />}
+    {tab === 'login' && <Login onLogin={() => setAuthenticated(true)} />}
+    {tab === 'pedidos' && <Pedidos />}
+  </div>
+);
 }
 
 export default App;
