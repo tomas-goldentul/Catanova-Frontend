@@ -7,6 +7,7 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState(null);
   const [user, setUserLocal] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -29,7 +30,9 @@ export default function Login({ onLogin }) {
           if (finalUser) localStorage.setItem('user', JSON.stringify(finalUser));
         } catch (e) {}
         setUserLocal(finalUser);
-        if (typeof onLogin === 'function') onLogin();
+        // Do not navigate away on successful login; show success message instead
+        setMessageType('success');
+        setMessage('Contraseña correcta');
       } else {
         const finalUser = result.usuario || result.user || null;
         try {
@@ -37,7 +40,11 @@ export default function Login({ onLogin }) {
         } catch (e) {}
         setUserLocal(finalUser);
       }
-      setMessage('Login correcto');
+      // If no token but login returned user info, still show success message
+      if (!message) {
+        setMessageType('success');
+        setMessage('Contraseña correcta');
+      }
     } catch (err) {
       console.error('Login error', err);
       const status = err.status ? ` (status ${err.status})` : '';
@@ -89,7 +96,7 @@ export default function Login({ onLogin }) {
             <button className="social apple">Usar Apple</button>
           </div>
 
-          <p className="small">No tenés cuenta? <a href="#">Registrate</a></p>
+          <p className="small">¿No tenés cuenta? <a href="#">Registrate</a></p>
 
           {message && <p className="login-message">{message}</p>}
 
@@ -102,7 +109,14 @@ export default function Login({ onLogin }) {
         </div>
       </div>
 
-      <div className="login-right" role="presentation" />
+      {/* Aquí está la modificación para la imagen de e-commerce */}
+      <div className="login-right">
+        <img 
+          src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
+          alt="E-commerce store warehouse" 
+          className="ecommerce-image"
+        />
+      </div>
     </div>
   );
 }
