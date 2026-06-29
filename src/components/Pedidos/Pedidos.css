@@ -19,6 +19,12 @@
   color: var(--text);
 }
 
+.pedidos-page.buyer-view {
+  --brand: #2563eb;
+  --brand-dark: #1e3a8a;
+  --ring: rgba(37, 99, 235, 0.16);
+}
+
 .pedidos-shell {
   width: min(100%, 1360px);
   margin: 0 auto;
@@ -73,6 +79,7 @@
 
 .pedidos-create,
 .pedidos-secondary,
+.pedidos-view-switch button,
 .pedido-view,
 .pedido-menu-trigger,
 .pedido-menu button,
@@ -81,6 +88,100 @@
   font: inherit;
   cursor: pointer;
   transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, color 0.16s ease;
+}
+
+.pedidos-view-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 5px;
+  background: #f2f4f7;
+}
+
+.pedidos-view-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: transparent;
+  color: #475467;
+  font-size: 14px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.pedidos-view-switch button:hover {
+  color: var(--text);
+}
+
+.pedidos-view-switch .active {
+  background: #ffffff;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+.pedidos-view-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0 16px;
+  background: #f2f4f7;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pedidos-view-badge svg {
+  color: var(--brand);
+}
+
+.pedidos-perspective-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  margin-bottom: 22px;
+  padding: 12px 14px 12px 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.pedidos-perspective-copy {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pedidos-perspective-copy span {
+  color: var(--subtle);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.pedidos-perspective-copy strong {
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.buyer-view .pedidos-perspective-panel {
+  border-color: #dbeafe;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
 }
 
 .pedidos-create,
@@ -320,6 +421,11 @@
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
+.buyer-view .pedido-card {
+  border-left: 4px solid var(--brand);
+  grid-template-columns: minmax(0, 1fr) 300px 180px 42px;
+}
+
 .pedido-card:hover {
   border-color: #ccd3dc;
   box-shadow: var(--shadow);
@@ -475,6 +581,11 @@
   font-weight: 850;
 }
 
+.buyer-view .person-avatar {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
 .pedido-progress {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -554,6 +665,10 @@
   font-size: 26px;
   font-weight: 800;
   line-height: 1;
+}
+
+.buyer-view .pedido-total-panel strong {
+  color: var(--brand-dark);
 }
 
 .pedido-view {
@@ -707,11 +822,30 @@
 
   .pedidos-header-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .pedidos-create,
+  .pedidos-view-badge,
   .pedidos-secondary {
+    flex: 1 1 150px;
+  }
+
+  .pedidos-view-switch {
+    width: 100%;
+  }
+
+  .pedidos-view-switch button {
     flex: 1;
+  }
+
+  .pedidos-perspective-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pedidos-perspective-copy {
+    justify-content: space-between;
   }
 
   .pedidos-summary {

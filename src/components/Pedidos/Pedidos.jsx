@@ -11,9 +11,11 @@ import {
   FiFileText,
   FiMapPin,
   FiMoreVertical,
-  FiPlus,
+  FiPackage,
   FiPrinter,
+  FiRefreshCw,
   FiSearch,
+  FiShoppingBag,
   FiTruck,
   FiUserCheck,
   FiUsers,
@@ -31,6 +33,7 @@ const ITEMS_POR_PAGINA = 4;
 
 function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
+  const [vista, setVista] = useState(() => obtenerVistaInicial());
   const [busqueda, setBusqueda] = useState('');
   const [estado, setEstado] = useState('Todos');
   const [orden, setOrden] = useState('fecha');
@@ -38,8 +41,18 @@ function Pedidos() {
   const [menuAbierto, setMenuAbierto] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const pedidosDisponibles = pedidos;
+  const actualizarPedidos = () => {
+    setRefreshKey((actual) => actual + 1);
+  };
+  const cambiarVista = (nuevaVista) => {
+    setVista(nuevaVista);
+    setPagina(1);
+    setMenuAbierto('');
+    guardarVista(nuevaVista);
+  };
 
   const pedidosFiltrados = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
@@ -53,6 +66,8 @@ function Pedidos() {
         detalle.codigoPostal,
         detalle.localidad,
         detalle.repartidor,
+        detalle.tienda,
+        resumenProductos(detalle.productos),
       ].join(' ');
 
       return coincideEstado && (!texto || campos.toLowerCase().includes(texto));
@@ -85,7 +100,7 @@ function Pedidos() {
       setError('');
 
       try {
-        const data = await fetchPedidos(controller.signal);
+        const data = await fetchPedidos(vista, controller.signal);
         setPedidos(extraerListaPedidos(data));
       } catch (err) {
         if (err.name !== 'AbortError') {
@@ -100,35 +115,66 @@ function Pedidos() {
     cargarPedidos();
 
     return () => controller.abort();
-  }, []);
+  }, [vista, refreshKey]);
 
   return (
-    <section className="pedidos-page">
+    <section className={`pedidos-page ${vista === 'usuario' ? 'buyer-view' : 'seller-view'}`}>
       <div className="pedidos-shell">
         <header className="pedidos-header">
           <div className="pedidos-heading">
-            <span className="pedidos-kicker">Panel del vendedor</span>
-            <h1>Pedidos y envios</h1>
-            <p>Operacion diaria, entregas, pagos y responsables en una vista compacta.</p>
+            <span className="pedidos-kicker">{vista === 'usuario' ? 'Panel del comprador' : 'Panel del vendedor'}</span>
+            <h1>{vista === 'usuario' ? 'Mis compras' : 'Pedidos y envios'}</h1>
+            <p>
+              {vista === 'usuario'
+                ? 'Seguimiento de compras, tiendas, pagos y entregas en una vista compacta.'
+                : 'Operacion diaria, entregas, pagos y responsables en una vista compacta.'}
+            </p>
           </div>
 
           <div className="pedidos-header-actions">
-            <button type="button" className="pedidos-secondary">
-              <FiPrinter aria-hidden="true" />
-              Imprimir
+            <button type="button" className="pedidos-secondary" onClick={actualizarPedidos}>
+              <FiRefreshCw aria-hidden="true" />
+              Actualizar
             </button>
-            <button type="button" className="pedidos-create">
-              <FiPlus aria-hidden="true" />
-              Crear envio
-            </button>
+            {vista === 'tienda' && (
+              <button type="button" className="pedidos-secondary">
+                <FiPrinter aria-hidden="true" />
+                Imprimir
+              </button>
+            )}
           </div>
         </header>
 
+        <div className="pedidos-perspective-panel">
+          <div className="pedidos-perspective-copy">
+            <span>Punto de vista</span>
+            <strong>{vista === 'usuario' ? 'Comprador' : 'Vendedor'}</strong>
+          </div>
+          <div className="pedidos-view-switch" aria-label="Elegir punto de vista">
+            <button
+              type="button"
+              className={vista === 'usuario' ? 'active' : ''}
+              onClick={() => cambiarVista('usuario')}
+            >
+              <FiShoppingBag aria-hidden="true" />
+              Comprador
+            </button>
+            <button
+              type="button"
+              className={vista === 'tienda' ? 'active' : ''}
+              onClick={() => cambiarVista('tienda')}
+            >
+              <FiTruck aria-hidden="true" />
+              Vendedor
+            </button>
+          </div>
+        </div>
+
         <div className="pedidos-summary" aria-label="Resumen de pedidos">
-          <KpiCard label="Pedidos activos" value={metricas.total} tone="neutral" />
+          <KpiCard label={vista === 'usuario' ? 'Compras realizadas' : 'Pedidos activos'} value={metricas.total} tone="neutral" />
           <KpiCard label="Pendientes" value={metricas.pendientes} tone="warning" />
           <KpiCard label="Entregados" value={metricas.entregados} tone="info" />
-          <KpiCard label="Facturado" value={formatearPrecio(metricas.facturado)} tone="success" />
+          <KpiCard label={vista === 'usuario' ? 'Total comprado' : 'Facturado'} value={formatearPrecio(metricas.facturado)} tone="success" />
         </div>
 
         <div className="pedidos-control-panel">
@@ -141,7 +187,7 @@ function Pedidos() {
                 setBusqueda(event.target.value);
                 setPagina(1);
               }}
-              placeholder="Buscar direccion, cliente, repartidor o CP"
+              placeholder={vista === 'usuario' ? 'Buscar direccion, tienda, producto o CP' : 'Buscar direccion, cliente, repartidor o CP'}
             />
           </label>
 
@@ -186,6 +232,7 @@ function Pedidos() {
           {pedidosPaginados.map((pedido) => {
             const detalle = normalizarPedido(pedido);
             const menuId = `menu-${detalle.id}`;
+            const tituloPedido = vista === 'usuario' ? detalle.tienda : detalle.direccion;
 
             return (
               <article className="pedido-card" key={detalle.id}>
@@ -199,7 +246,7 @@ function Pedidos() {
                   </div>
 
                   <div className="pedido-title-block">
-                    <h2>{detalle.direccion}</h2>
+                    <h2>{tituloPedido}</h2>
                     <span className={`pedido-status ${estadoClass(detalle.estado)}`}>
                       {estadoLabel(detalle.estado)}
                     </span>
@@ -208,7 +255,10 @@ function Pedidos() {
                   <p className="pedido-products">{resumenProductos(detalle.productos)}</p>
 
                   <div className="pedido-people">
-                    <PersonPill icon={<FiUsers aria-hidden="true" />} label={detalle.comprador} />
+                    <PersonPill
+                      icon={vista === 'usuario' ? <FiPackage aria-hidden="true" /> : <FiUsers aria-hidden="true" />}
+                      label={vista === 'usuario' ? `Pedido ${detalle.id}` : detalle.comprador}
+                    />
                     <PersonPill icon={<FiTruck aria-hidden="true" />} label={detalle.repartidor} muted={detalle.repartidor === 'Sin asignar'} />
                   </div>
 
@@ -216,8 +266,12 @@ function Pedidos() {
                 </div>
 
                 <div className="pedido-meta">
-                  <MetaItem icon={<FiMapPin aria-hidden="true" />} label="Zona" value={`${detalle.localidad} · ${detalle.codigoPostal}`} />
-                  <MetaItem icon={<FiClock aria-hidden="true" />} label="Entrega estimada" value={detalle.eta} />
+                  <MetaItem
+                    icon={<FiMapPin aria-hidden="true" />}
+                    label={vista === 'usuario' ? 'Destino' : 'Zona'}
+                    value={vista === 'usuario' ? detalle.direccion : `${detalle.localidad} · ${detalle.codigoPostal}`}
+                  />
+                  <MetaItem icon={<FiClock aria-hidden="true" />} label={vista === 'usuario' ? 'Llega' : 'Entrega estimada'} value={detalle.eta} />
                   <MetaItem icon={<FiCreditCard aria-hidden="true" />} label="Pago" value={detalle.pago} accent={detalle.pago === 'Pagado'} />
                 </div>
 
@@ -226,7 +280,7 @@ function Pedidos() {
                   <strong>{formatearPrecio(detalle.total)}</strong>
                   <button type="button" className="pedido-view">
                     <FiEye aria-hidden="true" />
-                    Ver detalle
+                    {vista === 'usuario' ? 'Ver compra' : 'Ver detalle'}
                   </button>
                 </div>
 
@@ -243,21 +297,25 @@ function Pedidos() {
 
                   {menuAbierto === menuId && (
                     <div className="pedido-menu">
-                      <button type="button">
-                        <FiEdit3 aria-hidden="true" />
-                        Editar pedido
-                      </button>
-                      <button type="button">
-                        <FiUserCheck aria-hidden="true" />
-                        Asignar repartidor
-                      </button>
+                      {vista === 'tienda' && (
+                        <>
+                          <button type="button">
+                            <FiEdit3 aria-hidden="true" />
+                            Editar pedido
+                          </button>
+                          <button type="button">
+                            <FiUserCheck aria-hidden="true" />
+                            Asignar repartidor
+                          </button>
+                        </>
+                      )}
                       <button type="button">
                         <FiCheckCircle aria-hidden="true" />
-                        Cambiar estado
+                        {vista === 'usuario' ? 'Consultar estado' : 'Cambiar estado'}
                       </button>
                       <button type="button">
                         <FiFileText aria-hidden="true" />
-                        Imprimir etiqueta
+                        {vista === 'usuario' ? 'Ver comprobante' : 'Imprimir etiqueta'}
                       </button>
                     </div>
                   )}
@@ -350,19 +408,254 @@ function ProgressBar({ estado }) {
   );
 }
 
-async function fetchPedidos(signal) {
+async function fetchPedidos(vista, signal) {
   const headers = {};
   const token = localStorage.getItem('token');
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await fetch(`${API_URL}/pedidos/getAll`, { headers, signal });
+  if (vista === 'usuario') {
+    return fetchPedidosUsuario(headers, signal);
+  }
+
+  return fetchPedidosTienda(headers, signal);
+}
+
+async function fetchPedidosTienda(headers, signal) {
+  const tiendaId = obtenerTiendaId();
+  const candidates = ['/pedidos/tienda', '/pedidos/store'];
+
+  if (tiendaId) {
+    candidates.push(
+      `/pedidos/tienda/${tiendaId}`,
+      `/pedidos/get/tienda/${tiendaId}`,
+      `/pedidos/getByTienda/${tiendaId}`,
+      `/pedidos/store/${tiendaId}`,
+      `/tiendas/${tiendaId}/pedidos`,
+    );
+  }
+
+  for (const path of candidates) {
+    try {
+      return await requestPedidos(path, headers, signal);
+    } catch (err) {
+      if (signal.aborted || ![400, 401, 403, 404, 405].includes(err.status)) {
+        throw err;
+      }
+    }
+  }
+
+  const data = await requestPedidos('/pedidos/getAll', headers, signal);
+  const lista = extraerListaPedidos(data);
+
+  return tiendaId ? lista.filter((pedido) => pedidoPerteneceATienda(pedido, tiendaId)) : lista;
+}
+
+async function fetchPedidosUsuario(headers, signal) {
+  const usuarioId = obtenerUsuarioId();
+  const candidates = [
+    '/pedidos/mis-pedidos',
+    '/pedidos/mios',
+    '/pedidos/usuario',
+    '/pedidos/user',
+  ];
+
+  if (usuarioId) {
+    candidates.push(
+      `/pedidos/usuario/${usuarioId}`,
+      `/pedidos/get/usuario/${usuarioId}`,
+      `/pedidos/getByUsuario/${usuarioId}`,
+      `/pedidos/user/${usuarioId}`,
+      `/usuarios/${usuarioId}/pedidos`,
+    );
+  }
+
+  let lastError;
+
+  for (const path of candidates) {
+    try {
+      return await requestPedidos(path, headers, signal);
+    } catch (err) {
+      lastError = err;
+      if (signal.aborted || ![400, 401, 403, 404, 405].includes(err.status)) {
+        throw err;
+      }
+    }
+  }
+
+  const data = await requestPedidos('/pedidos/getAll', headers, signal);
+  const lista = extraerListaPedidos(data);
+
+  if (!usuarioId) {
+    throw lastError || new Error('Inicia sesion para ver tus pedidos.');
+  }
+
+  return lista.filter((pedido) => pedidoPerteneceAUsuario(pedido, usuarioId));
+}
+
+async function requestPedidos(path, headers, signal) {
+  const response = await fetch(`${API_URL}${path}`, { headers, signal });
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(payload.message || payload.error || `Error ${response.status}`);
+    const error = new Error(payload.message || payload.error || `Error ${response.status}`);
+    error.status = response.status;
+    throw error;
   }
 
   return payload;
+}
+
+function obtenerUsuarioId() {
+  const fuente = obtenerSesionActual();
+
+  return (
+    fuente.id ||
+    fuente._id ||
+    fuente.id_usuario ||
+    fuente.idUsuario ||
+    fuente.usuarioId ||
+    fuente.userId ||
+    fuente.sub ||
+    ''
+  );
+}
+
+function obtenerTiendaId() {
+  const fuente = obtenerSesionActual();
+
+  return (
+    fuente.id_tienda ||
+    fuente.idTienda ||
+    fuente.tiendaId ||
+    fuente.storeId ||
+    fuente.tienda?.id ||
+    fuente.tienda?._id ||
+    fuente.store?.id ||
+    localStorage.getItem('id_tienda') ||
+    ''
+  );
+}
+
+function obtenerVistaDesdeSesion() {
+  return obtenerTipoSesion() === 'vendedor' ? 'tienda' : 'usuario';
+}
+
+function obtenerVistaInicial() {
+  const guardada = localStorage.getItem('pedidos_vista');
+  if (guardada === 'usuario' || guardada === 'tienda') return guardada;
+  return obtenerVistaDesdeSesion();
+}
+
+function guardarVista(vista) {
+  localStorage.setItem('pedidos_vista', vista);
+}
+
+function obtenerTipoSesion() {
+  const fuente = obtenerSesionActual();
+  const valores = [
+    fuente.rol,
+    fuente.role,
+    fuente.tipo,
+    fuente.tipoUsuario,
+    fuente.tipo_usuario,
+    fuente.perfil,
+    fuente.cuenta,
+    fuente.accountType,
+  ]
+    .filter(Boolean)
+    .map((valor) => String(valor).toLowerCase());
+
+  if (
+    fuente.esVendedor ||
+    fuente.isSeller ||
+    fuente.vendedor ||
+    fuente.tienda ||
+    obtenerTiendaIdDesdeFuente(fuente) ||
+    valores.some((valor) => ['vendedor', 'seller', 'tienda', 'store', 'comercio', 'admin_tienda'].includes(valor))
+  ) {
+    return 'vendedor';
+  }
+
+  if (
+    fuente.esComprador ||
+    fuente.isBuyer ||
+    valores.some((valor) => ['comprador', 'buyer', 'cliente', 'customer', 'usuario', 'user'].includes(valor))
+  ) {
+    return 'comprador';
+  }
+
+  return 'desconocido';
+}
+
+function obtenerSesionActual() {
+  return leerJsonLocalStorage('user') || leerJsonLocalStorage('usuario') || decodificarJwt(localStorage.getItem('token')) || {};
+}
+
+function obtenerTiendaIdDesdeFuente(fuente) {
+  return fuente.id_tienda || fuente.idTienda || fuente.tiendaId || fuente.storeId || fuente.tienda?.id || fuente.tienda?._id || fuente.store?.id || '';
+}
+
+function leerJsonLocalStorage(key) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : null;
+  } catch {
+    return null;
+  }
+}
+
+function decodificarJwt(token) {
+  if (!token || !token.includes('.')) return null;
+
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(payload)
+        .split('')
+        .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join(''),
+    );
+
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+function pedidoPerteneceAUsuario(pedido, usuarioId) {
+  const id = String(usuarioId);
+  const comprador = pedido.cliente || pedido.comprador || pedido.usuario || {};
+  const candidatos = [
+    pedido.id_usuario,
+    pedido.usuarioId,
+    pedido.userId,
+    pedido.clienteId,
+    pedido.id_cliente,
+    comprador.id,
+    comprador._id,
+    comprador.id_usuario,
+    comprador.usuarioId,
+  ];
+
+  return candidatos.some((value) => value != null && String(value) === id);
+}
+
+function pedidoPerteneceATienda(pedido, tiendaId) {
+  const id = String(tiendaId);
+  const tienda = pedido.tienda || pedido.vendedor || pedido.store || {};
+  const candidatos = [
+    pedido.id_tienda,
+    pedido.tiendaId,
+    pedido.storeId,
+    pedido.vendedorId,
+    pedido.id_vendedor,
+    tienda.id,
+    tienda._id,
+    tienda.id_tienda,
+    tienda.tiendaId,
+  ];
+
+  return candidatos.some((value) => value != null && String(value) === id);
 }
 
 function extraerListaPedidos(data) {
@@ -380,12 +673,14 @@ function normalizarPedido(pedido) {
   const productos = Array.isArray(productosBase) ? productosBase : [];
   const comprador = pedido.cliente || pedido.comprador || pedido.usuario || {};
   const repartidor = pedido.repartidor || pedido.delivery || pedido.cadete || {};
+  const tienda = pedido.tienda || pedido.vendedor || pedido.store || {};
   const direccion = pedido.direccion || pedido.direccionEnvio || pedido.shippingAddress || comprador.direccion || {};
 
   return {
     id: pedido.id || pedido._id || 'Sin ID',
     direccion: normalizarDireccion(direccion),
     comprador: comprador.nombre || comprador.name || pedido.clienteNombre || pedido.compradorNombre || 'Sin datos',
+    tienda: tienda.nombre || tienda.name || pedido.tiendaNombre || pedido.nombreTienda || pedido.vendedor?.nombre || 'Tienda sin datos',
     repartidor: repartidor.nombre || repartidor.name || pedido.repartidorNombre || pedido.vendedor?.nombre || 'Sin asignar',
     codigoPostal: pedido.codigoPostal || pedido.cp || direccion.codigoPostal || direccion.cp || comprador.codigoPostal || 'Sin CP',
     localidad: pedido.localidad || pedido.ciudad || direccion.localidad || direccion.ciudad || comprador.localidad || 'Sin localidad',
