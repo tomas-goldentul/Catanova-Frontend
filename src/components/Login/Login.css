@@ -55,6 +55,7 @@
 .small a{color:#0b76ff;text-decoration:none}
 
 .login-message{margin-top:10px;color:#e03b3b;text-align:center}
+.login-message.success{color:#0f9d58}
 .login-user{margin-top:12px;background:#f7f7f7;padding:8px;border-radius:6px}
 
 /* Right side image */

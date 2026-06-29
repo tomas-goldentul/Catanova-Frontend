@@ -7,12 +7,15 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState(null);
   const [user, setUserLocal] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
+    setMessageType(null);
+    
     try {
       const payload = {
         email,
@@ -21,7 +24,9 @@ export default function Login({ onLogin }) {
         contrasena: password,
         username: email,
       };
+      
       const result = await apiLogin(payload);
+      
       if (result.token) {
         localStorage.setItem('token', result.token);
         const finalUser = result.usuario || result.user || null;
@@ -29,7 +34,9 @@ export default function Login({ onLogin }) {
           if (finalUser) localStorage.setItem('user', JSON.stringify(finalUser));
         } catch (e) {}
         setUserLocal(finalUser);
-        if (typeof onLogin === 'function') onLogin();
+        
+        setMessageType('success');
+        setMessage('Contraseña correcta');
       } else {
         const finalUser = result.usuario || result.user || null;
         try {
@@ -37,12 +44,32 @@ export default function Login({ onLogin }) {
         } catch (e) {}
         setUserLocal(finalUser);
       }
-      setMessage('Login correcto');
+      
+      if (!message) {
+        setMessageType('success');
+        setMessage('Contraseña correcta');
+      }
     } catch (err) {
       console.error('Login error', err);
-      const status = err.status ? ` (status ${err.status})` : '';
-      const body = err.body ? ` — ${JSON.stringify(err.body)}` : '';
-      setMessage((err.message || 'Error en el login') + status + body);
+      setMessageType('error');
+      
+      let friendlyMessage = 'Ocurrió un error al iniciar sesión. Por favor, intentá de nuevo.';
+
+      if (err.body && err.body.message) {
+        friendlyMessage = err.body.message;
+      } else if (err.message) {
+        friendlyMessage = err.message;
+      }
+
+    
+      if (err.status === 401) {
+        friendlyMessage = 'Los datos ingresados son incorrectos';
+      } else if (err.status === 404) {
+        friendlyMessage = 'No encontramos ninguna cuenta asociada a este email.';
+      }
+
+      // Mostramos el mensaje limpio
+      setMessage(friendlyMessage);
     } finally {
       setLoading(false);
     }
@@ -77,8 +104,22 @@ export default function Login({ onLogin }) {
               />
             </label>
 
-            <button className="primary" type="submit" disabled={loading}>
-              {loading ? 'Ingresando...' : 'Ingresar'}
+            <button 
+              className="primary" 
+              type="submit" 
+              disabled={loading || messageType === 'success'}
+              style={{
+                opacity: loading ? 0.7 : 1,
+                cursor: (loading || messageType === 'success') ? 'not-allowed' : 'pointer',
+                backgroundColor: messageType === 'success' ? '#2ecc71' : '',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              {loading 
+                ? 'Ingresando...' 
+                : messageType === 'success' 
+                  ? '¡Ingreso exitoso!' 
+                  : 'Ingresar'}
             </button>
           </form>
 
@@ -89,9 +130,24 @@ export default function Login({ onLogin }) {
             <button className="social apple">Usar Apple</button>
           </div>
 
-          <p className="small">No tenés cuenta? <a href="#">Registrate</a></p>
+          <p className="small">¿No tenés cuenta? <a href="#">Registrate</a></p>
 
-          {message && <p className="login-message">{message}</p>}
+          {message && (
+            <p 
+              className="login-message"
+              style={{
+                color: messageType === 'success' ? '#2ecc71' : '#e74c3c',
+                fontWeight: '600',
+                padding: '10px',
+                backgroundColor: messageType === 'success' ? '#eafaf1' : '#fdedec',
+                borderRadius: '5px',
+                textAlign: 'center',
+                marginTop: '15px'
+              }}
+            >
+              {message}
+            </p>
+          )}
 
           {user && (
             <div className="login-user">
@@ -102,7 +158,13 @@ export default function Login({ onLogin }) {
         </div>
       </div>
 
-      <div className="login-right" role="presentation" />
+      <div className="login-right">
+        <img 
+          src="https://fashionboard.dk/wp-content/uploads/2024/01/replenishment-1.png" 
+          alt="E-commerce store warehouse" 
+          className="ecommerce-image"
+        />
+      </div>
     </div>
   );
 }
