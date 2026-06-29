@@ -10,6 +10,7 @@ import Pedidos from './components/Pedidos/Pedidos';
 
 function App() {
   const [tab, setTab] = useState('tienda');
+  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
   return (
     <div className="app-container">
@@ -64,9 +65,21 @@ function App() {
 
       {tab === 'tienda' && <MiTienda />}
       {tab === 'galeria' && <GaleriaProductos />}
-      {tab === 'catalogo' && <Catalogo onVerProducto={() => setTab('producto')} />}
+      {tab === 'catalogo' && (
+        <Catalogo
+          onVerProducto={(id) => {
+            setProductoSeleccionado(id);
+            setTab('producto');
+          }}
+        />
+      )}
       {tab === 'productos' && <Productos />}
-      {tab === 'producto' && <Producto />}
+      {tab === 'producto' && (
+        <Producto
+          productoId={productoSeleccionado}
+          onVolver={() => setTab('catalogo')}
+        />
+      )}
       {tab === 'login' && <Login />}
       {tab === 'pedidos' && <Pedidos />}
     </div>

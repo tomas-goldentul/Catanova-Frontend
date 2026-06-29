@@ -28,7 +28,7 @@ function TarjetaCatalogo({
 
           <button
             className="cat-card__btn-datos"
-            onClick={onVerProducto}
+            onClick={() => onVerProducto(id)}
             type="button"
           >
             Más datos

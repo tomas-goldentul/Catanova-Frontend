@@ -12,6 +12,23 @@ export async function getTodosLosProductos() {
   return res.json();
 }
 
+export async function getProductoPorId(id) {
+  const data = await getTodosLosProductos(); 
+  const lista = Array.isArray(data)
+    ? data
+    : data?.productos ?? [];
+
+  const producto = lista.find(
+    (item) => item.id_producto === id || item.id === id || String(item.id_producto) === String(id) || String(item.id) === String(id)
+  );
+
+  if (!producto) {
+    throw new Error('Producto no encontrado');
+  }
+
+  return producto;
+}
+
 export async function insertProducto(datosProducto) {
   
   console.log("Enviando producto:", datosProducto);
