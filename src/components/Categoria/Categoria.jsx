@@ -2,7 +2,7 @@ import TarjetaCatalogo from '../TarjetaCatalogo/TarjetaCatalogo';
 import { IconoLapiz } from '../Icons/Icons';
 import './Categoria.css';
 
-function Categoria({ id, nombre, productos, onEditar }) {
+function Categoria({ id, nombre, productos, onEditar, onVerProducto }) {
   return (
     <div className="cat-seccion" id={`seccion-${id}`}>
       <div className="cat-seccion__header">
@@ -19,7 +19,7 @@ function Categoria({ id, nombre, productos, onEditar }) {
 
       <div className="cat-seccion__scroll">
         {productos.map((p) => (
-          <TarjetaCatalogo key={p.id} {...p} />
+          <TarjetaCatalogo key={p.id} {...p} onVerProducto={onVerProducto} />
         ))}
       </div>
     </div>

@@ -328,7 +328,7 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
 //   COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════
 
-function Catalogo() {
+function Catalogo({ onVerProducto }) {
   const [categorias, setCategorias]         = useState([]);
   const [tabActivo, setTabActivo]           = useState(null);
   const [infoTienda, setInfoTienda]         = useState({ nombre: '', slogan: '' });
@@ -510,6 +510,7 @@ function Catalogo() {
                     key={cat.id}
                     {...cat}
                     onEditar={() => abrirEditar(cat)}
+                    onVerProducto={onVerProducto}
                   />
                 ))
               )}

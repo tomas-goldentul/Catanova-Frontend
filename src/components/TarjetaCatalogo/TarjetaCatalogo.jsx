@@ -11,7 +11,8 @@ function TarjetaCatalogo({
   ventas,
   vistas,
   favoritos,
-  stock
+  stock,
+  onVerProducto,
 }) {
   return (
     <div className="cat-card">
@@ -25,7 +26,11 @@ function TarjetaCatalogo({
         <div className="cat-card__overlay">
           <span className="cat-card__nombre">{nombre}</span>
 
-          <button className="cat-card__btn-datos">
+          <button
+            className="cat-card__btn-datos"
+            onClick={onVerProducto}
+            type="button"
+          >
             Más datos
             <br />
             y analítica

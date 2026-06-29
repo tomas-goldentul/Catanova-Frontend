@@ -82,7 +82,7 @@ function App() {
 
       {tab === 'tienda' && <MiTienda />}
       {tab === 'galeria' && <GaleriaProductos />}
-      {tab === 'catalogo' && <Catalogo />}
+      {tab === 'catalogo' && <Catalogo onVerProducto={() => setTab('producto')} />}
       {tab === 'productos' && <Productos />}
       {tab === 'producto' && <Producto />}
       {tab === 'login' && <Login onLogin={() => setAuthenticated(true)} />}
