@@ -45,12 +45,12 @@ function AgregarProducto({ onCrear, onCancelar }) {
         event.preventDefault();
         if (!validarFormulario()) return;
 
-        // obtener id de tienda desde localStorage en lugar de usar 1 fijo
         const tiendaIdRaw = localStorage.getItem('id_tienda');
         const tiendaId = Number(tiendaIdRaw);
+        const tiendaIdFinal = tiendaIdRaw && !Number.isNaN(tiendaId) ? tiendaId : 1;
+
         if (!tiendaIdRaw || Number.isNaN(tiendaId)) {
-            alert('No hay una tienda activa. Seleccioná o creá una tienda antes de agregar productos.');
-            return;
+            localStorage.setItem('id_tienda', String(tiendaIdFinal));
         }
 
         const payload = {
@@ -61,8 +61,8 @@ function AgregarProducto({ onCrear, onCancelar }) {
             activo: formulario.activo,
             categoria: formulario.categoria,
             descripcion: formulario.descripcion.trim(),
-            id_tienda: tiendaId,
             imagen: imagenNombre,
+            id_tienda: tiendaIdFinal,
         };
 
         try {
