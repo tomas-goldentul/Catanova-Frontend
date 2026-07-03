@@ -12,6 +12,7 @@ import {
   FiMapPin,
   FiMoreVertical,
   FiPackage,
+  FiPlus,
   FiPrinter,
   FiRefreshCw,
   FiSearch,
@@ -20,6 +21,7 @@ import {
   FiUserCheck,
   FiUsers,
 } from 'react-icons/fi';
+import CrearPedido from './CrearPedido';
 import './Pedidos.css';
 
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -42,10 +44,16 @@ function Pedidos() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [mostrarCrearPedido, setMostrarCrearPedido] = useState(false);
 
   const pedidosDisponibles = pedidos;
   const actualizarPedidos = () => {
     setRefreshKey((actual) => actual + 1);
+  };
+  const crearPedidoManual = (nuevoPedido) => {
+    setPedidos((actuales) => [nuevoPedido, ...actuales]);
+    setMostrarCrearPedido(false);
+    setPagina(1);
   };
   const cambiarVista = (nuevaVista) => {
     setVista(nuevaVista);
@@ -137,13 +145,27 @@ function Pedidos() {
               Actualizar
             </button>
             {vista === 'tienda' && (
-              <button type="button" className="pedidos-secondary">
-                <FiPrinter aria-hidden="true" />
-                Imprimir
-              </button>
+              <>
+                <button type="button" className="pedidos-secondary">
+                  <FiPrinter aria-hidden="true" />
+                  Imprimir
+                </button>
+                <button
+                  type="button"
+                  className="pedidos-create"
+                  onClick={() => setMostrarCrearPedido((actual) => !actual)}
+                >
+                  <FiPlus aria-hidden="true" />
+                  Crear pedido
+                </button>
+              </>
             )}
           </div>
         </header>
+
+        {vista === 'tienda' && mostrarCrearPedido && (
+          <CrearPedido onCrear={crearPedidoManual} onCancelar={() => setMostrarCrearPedido(false)} />
+        )}
 
         <div className="pedidos-perspective-panel">
           <div className="pedidos-perspective-copy">
