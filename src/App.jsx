@@ -43,14 +43,6 @@ function App() {
         >
           Productos API
         </button>
-        <button
-          type="button"
-          className={tab === 'producto' ? 'tab active' : 'tab'}
-          onClick={() => setTab('producto')}
-        >
-          
-          Producto Individual
-        </button>
         <button type="button" className={tab === 'login' ? 'tab active' : 'tab'} onClick={() => setTab('login')}>
           Login
         </button>
