@@ -43,7 +43,6 @@ export async function insertProducto(datosProducto) {
   try {
     data = text ? JSON.parse(text) : {};
   } catch (e) {
-    // respuesta no-JSON, dejamos el texto crudo en data._raw
     data = { _raw: text };
   }
 
@@ -100,4 +99,114 @@ export async function getProductosPorCategoria(idCat) {
   }
 
   return res.json();
+}
+
+export async function agregarStock(id, cantidad) {
+  if (!cantidad || cantidad <= 0) {
+    throw new Error("La cantidad debe ser mayor a 0");
+  }
+
+  console.log("Agregando stock:", { id, cantidad });
+
+  const res = await fetch(`${BASE_URL}/agregar-stock/${id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cantidad: Number(cantidad) }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
+  }
+
+  return data;
+}
+
+export async function editarStock(id, cantidad) {
+  if (cantidad === undefined || cantidad < 0) {
+    throw new Error("La cantidad no puede ser negativa");
+  }
+
+  console.log("Editando stock:", { id, cantidad });
+
+  const res = await fetch(`${BASE_URL}/editar-stock/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cantidad: Number(cantidad) }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
+  }
+
+  return data;
+}
+
+export async function editarNombre(id, nombre) {
+  if (!nombre || !nombre.trim()) {
+    throw new Error("El nombre es obligatorio");
+  }
+
+  console.log("Editando nombre:", { id, nombre });
+
+  const res = await fetch(`${BASE_URL}/editar-nombre/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre: nombre.trim() }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
+  }
+
+  return data;
+}
+
+export async function editarTipo(id, tipo) {
+  if (!tipo || !tipo.trim()) {
+    throw new Error("El tipo es obligatorio");
+  }
+
+  console.log("Editando tipo:", { id, tipo });
+
+  const res = await fetch(`${BASE_URL}/editar-tipo/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tipo: tipo.trim() }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
+  }
+
+  return data;
+}
+
+export async function cambiarImagen(id, imagen) {
+  if (!imagen || !imagen.trim()) {
+    throw new Error("La URL de imagen es obligatoria");
+  }
+
+  console.log("Cambiando imagen:", { id, imagen });
+
+  const res = await fetch(`${BASE_URL}/cambiar-imagen/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ imagen: imagen.trim() }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
+  }
+
+  return data;
 }

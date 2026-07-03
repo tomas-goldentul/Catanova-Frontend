@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { FaArrowLeft, FaChartLine, FaEye, FaDollarSign, FaHeart, FaTag, FaTrash, FaPen, FaSyncAlt, FaClipboardList, FaChevronDown, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaChartLine, FaEye, FaDollarSign, FaHeart, FaTag, FaTrash, FaPen, FaSyncAlt, FaClipboardList, FaPlus, FaTimes } from 'react-icons/fa';
 import Header from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
-import { getProductoPorId, actualizarProducto } from '../../api/productos';
+import { getProductoPorId, actualizarProducto, borrarProducto, agregarStock, editarStock } from '../../api/productos';
+import { obtenerEtiquetasProducto, agregarEtiqueta, borrarEtiqueta } from '../../api/etiquetas';
 import {
   getVentasUltimos7Dias,
   getVentasUltimoMes,
@@ -24,6 +25,9 @@ function Producto({ productoId, onVolver }) {
     const [stockNuevo, setStockNuevo] = useState(0);
     const [guardando, setGuardando] = useState(false);
     const [cargandoVentas, setCargandoVentas] = useState(false);
+    const [etiquetas, setEtiquetas] = useState([]);
+    const [etiquetaActiva, setEtiquetaActiva] = useState('');
+    const [nuevaEtiqueta, setNuevaEtiqueta] = useState('');
 
     useEffect(() => {
         async function loadProducto() {
@@ -68,12 +72,35 @@ function Producto({ productoId, onVolver }) {
             nombre: producto.nombre,
             tipo: producto.tipo,
             precio: producto.precio,
-            stock: producto.stock,
-            colores: producto.colores,
             imagen: producto.imagen,
         });
         setStockNuevo(producto.stock);
     }, [producto]);
+
+    useEffect(() => {
+        if (!producto?.id) return;
+
+        async function loadEtiquetas() {
+            try {
+                const data = await obtenerEtiquetasProducto(producto.id);
+                const lista = Array.isArray(data)
+                    ? data.map((item) => ({
+                          id: item.id ?? item.id_etiqueta ?? item.id_etiqueta_producto,
+                          nombre: item.nombre ?? item.etiqueta ?? item.label ?? '',
+                      }))
+                    : [];
+                setEtiquetas(lista);
+                if (lista.length > 0) {
+                    setEtiquetaActiva(lista[0].nombre);
+                }
+            } catch (err) {
+                console.error(err);
+                setEtiquetas([]);
+            }
+        }
+
+        loadEtiquetas();
+    }, [producto?.id]);
 
     const normalizeVenta = (venta) => {
         const cantidad = Number(venta.cantidad ?? venta.cantidad_vendida ?? venta.cantidadVendida ?? 1);
@@ -151,15 +178,14 @@ function Producto({ productoId, onVolver }) {
             nombre: formProducto.nombre,
             tipo: formProducto.tipo,
             precio: Number(formProducto.precio) || 0,
-            stock: Number(formProducto.stock) || 0,
-            colores: Number(formProducto.colores) || 1,
             imagen: formProducto.imagen,
+            stock: producto.stock,
         };
 
         try {
             setGuardando(true);
             await actualizarProducto(producto.id, actualizacion);
-            setProducto(prev => ({
+            setProducto((prev) => ({
                 ...prev,
                 ...actualizacion,
             }));
@@ -174,18 +200,17 @@ function Producto({ productoId, onVolver }) {
     const handleAgregarStock = async () => {
         if (!producto) return;
         const cantidad = Number(stockCantidad) || 0;
-        const nuevoStock = producto.stock + cantidad;
 
         try {
             setGuardando(true);
-            await actualizarProducto(producto.id, { stock: nuevoStock });
-            setProducto(prev => ({
+            await agregarStock(producto.id, cantidad);
+            setProducto((prev) => ({
                 ...prev,
-                stock: nuevoStock,
+                stock: prev.stock + cantidad,
             }));
             setVistaPanel(null);
         } catch (err) {
-            setError(err.message || 'Error al actualizar stock');
+            setError(err.message || 'Error al agregar stock');
         } finally {
             setGuardando(false);
         }
@@ -198,16 +223,67 @@ function Producto({ productoId, onVolver }) {
 
         try {
             setGuardando(true);
-            await actualizarProducto(producto.id, { stock: nuevoStock });
-            setProducto(prev => ({
+            await editarStock(producto.id, nuevoStock);
+            setProducto((prev) => ({
                 ...prev,
                 stock: nuevoStock,
             }));
             setVistaPanel(null);
         } catch (err) {
-            setError(err.message || 'Error al actualizar stock');
+            setError(err.message || 'Error al modificar stock');
         } finally {
             setGuardando(false);
+        }
+    };
+
+    const handleBorrarProducto = async () => {
+        if (!producto) return;
+
+        try {
+            setGuardando(true);
+            await borrarProducto(producto.id);
+            onVolver?.();
+        } catch (err) {
+            setError(err.message || 'Error al borrar el producto');
+        } finally {
+            setGuardando(false);
+        }
+    };
+
+    const handleAgregarEtiqueta = async () => {
+        if (!producto || !nuevaEtiqueta.trim()) return;
+
+        try {
+            setGuardando(true);
+            const data = await agregarEtiqueta(nuevaEtiqueta.trim(), producto.id);
+            const nueva = {
+                id: data.id ?? data.id_etiqueta ?? Date.now(),
+                nombre: data.nombre ?? nuevaEtiqueta.trim(),
+            };
+            setEtiquetas((prev) => [...prev, nueva]);
+            setEtiquetaActiva(nueva.nombre);
+            setNuevaEtiqueta('');
+        } catch (err) {
+            setError(err.message || 'Error al agregar etiqueta');
+        } finally {
+            setGuardando(false);
+        }
+    };
+
+    const handleEliminarEtiqueta = async (etiquetaId) => {
+        if (!etiquetaId) return;
+
+        try {
+            await borrarEtiqueta(etiquetaId);
+            setEtiquetas((prev) => {
+                const siguiente = prev.filter((item) => item.id !== etiquetaId);
+                if (etiquetaActiva && !siguiente.some((item) => item.nombre === etiquetaActiva)) {
+                    setEtiquetaActiva(siguiente[0]?.nombre ?? '');
+                }
+                return siguiente;
+            });
+        } catch (err) {
+            setError(err.message || 'Error al eliminar la etiqueta');
         }
     };
 
@@ -224,19 +300,6 @@ function Producto({ productoId, onVolver }) {
             { icon: FaDollarSign, valor: '-', label: 'Ganancias' },
             { icon: FaHeart, valor: '-', label: 'Favoritos' },
         ];
-
-    const [etiquetas, setEtiquetas] = useState(['Moda', 'Chill', 'Barato', 'Ropa', 'Modesto', 'Tranquilidad', 'Remera', 'MSI']);
-    const [etiquetaActiva, setEtiquetaActiva] = useState('Tranquilidad');
-
-    const handleEliminarEtiqueta = (etiqueta) => {
-        setEtiquetas(prev => prev.filter(item => item !== etiqueta));
-        if (etiquetaActiva === etiqueta) {
-            setEtiquetaActiva(prev => {
-                const siguiente = etiquetas.find(item => item !== etiqueta);
-                return siguiente || '';
-            });
-        }
-    };
 
     return (
         <>
@@ -346,38 +409,48 @@ function Producto({ productoId, onVolver }) {
                 </p>
 
                 <div className="EtiquetasAbajo">
-                    {etiquetas.map((etiqueta) => {
-                        const activa = etiqueta === etiquetaActiva;
+                    {etiquetas.length > 0 ? etiquetas.map((etiqueta) => {
+                        const activa = etiqueta.nombre === etiquetaActiva;
                         return (
                         <button
-                            key={etiqueta}
+                            key={etiqueta.id}
                             type="button"
-                            onClick={() => setEtiquetaActiva(etiqueta)}
-                            className={`Unidad ${
-                            activa
-                                ? 'normal'
-                                : 'hovereada'
-                            }`}
+                            onClick={() => setEtiquetaActiva(etiqueta.nombre)}
+                            className={`Unidad ${activa ? 'normal' : 'hovereada'}`}
                         >
-                            {etiqueta}
+                            {etiqueta.nombre}
                             <span
                                 className="Unidad__close"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEliminarEtiqueta(etiqueta);
+                                    handleEliminarEtiqueta(etiqueta.id);
                                 }}
                             >
                                 ×
                             </span>
                         </button>
                         );
-                    })}
+                    }) : (
+                        <p className="EtiquetasDescripcion">No hay etiquetas cargadas.</p>
+                    )}
+                </div>
+                <div className="EtiquetasAgregar">
+                    <input
+                        type="text"
+                        placeholder="Agregar nueva etiqueta"
+                        value={nuevaEtiqueta}
+                        onChange={(e) => setNuevaEtiqueta(e.target.value)}
+                    />
+                    <button type="button" className="EtiquetasAgregarBtn" onClick={handleAgregarEtiqueta} disabled={guardando || !nuevaEtiqueta.trim()}>
+                        <FaPlus size={14} />
+                        Agregar
+                    </button>
                 </div>
             </div>
 
             {/* Acciones */}
             <div className="Acciones">
-                <button className="Accion1" type="button">
+                <button className="Accion1" type="button" onClick={handleBorrarProducto}>
                     <FaTrash size={16} />
                     Borrar Producto
                 </button>
@@ -430,24 +503,6 @@ function Producto({ productoId, onVolver }) {
                                 min="0"
                                 value={formProducto.precio}
                                 onChange={(e) => setFormProducto(prev => ({ ...prev, precio: e.target.value }))}
-                            />
-                        </label>
-                        <label>
-                            Stock
-                            <input
-                                type="number"
-                                min="0"
-                                value={formProducto.stock}
-                                onChange={(e) => setFormProducto(prev => ({ ...prev, stock: e.target.value }))}
-                            />
-                        </label>
-                        <label>
-                            Colores
-                            <input
-                                type="number"
-                                min="1"
-                                value={formProducto.colores}
-                                onChange={(e) => setFormProducto(prev => ({ ...prev, colores: e.target.value }))}
                             />
                         </label>
                         <label className="producto-panel__full">
