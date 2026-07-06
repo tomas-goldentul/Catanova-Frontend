@@ -4,13 +4,13 @@ import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import BurbujaChatanova from '../BurbujaChatanova/BurbujaChatanova';
 import Categoria from '../Categoria/Categoria';
-import { getCategorias } from '../../api/categorias';
+import { getCategoriasPorTienda } from '../../api/categorias';
 import { getProductosPorCategoria } from '../../api/productos';
 import { getNombre, getSlogan } from '../../api/tiendas';
-import { getVistas } from '../../api/vistas';
-import { getFavoritos } from '../../api/favoritos';
-import { getVentas } from '../../api/ventas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
+import { getCantidadVentasProducto } from '../../api/ventas';
+import { getCantidadFavoritosProducto } from '../../api/favoritos';
+import { getCantidadVistasProducto } from '../../api/vistas';
 
 // ── Datos de ejemplo para el selector de productos en los paneles ──
 const PRODUCTOS_DISPONIBLES = [
@@ -39,25 +39,6 @@ const CATEGORIAS_MOCK = [
     ],
   },
 ];
-
-// Normaliza una categoría de la API a la estructura interna consistente
-function normalizarCategoria(cat, productos) {
-  return {
-    id: cat.id_categoria ?? cat.id,
-    nombre: cat.nombre ?? 'Sin nombre',
-    productos: (productos || []).map(p => ({
-      id:             p.id_producto ?? p.id,
-      nombre:         p.nombre ?? 'Producto',
-      precio:         Number(p.precio) || 0,
-      precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
-      cantidad:       Number(p.cantidad) || 1,
-      stock:          p.stock,
-      ventas:         p.ventas,
-      vistas:         p.vistas,
-      favoritos:      p.favoritos,
-    })),
-  };
-}
 
 // ════════════════════════════════════════════
 //   PANEL: CREAR CATEGORÍA
@@ -345,7 +326,7 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
     async function cargarDatos() {
       try {
         const [categoriasDB, dataNombre, dataSlogan] = await Promise.all([
-          getCategorias(),
+          getCategoriasPorTienda(idTienda),
           getNombre(idTienda),
           getSlogan(idTienda),
         ]);
@@ -357,8 +338,33 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
 
         const normalizadas = await Promise.all(
           categoriasDB.map(async cat => {
+            console.log(categoriasDB);
             const productos = await getProductosPorCategoria(cat.id_categoria ?? cat.id);
-            return normalizarCategoria(cat, productos);
+
+            console.log("Categoría:", cat.nombre, cat.id_categoria ?? cat.id);
+            console.log("Productos:", productos);
+
+            const productosConAnaliticas = await Promise.all(
+              productos.map(async p => ({
+                id: p.id_producto ?? p.id,
+                nombre: p.nombre ?? "Producto",
+                precio: Number(p.precio) || 0,
+                precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
+                cantidad: Number(p.cantidad) || 1,
+                stock: p.stock,
+                ventas: await getCantidadVentasProducto(p.id_producto ?? p.id),
+                vistas: await getCantidadVistasProducto(p.id_producto ?? p.id),
+                favoritos: await getCantidadFavoritosProducto(p.id_producto ?? p.id),
+              }))
+            );
+
+            console.log("Productos con analíticas:", productosConAnaliticas);
+
+            return {
+              id: cat.id_categoria ?? cat.id,
+              nombre: cat.nombre ?? "Sin nombre",
+              productos: productosConAnaliticas,
+            };
           })
         );
 

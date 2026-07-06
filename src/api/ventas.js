@@ -84,5 +84,7 @@ export async function deleteVenta(id) {
 export async function getCantidadVentasProducto(id) {
   const res = await fetch(`${BASE_URL}/producto/${id}/cantidad`);
   if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
-  return res.json();
+
+  const data = await res.json();
+  return Number(data.cantidad);
 }

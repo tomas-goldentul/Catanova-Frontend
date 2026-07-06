@@ -35,4 +35,14 @@ export async function getProductosDeCategoria(id) {
 }
 //trae los productos de una categoría
 
+export async function getCategoriasPorTienda(id) {
+  const res = await fetch(`${BASE_URL}/tienda/${id}`);
+
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+
+  return res.json();
+}
+
 //el futuro agregar crear categoria, editar (elegir que productos poner y sacar) y eliminar

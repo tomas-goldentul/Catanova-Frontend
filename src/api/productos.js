@@ -101,6 +101,16 @@ export async function getProductosPorCategoria(idCat) {
   return res.json();
 }
 
+export async function getProductosPorTienda(idTienda) {
+  const res = await fetch(`${BASE_URL}/get/tienda/${idTienda}`);
+
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+
+  return res.json();
+}
+
 export async function agregarStock(id, cantidad) {
   if (!cantidad || cantidad <= 0) {
     throw new Error("La cantidad debe ser mayor a 0");
