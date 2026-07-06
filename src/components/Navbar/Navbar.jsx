@@ -9,7 +9,7 @@ const IconoHamburger = () => (
   </svg>
 );
 
-function Navbar() {
+function Navbar({ onLogoClick }) {
   return (
     <nav className="navbar">
 
@@ -25,7 +25,13 @@ function Navbar() {
       </div>
 
       <div className="nav-center">
-        <img src={logo} alt="Catanova" className="logo-img" />
+        <img
+          src={logo}
+          alt="Catanova"
+          className="logo-img"
+          onClick={onLogoClick}
+          style={onLogoClick ? { cursor: 'pointer' } : undefined}
+        />
       </div>
 
       <div className="nav-right">

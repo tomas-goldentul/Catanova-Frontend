@@ -30,7 +30,7 @@ const obtenerPrecioNumerico = (precio) => {
     return Number.isFinite(numero) ? numero : 0;
 };
  
-function GaleriaProductos() {
+function GaleriaProductos({ onIrAMenuPrincipal }) {
     const [productos, setProductos] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
     const [mostrarAgregarProducto, setMostrarAgregarProducto] = useState(false);
@@ -141,7 +141,7 @@ function GaleriaProductos() {
  
     return (
         <>
-            <Header />
+            <Header onLogoClick={onIrAMenuPrincipal} />
             <div className="galeria">
  
                 <div className="divBuscarProductos">

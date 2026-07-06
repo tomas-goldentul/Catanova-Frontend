@@ -53,13 +53,15 @@ const IconFotos = () => (
   </svg>
 );
 
-const cards = [
+function crearCards(onIrAGaleria) {
+  return [
   {
     icon: <IconProductos />,
     title: "Mis productos",
     description: "Gestioná tu inventario, precios y disponibilidad de prendas.",
     accentBg: "#eff6ff",
-    accentColor: "#1d4ed8"
+    accentColor: "#1d4ed8",
+    onClick: onIrAGaleria
   },
   {
     icon: <IconVentas />,
@@ -96,14 +98,17 @@ const cards = [
     accentBg: "#ecfdf5",
     accentColor: "#00a884"
   }
-];
+  ];
+}
 
-function MiTienda() {
+function MiTienda({ onIrAGaleria, onVerTiendaPublica, onIrAMenuPrincipal }) {
+  const cards = crearCards(onIrAGaleria);
+
   return (
     <>
-      <Navbar />
+      <Navbar onLogoClick={onIrAMenuPrincipal} />
       <main className="menu-main">
-        <StoreHeader />
+        <StoreHeader onVerTiendaPublica={onVerTiendaPublica} />
         <div className="menu-section-header">
           <span className="menu-section-label">Herramientas</span>
           <p className="menu-section-subtitle">Accedé rápidamente a todas las funciones de tu negocio</p>

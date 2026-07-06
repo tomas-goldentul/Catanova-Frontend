@@ -7,9 +7,14 @@ const IconArrow = () => (
   </svg>
 );
 
-function DashboardCard({ icon, title, description, accentBg, accentColor }) {
+function DashboardCard({ icon, title, description, accentBg, accentColor, onClick }) {
   return (
-    <div className="dashboard-card">
+    <div
+      className="dashboard-card"
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <div className="card-icon-bg" style={{ background: accentBg, color: accentColor }}>
         {icon}
       </div>

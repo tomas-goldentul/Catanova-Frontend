@@ -18,7 +18,7 @@ import {
 } from '../../api/vistas';
 import './Producto.css';
 
-function Producto({ productoId, onVolver }) {
+function Producto({ productoId, onVolver, onIrAMenuPrincipal }) {
     const [producto, setProducto] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -363,7 +363,7 @@ function Producto({ productoId, onVolver }) {
 
     return (
         <>
-        <Header />
+        <Header onLogoClick={onIrAMenuPrincipal} />
 
         <section className="cuerpo">
             <section className="producto">

@@ -328,7 +328,7 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
 //   COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════
 
-function Catalogo({ onVerProducto }) {
+function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
   const [categorias, setCategorias]         = useState([]);
   const [tabActivo, setTabActivo]           = useState(null);
   const [infoTienda, setInfoTienda]         = useState({ nombre: '', slogan: '' });
@@ -429,7 +429,7 @@ function Catalogo({ onVerProducto }) {
 
   return (
     <>
-      <Navbar />
+      <Navbar onLogoClick={onIrAMenuPrincipal} />
       <main className="cat-main">
 
         {/* ── Header tienda ── */}

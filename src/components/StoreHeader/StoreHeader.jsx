@@ -10,7 +10,7 @@ const IconExternalLink = () => (
   </svg>
 );
 
-function StoreHeader() {
+function StoreHeader({ onVerTiendaPublica }) {
   const [nombreTienda, setNombreTienda] = useState('Cargando tienda...');
 
   // ASÍ SERÍA CON EL ID DINÁMICO DESDE LA URL EN EL FUTURO:
@@ -52,7 +52,7 @@ function StoreHeader() {
           <span className="meta-text">Desde 2022</span>
         </div>
       </div>
-      <button className="btn-ver-tienda">
+      <button className="btn-ver-tienda" onClick={onVerTiendaPublica}>
         Ver tienda pública
         <IconExternalLink />
       </button>

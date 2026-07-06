@@ -55,14 +55,21 @@ function App() {
         </button>
       </div>
 
-      {tab === 'tienda' && <MiTienda />}
-      {tab === 'galeria' && <GaleriaProductos />}
+      {tab === 'tienda' && (
+        <MiTienda
+          onIrAGaleria={() => setTab('galeria')}
+          onVerTiendaPublica={() => setTab('catalogo')}
+          onIrAMenuPrincipal={() => setTab('tienda')}
+        />
+      )}
+      {tab === 'galeria' && <GaleriaProductos onIrAMenuPrincipal={() => setTab('tienda')} />}
       {tab === 'catalogo' && (
         <Catalogo
           onVerProducto={(id) => {
             setProductoSeleccionado(id);
             setTab('producto');
           }}
+          onIrAMenuPrincipal={() => setTab('tienda')}
         />
       )}
       {tab === 'productos' && <Productos />}
@@ -70,6 +77,7 @@ function App() {
         <Producto
           productoId={productoSeleccionado}
           onVolver={() => setTab('catalogo')}
+          onIrAMenuPrincipal={() => setTab('tienda')}
         />
       )}
       {tab === 'login' && <Login />}
