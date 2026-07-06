@@ -143,6 +143,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
 }
 
 .AnaliticasArriba h3 {
@@ -151,17 +152,26 @@
   color: #111827;
 }
 
-.AnaliticasArriba button {
-  display: flex;
+.AnaliticasPeriodo {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: #6b7280;
+}
+
+.AnaliticasPeriodoSelect {
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
   border: 1px solid #e5e7eb;
-  border-radius: 999px;
-  padding: 3px 10px;
-  background: none;
+  background: #fff;
+  color: #111827;
+  font-size: 0.95rem;
   cursor: pointer;
+  min-width: 180px;
+}
+
+.AnaliticasPeriodoSelect:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 165, 160, 0.15);
+  border-color: #0ea5a0;
 }
 
 .AnaliticasArriba button:hover {

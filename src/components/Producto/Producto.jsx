@@ -10,6 +10,12 @@ import {
   getVentasUltimoAno,
   getVentasUltimos2Anios,
 } from '../../api/ventas';
+import {
+  getFavoritos,
+} from '../../api/favoritos';
+import {
+  getVistas,
+} from '../../api/vistas';
 import './Producto.css';
 
 function Producto({ productoId, onVolver }) {
@@ -17,7 +23,6 @@ function Producto({ productoId, onVolver }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [periodo, setPeriodo] = useState('mes');
-    const [diasPersonalizados, setDiasPersonalizados] = useState(30);
     const [ventasHistoricas, setVentasHistoricas] = useState({ ventas: '-', ganancias: '-', vistas: '-', favoritos: '-' });
     const [vistaPanel, setVistaPanel] = useState(null);
     const [formProducto, setFormProducto] = useState(null);
@@ -111,9 +116,43 @@ function Producto({ productoId, onVolver }) {
         return { cantidad, precio, total, productoId, fecha: new Date(venta.fecha ?? venta.createdAt ?? venta.fecha_venta ?? null) };
     };
 
-    const esVentaDelProducto = (venta, idProducto) => {
-        if (!venta || !idProducto) return false;
-        return String(venta.productoId) === String(idProducto);
+    const normalizeContador = (registro) => {
+        const cantidad = Number(registro.cantidad ?? registro.total ?? registro.cantidad_vistas ?? registro.cantidad_favoritos ?? 1);
+        const productoId = registro.id_producto ?? registro.producto_id ?? registro.productoId ?? registro.idProducto ?? registro.id;
+        return { cantidad, productoId, fecha: new Date(registro.fecha ?? registro.createdAt ?? registro.fecha_vista ?? registro.fecha_favorito ?? null) };
+    };
+
+    const esRegistroDelProducto = (registro, idProducto) => {
+        if (!registro || !idProducto) return false;
+        return String(registro.productoId) === String(idProducto);
+    };
+
+    const extraerLista = (respuesta) => {
+        if (Array.isArray(respuesta)) return respuesta;
+        if (Array.isArray(respuesta?.data)) return respuesta.data;
+        if (respuesta && typeof respuesta === 'object') return [respuesta];
+        return [];
+    };
+
+    const estaEnPeriodo = (fecha, periodoSeleccionado) => {
+        if (!fecha || Number.isNaN(fecha.getTime())) return false;
+
+        const ahora = new Date();
+        const limite = new Date(ahora);
+
+        if (periodoSeleccionado === '7dias') {
+            limite.setDate(ahora.getDate() - 7);
+        } else if (periodoSeleccionado === 'mes') {
+            limite.setMonth(ahora.getMonth() - 1);
+        } else if (periodoSeleccionado === '1anio') {
+            limite.setFullYear(ahora.getFullYear() - 1);
+        } else if (periodoSeleccionado === '2anios') {
+            limite.setFullYear(ahora.getFullYear() - 2);
+        } else {
+            return true;
+        }
+
+        return fecha >= limite;
     };
 
     const cargarVentasHistoricas = async () => {
@@ -122,6 +161,9 @@ function Producto({ productoId, onVolver }) {
         setCargandoVentas(true);
         try {
             let ventas = [];
+            let vistas = [];
+            let favoritos = [];
+
             if (periodo === '7dias') {
                 ventas = await getVentasUltimos7Dias();
             } else if (periodo === 'mes') {
@@ -132,15 +174,29 @@ function Producto({ productoId, onVolver }) {
                 ventas = await getVentasUltimos2Anios();
             }
 
-            const filtradas = (Array.isArray(ventas) ? ventas : []).map(normalizeVenta).filter(v => esVentaDelProducto(v, producto.id));
-            const ventasSum = filtradas.reduce((sum, item) => sum + item.cantidad, 0);
-            const gananciasSum = filtradas.reduce((sum, item) => sum + item.total, 0);
+            const [vistasRespuesta, favoritosRespuesta] = await Promise.all([
+                getVistas(),
+                getFavoritos(),
+            ]);
+
+            const ventasFiltradas = extraerLista(ventas).map(normalizeVenta).filter(v => esRegistroDelProducto(v, producto.id));
+            const vistasFiltradas = extraerLista(vistasRespuesta)
+                .map(normalizeContador)
+                .filter(v => esRegistroDelProducto(v, producto.id) && estaEnPeriodo(v.fecha, periodo));
+            const favoritosFiltradas = extraerLista(favoritosRespuesta)
+                .map(normalizeContador)
+                .filter(v => esRegistroDelProducto(v, producto.id) && estaEnPeriodo(v.fecha, periodo));
+
+            const ventasSum = ventasFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
+            const gananciasSum = ventasFiltradas.reduce((sum, item) => sum + item.total, 0);
+            const vistasSum = vistasFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
+            const favoritosSum = favoritosFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
 
             setVentasHistoricas({
                 ventas: ventasSum,
                 ganancias: gananciasSum,
-                vistas: producto.vistas ?? '-',
-                favoritos: producto.favoritos ?? '-',
+                vistas: vistasSum,
+                favoritos: favoritosSum,
             });
         } catch (err) {
             setVentasHistoricas({ ventas: '-', ganancias: '-', vistas: producto.vistas ?? '-', favoritos: producto.favoritos ?? '-' });
@@ -151,14 +207,13 @@ function Producto({ productoId, onVolver }) {
 
     useEffect(() => {
         cargarVentasHistoricas();
-    }, [producto, periodo, diasPersonalizados]);
+    }, [producto, periodo]);
 
     const periodos = [
         { id: '7dias', label: 'Últimos 7 días' },
         { id: 'mes', label: 'Último mes' },
         { id: '1anio', label: '1 año' },
         { id: '2anios', label: '2 años' },
-        { id: 'personalizado', label: 'Personalizado' },
     ];
 
     const handleAbrirPanel = (panel) => {
@@ -174,12 +229,17 @@ function Producto({ productoId, onVolver }) {
     const handleGuardarProducto = async () => {
         if (!formProducto || !producto) return;
 
+        const tiendaIdRaw = localStorage.getItem('id_tienda');
+        const tiendaId = Number(tiendaIdRaw);
+        const tiendaIdFinal = tiendaIdRaw && !Number.isNaN(tiendaId) ? tiendaId : 1;
+
         const actualizacion = {
             nombre: formProducto.nombre,
-            tipo: formProducto.tipo,
             precio: Number(formProducto.precio) || 0,
             imagen: formProducto.imagen,
-            stock: producto.stock,
+            stock: Number(producto.stock),
+            activo: true,
+            id_tienda: tiendaIdFinal,
         };
 
         try {
@@ -290,9 +350,9 @@ function Producto({ productoId, onVolver }) {
     const analiticas = producto
         ? [
             { icon: FaChartLine, valor: cargandoVentas ? 'Cargando...' : ventasHistoricas.ventas, label: 'Ventas' },
-            { icon: FaEye, valor: producto.vistas ?? ventasHistoricas.vistas, label: 'Vistas' },
+            { icon: FaEye, valor: cargandoVentas ? 'Cargando...' : ventasHistoricas.vistas, label: 'Vistas' },
             { icon: FaDollarSign, valor: cargandoVentas ? 'Cargando...' : (Number.isFinite(ventasHistoricas.ganancias) ? `$${ventasHistoricas.ganancias.toLocaleString('es-AR')}` : ventasHistoricas.ganancias), label: 'Ganancias' },
-            { icon: FaHeart, valor: producto.favoritos ?? ventasHistoricas.favoritos, label: 'Favoritos' },
+            { icon: FaHeart, valor: cargandoVentas ? 'Cargando...' : ventasHistoricas.favoritos, label: 'Favoritos' },
         ]
         : [
             { icon: FaChartLine, valor: '-', label: 'Ventas' },
@@ -349,40 +409,25 @@ function Producto({ productoId, onVolver }) {
 
                         {/* Analíticas */}
                         <div className="Analiticas">
-                            <div className="AnaliticasArriba">
+                                            <div className="AnaliticasArriba">
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900">Analíticas:</h3>
                                     <p className="text-xs text-gray-500">Periodo: {periodos.find(p => p.id === periodo)?.label}</p>
                                 </div>
-                                <div className="AnaliticasFiltros">
-                                    {periodos.map((item) => (
-                                        <button
-                                            key={item.id}
-                                            type="button"
-                                            className={`AnaliticasFiltroBtn ${periodo === item.id ? 'AnaliticasFiltroBtn--activo' : ''}`}
-                                            onClick={() => setPeriodo(item.id)}
-                                        >
-                                            {item.label}
-                                        </button>
-                                    ))}
+                                <div className="AnaliticasPeriodo">
+                                    <select
+                                        className="AnaliticasPeriodoSelect"
+                                        value={periodo}
+                                        onChange={(e) => setPeriodo(e.target.value)}
+                                    >
+                                        {periodos.map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.label}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
-
-                            {periodo === 'personalizado' && (
-                                <div className="AnaliticasPersonalizado">
-                                    <label className="AnaliticasPersonalizado__label" htmlFor="dias-personalizados">
-                                        Días personalizados:
-                                    </label>
-                                    <input
-                                        id="dias-personalizados"
-                                        type="number"
-                                        min="1"
-                                        value={diasPersonalizados}
-                                        onChange={(e) => setDiasPersonalizados(e.target.value)}
-                                        className="AnaliticasPersonalizado__input"
-                                    />
-                                </div>
-                            )}
 
                             <div className="AnaliticasAbajo">
                                 {analiticas.map(({ icon: Icon, valor, label }) => (
