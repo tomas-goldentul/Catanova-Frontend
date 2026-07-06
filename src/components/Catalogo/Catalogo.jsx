@@ -7,6 +7,9 @@ import Categoria from '../Categoria/Categoria';
 import { getCategorias } from '../../api/categorias';
 import { getProductosPorCategoria } from '../../api/productos';
 import { getNombre, getSlogan } from '../../api/tiendas';
+import { getVistas } from '../../api/vistas';
+import { getFavoritos } from '../../api/favoritos';
+import { getVentas } from '../../api/ventas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
 
 // ── Datos de ejemplo para el selector de productos en los paneles ──

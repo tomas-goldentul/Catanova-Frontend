@@ -80,3 +80,9 @@ export async function deleteVenta(id) {
   if (!res.ok) throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
   return data;
 }
+
+export async function getCantidadVentasProducto(id) {
+  const res = await fetch(`${BASE_URL}/producto/${id}/cantidad`);
+  if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+  return res.json();
+}
