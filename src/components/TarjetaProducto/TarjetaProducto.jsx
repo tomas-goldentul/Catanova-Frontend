@@ -1,12 +1,5 @@
 import './TarjetaProducto.css';
-
-const IconoImagen = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <path d="M3 9l4-4 4 4 4-4 4 4" />
-        <circle cx="8.5" cy="13.5" r="1.5" />
-    </svg>
-);
+import { getImagenUrl } from '../../api/helper.js';
 
 const IconoEliminar = () => (
     <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -30,13 +23,14 @@ const IconoMas = () => (
  *   talle: string,
  *   stock: number,
  *   precio: string,
+ *   imagen?: string,
  *   activo: boolean,
  *   onAgregar?: () => void,
  *   onEliminar?: () => void,
  * }} props
  */
 
-function TarjetaProducto({ nombre, talle, stock, precio, activo, onAgregar, onEliminar }) {
+function TarjetaProducto({ nombre, talle, stock, precio, imagen, activo, onAgregar, onEliminar }) {
     const datosDistintivos = [];
     if (!activo) datosDistintivos.push(
         {
@@ -50,39 +44,43 @@ function TarjetaProducto({ nombre, talle, stock, precio, activo, onAgregar, onEl
     );
 
     return (
-        <>
-            <article className="tarjetaProducto">
-                {datosDistintivos.length > 0 && (
-                    <div className="tarjetaProductoDatosDistintivos">
-                        {datosDistintivos.map((dato) => (
-                            <span key={dato.tipo} className={`tarjetaProductoDatoD tarjetaProductoDatoD--${dato.tipo}`}>
-                                {dato.label}
-                            </span>
-                        ))}
-                    </div>
-                )}
-
-                <div className="tarjetaProductoImagen">
-                    <IconoImagen />
-                    <span>Imagen</span>
+        <article className="tarjetaProducto">
+            {datosDistintivos.length > 0 && (
+                <div className="tarjetaProductoDatosDistintivos">
+                    {datosDistintivos.map((dato) => (
+                        <span key={dato.tipo} className={`tarjetaProductoDatoD tarjetaProductoDatoD--${dato.tipo}`}>
+                            {dato.label}
+                        </span>
+                    ))}
                 </div>
+            )}
 
-                <div className="tarjetaProductoContenido">
-                    <p className="tarjetaProductoNombre">{nombre}</p>
-                    <p className="tarjetaProductoDatos">{talle} · Stock: {stock} uds.</p>
-                    <p className="tarjetaProductoPrecio">{precio}</p>
+            <div className="tarjetaProductoImagen">
+                <img 
+                    src={getImagenUrl(imagen)} 
+                    alt={nombre}
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/200?text=Sin+Imagen';
+                    }}
+                />
+            </div>
 
-                    <div className="tarjetaProductoAcciones">
-                        <button className="tarjetaProductoAgregar" onClick={onAgregar}>
-                            <IconoMas /> Agregar a tienda
-                        </button>
-                        <button className="tarjetaProductoEliminar" onClick={onEliminar} aria-label="Eliminar producto">
-                            <IconoEliminar />
-                        </button>
-                    </div>
+            <div className="tarjetaProductoContenido">
+                <p className="tarjetaProductoNombre">{nombre}</p>
+                <p className="tarjetaProductoDatos">{talle} · Stock: {stock} uds.</p>
+                <p className="tarjetaProductoPrecio">{precio}</p>
+
+                <div className="tarjetaProductoAcciones">
+                    <button className="tarjetaProductoAgregar" onClick={onAgregar}>
+                        <IconoMas /> Agregar a tienda
+                    </button>
+                    <button className="tarjetaProductoEliminar" onClick={onEliminar} aria-label="Eliminar producto">
+                        <IconoEliminar />
+                    </button>
                 </div>
-            </article>
-        </>
+            </div>
+        </article>
     );
 }
 

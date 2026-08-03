@@ -13,6 +13,7 @@ import './GaleriaProductos.css';
 const normalizarProducto = (producto) => ({
     id: producto.id_producto ?? producto.id ?? producto._id ?? producto.productoId,
     nombre: producto.nombre ?? 'Sin nombre',
+    imagen: producto.imagen, // <-- Se añade la lectura de la propiedad imagen
     talle: producto.talle ?? producto.talla ?? 'Sin talle',
     stock: Number(producto.stock ?? 0),
     precio: typeof producto.precio === 'number'
@@ -22,14 +23,14 @@ const normalizarProducto = (producto) => ({
             : '$0'),
     activo: producto.activo ?? producto.estado ?? true,
 });
- 
-const PRODUCTOS_POR_PAGINA = 6; //Limite de 6 productos por pagina
+
+const PRODUCTOS_POR_PAGINA = 6; // Límite de 6 productos por página
 
 const obtenerPrecioNumerico = (precio) => {
     const numero = Number(String(precio).replace(/[^\d.-]/g, ''));
     return Number.isFinite(numero) ? numero : 0;
 };
- 
+
 function GaleriaProductos({ onIrAMenuPrincipal }) {
     const [productos, setProductos] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
@@ -77,11 +78,12 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
         const timer = window.setTimeout(() => setMensaje(''), 2500);
         return () => window.clearTimeout(timer);
     }, [mensaje]);
- 
+
     const productosFiltrados = productos
         .filter((productoActual) => {
             const coincideBusqueda = productoActual.nombre.toLowerCase().includes(busqueda.toLowerCase());
-            return coincideBusqueda;
+            const coincideActivo = soloActivos ? productoActual.activo : true; // <-- Conexión con el filtro de solo activos
+            return coincideBusqueda && coincideActivo;
         })
         .sort((a, b) => {
             if (orden === 'barato') {
@@ -97,15 +99,15 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
     const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA;
     const productosPagina = productosFiltrados.slice(inicio, inicio + PRODUCTOS_POR_PAGINA);
 
-    const enTienda = productos.filter(productoActual => productoActual.activo).length; //productos en tienda
-    const sinPublicar = productos.filter(productoActual => !productoActual.activo).length; //productos que no estan en tienda
-    const stockBajo = productos.filter(productoActual => productoActual.stock < 10).length; //productos con stock bajo
- 
+    const enTienda = productos.filter(productoActual => productoActual.activo).length;
+    const sinPublicar = productos.filter(productoActual => !productoActual.activo).length;
+    const stockBajo = productos.filter(productoActual => productoActual.stock < 10).length;
+
     const handleEliminar = async (id) => {
         await borrarProducto(id);
-        setProductos(productosPrevios => productosPrevios.filter(productoActual => productoActual.id !== id)); //Usa el estado previo para eliminar el producto por id
+        setProductos(productosPrevios => productosPrevios.filter(productoActual => productoActual.id !== id));
     };
- 
+
     const handleAgregar = async (id) => {
         const producto = productos.find((item) => item.id === id);
 
@@ -141,12 +143,12 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
         setPaginaActual(1);
         setMostrarAgregarProducto(false);
     };
- 
+
     return (
         <>
             <Header onLogoClick={onIrAMenuPrincipal} />
             <div className="galeria">
- 
+
                 <div className="divBuscarProductos">
                     <h1>Galería de Productos:</h1>
                     <div className="accionesBuscador">
@@ -218,7 +220,7 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
                     <StatCard label="Sin publicar" value={sinPublicar}/>
                     <StatCard label="Stock bajo" value={stockBajo}/>
                 </div>
- 
+
                 <div className="productosOrdenados">
                     {productosPagina.map((producto) => (
                         <TarjetaProducto
@@ -235,11 +237,11 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
                     paginaActual={paginaActual}
                     onChange={setPaginaActual}
                 />
- 
+
             </div>
             <Footer />
         </>
     );
 }
- 
+
 export default GaleriaProductos;
