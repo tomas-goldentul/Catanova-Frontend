@@ -23,10 +23,12 @@ import {
   FiX,
 } from 'react-icons/fi';
 import CrearPedido from './CrearPedido';
+import { actualizarEstadoPedido } from '../../api/pedidos';
 import './Pedidos.css';
 
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const ESTADOS = ['Todos', 'Pendiente', 'Entregado'];
+const ESTADOS_PEDIDO = ['Pendiente', 'Preparando', 'Enviado', 'Entregado'];
+const ESTADOS = ['Todos', ...ESTADOS_PEDIDO];
 const ORDENES = [
   { value: 'fecha', label: 'Fecha reciente' },
   { value: 'total', label: 'Mayor total' },
@@ -48,6 +50,10 @@ function Pedidos() {
   const [mostrarCrearPedido, setMostrarCrearPedido] = useState(false);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
   const [pedidoEnEdicion, setPedidoEnEdicion] = useState(null);
+  const [pedidoParaActualizar, setPedidoParaActualizar] = useState(null);
+  const [nuevoEstado, setNuevoEstado] = useState('Pendiente');
+  const [guardandoEstado, setGuardandoEstado] = useState(false);
+  const [errorEstado, setErrorEstado] = useState('');
 
   const pedidosDisponibles = pedidos;
   const actualizarPedidos = () => {
@@ -63,6 +69,43 @@ function Pedidos() {
     setPagina(1);
     setMenuAbierto('');
     guardarVista(nuevaVista);
+  };
+  const abrirCambioEstado = (pedido) => {
+    const detalle = normalizarPedido(pedido);
+    setPedidoParaActualizar({ id: detalle.id, pedido });
+    setNuevoEstado(detalle.estado);
+    setErrorEstado('');
+    setMenuAbierto('');
+  };
+  const cerrarCambioEstado = () => {
+    if (!guardandoEstado) {
+      setPedidoParaActualizar(null);
+      setErrorEstado('');
+    }
+  };
+  const guardarCambioEstado = async () => {
+    if (!pedidoParaActualizar) return;
+
+    setGuardandoEstado(true);
+    setErrorEstado('');
+
+    try {
+      await actualizarEstadoPedido(pedidoParaActualizar.id, nuevoEstado);
+      setPedidos((actuales) => actuales.map((pedido) => {
+        if (String(normalizarPedido(pedido).id) !== String(pedidoParaActualizar.id)) return pedido;
+
+        const actualizado = { ...pedido, estado: nuevoEstado };
+        if (Object.hasOwn(pedido, 'entregado')) {
+          actualizado.entregado = nuevoEstado === 'Entregado';
+        }
+        return actualizado;
+      }));
+      setPedidoParaActualizar(null);
+    } catch (err) {
+      setErrorEstado(err.message || 'No se pudo actualizar el estado del pedido.');
+    } finally {
+      setGuardandoEstado(false);
+    }
   };
 
   const pedidosFiltrados = useMemo(() => {
@@ -338,10 +381,17 @@ function Pedidos() {
                           </button>
                         </>
                       )}
-                      <button type="button">
-                        <FiCheckCircle aria-hidden="true" />
-                        {vista === 'usuario' ? 'Consultar estado' : 'Cambiar estado'}
-                      </button>
+                      {vista === 'tienda' ? (
+                        <button type="button" onClick={() => abrirCambioEstado(pedido)}>
+                          <FiCheckCircle aria-hidden="true" />
+                          Cambiar estado
+                        </button>
+                      ) : (
+                        <button type="button">
+                          <FiCheckCircle aria-hidden="true" />
+                          Consultar estado
+                        </button>
+                      )}
                       <button type="button">
                         <FiFileText aria-hidden="true" />
                         {vista === 'usuario' ? 'Ver comprobante' : 'Imprimir etiqueta'}
@@ -413,6 +463,49 @@ function Pedidos() {
               setPedidoSeleccionado(pedidoActualizado);
             }}
           />
+        )}
+
+        {pedidoParaActualizar && (
+          <div className="pedido-modal-backdrop" role="presentation" onMouseDown={cerrarCambioEstado}>
+            <section
+              className="pedido-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cambiarEstadoTitulo"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <div>
+                <span className="pedido-modal-kicker">Administrar pedido</span>
+                <h2 id="cambiarEstadoTitulo">Cambiar estado</h2>
+                <p>Pedido #{pedidoParaActualizar.id}</p>
+              </div>
+
+              <label className="pedido-modal-field" htmlFor="nuevoEstadoPedido">
+                <span>Nuevo estado</span>
+                <select
+                  id="nuevoEstadoPedido"
+                  value={nuevoEstado}
+                  disabled={guardandoEstado}
+                  onChange={(event) => setNuevoEstado(event.target.value)}
+                >
+                  {ESTADOS_PEDIDO.map((opcion) => (
+                    <option key={opcion} value={opcion}>{opcion}</option>
+                  ))}
+                </select>
+              </label>
+
+              {errorEstado && <p className="pedido-modal-error">{errorEstado}</p>}
+
+              <div className="pedido-modal-actions">
+                <button type="button" className="pedido-modal-cancel" onClick={cerrarCambioEstado} disabled={guardandoEstado}>
+                  Cancelar
+                </button>
+                <button type="button" className="pedido-modal-save" onClick={guardarCambioEstado} disabled={guardandoEstado}>
+                  {guardandoEstado ? 'Guardando...' : 'Guardar estado'}
+                </button>
+              </div>
+            </section>
+          </div>
         )}
       </div>
     </section>
