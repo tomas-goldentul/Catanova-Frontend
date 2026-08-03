@@ -320,6 +320,9 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
   const [vistaPanel, setVistaPanel]         = useState(null); // null | 'crear' | 'editar' | 'borrar'
   const [categoriaEditando, setCategoriaEditando] = useState(null);
 
+  const tipoSesion = typeof localStorage !== 'undefined' ? localStorage.getItem('tipo') : null;
+  const esTienda = tipoSesion === 'tienda';
+
   useEffect(() => {
     const tiendaIdRaw = localStorage.getItem('id_tienda');
     const idTienda = tiendaIdRaw ? Number(tiendaIdRaw) : null;
@@ -344,28 +347,37 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
         const normalizadas = await Promise.all(
           categoriasDB.map(async cat => {
             console.log(categoriasDB);
-            const tiendaIdRaw = localStorage.getItem('id_tienda');
-            const tiendaId = tiendaIdRaw ? Number(tiendaIdRaw) : null;
+            const tiendaId = idTienda;
             const productos = await getProductosPorCategoria(cat.id_categoria ?? cat.id, tiendaId);
 
             console.log("Categoría:", cat.nombre, cat.id_categoria ?? cat.id);
             console.log("Productos:", productos);
 
-            const productosConAnaliticas = await Promise.all(
-              productos.map(async p => ({
+            let productosConAnaliticas;
+            if (esTienda) {
+              productosConAnaliticas = await Promise.all(
+                productos.map(async p => ({
+                  id: p.id_producto ?? p.id,
+                  nombre: p.nombre ?? "Producto",
+                  precio: Number(p.precio) || 0,
+                  precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
+                  cantidad: Number(p.cantidad) || 1,
+                  stock: p.stock,
+                  ventas: await getCantidadVentasProducto(p.id_producto ?? p.id),
+                  vistas: await getCantidadVistasProducto(p.id_producto ?? p.id),
+                  favoritos: await getCantidadFavoritosProducto(p.id_producto ?? p.id),
+                }))
+              );
+            } else {
+              productosConAnaliticas = productos.map(p => ({
                 id: p.id_producto ?? p.id,
                 nombre: p.nombre ?? "Producto",
                 precio: Number(p.precio) || 0,
                 precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
-                cantidad: Number(p.cantidad) || 1,
+                cantidad: 1,
                 stock: p.stock,
-                ventas: await getCantidadVentasProducto(p.id_producto ?? p.id),
-                vistas: await getCantidadVistasProducto(p.id_producto ?? p.id),
-                favoritos: await getCantidadFavoritosProducto(p.id_producto ?? p.id),
-              }))
-            );
-
-            console.log("Productos con analíticas:", productosConAnaliticas);
+              }));
+            }
 
             return {
               id: cat.id_categoria ?? cat.id,
@@ -450,7 +462,7 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
 
         {/* ── Header tienda ── */}
         <div className="cat-header">
-          <div className="cat-header__tienda">
+            <div className="cat-header__tienda">
             <h1 className="cat-header__nombre">{infoTienda.nombre || 'Mi Tienda'}</h1>
             <p className="cat-header__tagline">{infoTienda.slogan}</p>
             <div className="cat-header__meta">
@@ -458,9 +470,11 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
               <span className="cat-header__stars">★★★★★</span>
               <span className="cat-header__rating">5/5</span>
             </div>
-            <button className="cat-header__btn-editar">
-              Editar Tienda <IconoLapiz />
-            </button>
+            {esTienda && (
+              <button className="cat-header__btn-editar">
+                Editar Tienda <IconoLapiz />
+              </button>
+            )}
           </div>
 
           <div className="cat-header__divider" />
@@ -468,9 +482,11 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
           <div className="cat-header__right">
             <h2 className="cat-header__titulo">Catálogo</h2>
             <p className="cat-header__subtitulo">Hechá un vistazo a tus productos</p>
-            <button className="cat-header__btn-stats">
-              <IconoOjo /> Ver Estadísticas
-            </button>
+            {esTienda && (
+              <button className="cat-header__btn-stats">
+                <IconoOjo /> Ver Estadísticas
+              </button>
+            )}
           </div>
         </div>
 
@@ -479,11 +495,11 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
           <h2 className="cat-productos__titulo">Productos:</h2>
 
           {/* ── Paneles inline ── */}
-          {vistaPanel === 'crear' && (
+          {esTienda && vistaPanel === 'crear' && (
             <PanelCrear onCrear={handleCrear} onCancelar={cerrarPanel} />
           )}
 
-          {vistaPanel === 'editar' && categoriaEditando && (
+          {esTienda && vistaPanel === 'editar' && categoriaEditando && (
             <PanelEditar
               categoria={categoriaEditando}
               onGuardar={handleGuardar}
@@ -492,7 +508,7 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
             />
           )}
 
-          {vistaPanel === 'borrar' && categoriaEditando && (
+          {esTienda && vistaPanel === 'borrar' && categoriaEditando && (
             <PanelBorrar
               nombreCategoria={categoriaEditando.nombre}
               onConfirmar={handleBorrar}
@@ -525,13 +541,15 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
                   <Categoria
                     key={cat.id}
                     {...cat}
-                    onEditar={() => abrirEditar(cat)}
+                    tipoSesion={tipoSesion}
+                    onEditar={esTienda ? () => abrirEditar(cat) : undefined}
                     onVerProducto={onVerProducto}
                   />
                 ))
               )}
 
               {/* ── Card crear categoría ── */}
+              {esTienda && (
               <div className="cat-crear">
                 <div className="cat-crear__card">
                   <div className="cat-crear__icon-wrap">
@@ -546,6 +564,7 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
                   </button>
                 </div>
               </div>
+              )}
             </>
           )}
         </div>

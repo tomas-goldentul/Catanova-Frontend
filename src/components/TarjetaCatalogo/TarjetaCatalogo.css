@@ -41,7 +41,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 30px 9px 9px;
+  padding: 14px 9px 9px;
   background: linear-gradient(
     transparent 0%,
     rgba(0, 0, 0, 0.68) 100%
@@ -101,5 +101,28 @@
   color: #0d1b38;
   text-align: right;
   margin-top: 5px;
+}
+
+/* Footer for buyer view */
+.cat-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+.cat-card__btn-comprar {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cat-card__btn-comprar:hover {
+  background: #e85a5a;
 }
 
