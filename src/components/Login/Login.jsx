@@ -29,12 +29,27 @@ export default function Login({ onLogin }) {
       
       if (result.token) {
         localStorage.setItem('token', result.token);
-        const finalUser = result.usuario || result.user || null;
+        if (result.tipo) {
+          localStorage.setItem('tipo', result.tipo);
+        }
+        if (result.id_tienda) {
+          localStorage.setItem('id_tienda', String(result.id_tienda));
+        } else if (result.tipo !== 'tienda') {
+          localStorage.removeItem('id_tienda');
+        }
+
+        const finalUser = result.usuario || result.user || {
+          email: result.email,
+          tipo: result.tipo,
+          id_tienda: result.id_tienda
+        };
+
         try {
           if (finalUser) localStorage.setItem('user', JSON.stringify(finalUser));
         } catch (e) {}
         setUserLocal(finalUser);
-        
+        if (onLogin) onLogin(result);
+
         setMessageType('success');
         setMessage('Contraseña correcta');
       } else {

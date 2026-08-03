@@ -91,8 +91,9 @@ export async function borrarProducto(id) {
   return data;
 }
 
-export async function getProductosPorCategoria(idCat) {
-  const res = await fetch(`${BASE_URL}/get/categoria/${idCat}`);
+export async function getProductosPorCategoria(idCat, idTienda = null) {
+  const url = idTienda ? `${BASE_URL}/get/categoria/${idCat}?tienda=${idTienda}` : `${BASE_URL}/get/categoria/${idCat}`;
+  const res = await fetch(url);
 
   if (!res.ok) {
     throw new Error(`Error ${res.status}: ${res.statusText}`);
@@ -103,6 +104,16 @@ export async function getProductosPorCategoria(idCat) {
 
 export async function getProductosPorTienda(idTienda) {
   const res = await fetch(`${BASE_URL}/get/tienda/${idTienda}`);
+
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+
+  return res.json();
+}
+
+export async function getTodosProductosPorTienda(idTienda) {
+  const res = await fetch(`${BASE_URL}/get/tienda/${idTienda}/todos`);
 
   if (!res.ok) {
     throw new Error(`Error ${res.status}: ${res.statusText}`);

@@ -321,10 +321,15 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
   const [categoriaEditando, setCategoriaEditando] = useState(null);
 
   useEffect(() => {
-    const idTienda = 1;
+    const tiendaIdRaw = localStorage.getItem('id_tienda');
+    const idTienda = tiendaIdRaw ? Number(tiendaIdRaw) : null;
 
     async function cargarDatos() {
       try {
+        if (!idTienda || Number.isNaN(idTienda)) {
+          throw new Error('No hay tienda iniciada en la sesión');
+        }
+
         const [categoriasDB, dataNombre, dataSlogan] = await Promise.all([
           getCategoriasPorTienda(idTienda),
           getNombre(idTienda),
@@ -339,7 +344,9 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
         const normalizadas = await Promise.all(
           categoriasDB.map(async cat => {
             console.log(categoriasDB);
-            const productos = await getProductosPorCategoria(cat.id_categoria ?? cat.id);
+            const tiendaIdRaw = localStorage.getItem('id_tienda');
+            const tiendaId = tiendaIdRaw ? Number(tiendaIdRaw) : null;
+            const productos = await getProductosPorCategoria(cat.id_categoria ?? cat.id, tiendaId);
 
             console.log("Categoría:", cat.nombre, cat.id_categoria ?? cat.id);
             console.log("Productos:", productos);

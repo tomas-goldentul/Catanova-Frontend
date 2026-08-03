@@ -6,7 +6,7 @@ import TarjetaProducto from '../TarjetaProducto/TarjetaProducto';
 import Paginacion from '../Paginacion/Paginacion';
 import AgregarProducto from '../AgregarProducto/AgregarProducto';
 import FiltroProductos from './FiltroProductos';
-import { getTodosLosProductos, updateEstadoProducto, borrarProducto } from '../../api/productos';
+import { getTodosLosProductos, getTodosProductosPorTienda, updateEstadoProducto, borrarProducto } from '../../api/productos';
 import { IconoBuscar, IconoFiltrar, IconoMas } from '../Icons/Icons';
 import './GaleriaProductos.css';
 
@@ -45,7 +45,11 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
 
         const cargarProductos = async () => {
             try {
-                const data = await getTodosLosProductos();
+                const tiendaIdRaw = localStorage.getItem('id_tienda');
+                const tiendaId = tiendaIdRaw ? Number(tiendaIdRaw) : null;
+                const data = tiendaId && Number.isFinite(tiendaId)
+                    ? await getTodosProductosPorTienda(tiendaId)
+                    : await getTodosLosProductos();
                 const lista = Array.isArray(data) ? data : data?.productos ?? [];
 
                 if (!activo) return;
@@ -77,8 +81,7 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
     const productosFiltrados = productos
         .filter((productoActual) => {
             const coincideBusqueda = productoActual.nombre.toLowerCase().includes(busqueda.toLowerCase());
-            const coincideEstado = !soloActivos || productoActual.activo;
-            return coincideBusqueda && coincideEstado;
+            return coincideBusqueda;
         })
         .sort((a, b) => {
             if (orden === 'barato') {
