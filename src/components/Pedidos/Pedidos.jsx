@@ -20,6 +20,7 @@ import {
   FiTruck,
   FiUserCheck,
   FiUsers,
+  FiX,
 } from 'react-icons/fi';
 import CrearPedido from './CrearPedido';
 import './Pedidos.css';
@@ -45,6 +46,8 @@ function Pedidos() {
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [mostrarCrearPedido, setMostrarCrearPedido] = useState(false);
+  const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
+  const [pedidoEnEdicion, setPedidoEnEdicion] = useState(null);
 
   const pedidosDisponibles = pedidos;
   const actualizarPedidos = () => {
@@ -300,7 +303,11 @@ function Pedidos() {
                 <div className="pedido-total-panel">
                   <span>Total</span>
                   <strong>{formatearPrecio(detalle.total)}</strong>
-                  <button type="button" className="pedido-view">
+                  <button 
+                    type="button" 
+                    className="pedido-view"
+                    onClick={() => setPedidoSeleccionado(detalle)}
+                  >
                     <FiEye aria-hidden="true" />
                     {vista === 'usuario' ? 'Ver compra' : 'Ver detalle'}
                   </button>
@@ -379,6 +386,34 @@ function Pedidos() {
             </button>
           </nav>
         )}
+
+        {pedidoSeleccionado && !pedidoEnEdicion && (
+          <DetallesPedidoModal 
+            pedido={pedidoSeleccionado} 
+            vista={vista}
+            onClose={() => setPedidoSeleccionado(null)}
+            onEdit={() => setPedidoEnEdicion(pedidoSeleccionado)}
+          />
+        )}
+
+        {pedidoEnEdicion && (
+          <EditarPedidoModal 
+            pedido={pedidoEnEdicion} 
+            vista={vista}
+            onClose={() => setPedidoEnEdicion(null)}
+            onGuardar={(pedidoActualizado) => {
+              setPedidos((actuales) =>
+                actuales.map((p) =>
+                  normalizarPedido(p).id === normalizarPedido(pedidoActualizado).id
+                    ? pedidoActualizado
+                    : p
+                )
+              );
+              setPedidoEnEdicion(null);
+              setPedidoSeleccionado(pedidoActualizado);
+            }}
+          />
+        )}
       </div>
     </section>
   );
@@ -390,6 +425,395 @@ function KpiCard({ label, value, tone }) {
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function DetallesPedidoModal({ pedido, vista, onClose, onEdit }) {
+  return (
+    <>
+      <div className="detalles-modal-overlay" onClick={onClose} />
+      <div className="detalles-modal">
+        <div className="detalles-modal-header">
+          <h2>Detalles del pedido {pedido.id}</h2>
+          <button 
+            type="button" 
+            className="detalles-modal-close"
+            onClick={onClose}
+            aria-label="Cerrar detalles"
+          >
+            <FiX aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="detalles-modal-content">
+          {/* Información general */}
+          <section className="detalles-section">
+            <h3>Información general</h3>
+            <div className="detalles-grid">
+              <div className="detalles-item">
+                <span className="detalles-label">Número de pedido</span>
+                <strong>{pedido.id}</strong>
+              </div>
+              <div className="detalles-item">
+                <span className="detalles-label">Fecha</span>
+                <strong>{formatearFecha(pedido.fecha)}</strong>
+              </div>
+              <div className="detalles-item">
+                <span className="detalles-label">Estado</span>
+                <strong className={`estado-badge ${estadoClass(pedido.estado)}`}>
+                  {estadoLabel(pedido.estado)}
+                </strong>
+              </div>
+              <div className="detalles-item">
+                <span className="detalles-label">Prioridad</span>
+                <strong>{pedido.prioridad}</strong>
+              </div>
+            </div>
+          </section>
+
+          {/* Información del comprador/vendedor */}
+          <section className="detalles-section">
+            <h3>{vista === 'usuario' ? 'Tu tienda' : 'Información del comprador'}</h3>
+            <div className="detalles-grid">
+              <div className="detalles-item">
+                <span className="detalles-label">
+                  {vista === 'usuario' ? 'Tienda' : 'Nombre del comprador'}
+                </span>
+                <strong>{vista === 'usuario' ? pedido.tienda : pedido.comprador}</strong>
+              </div>
+              {vista === 'tienda' && (
+                <div className="detalles-item">
+                  <span className="detalles-label">Repartidor</span>
+                  <strong>{pedido.repartidor}</strong>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Información de entrega */}
+          <section className="detalles-section">
+            <h3>Información de entrega</h3>
+            <div className="detalles-grid">
+              <div className="detalles-item full-width">
+                <span className="detalles-label">Dirección</span>
+                <strong>{pedido.direccion}</strong>
+              </div>
+              <div className="detalles-item">
+                <span className="detalles-label">Localidad</span>
+                <strong>{pedido.localidad}</strong>
+              </div>
+              <div className="detalles-item">
+                <span className="detalles-label">Código postal</span>
+                <strong>{pedido.codigoPostal}</strong>
+              </div>
+              <div className="detalles-item">
+                <span className="detalles-label">Entrega estimada</span>
+                <strong>{pedido.eta}</strong>
+              </div>
+            </div>
+          </section>
+
+          {/* Productos */}
+          <section className="detalles-section">
+            <h3>Productos ({pedido.productos.length})</h3>
+            <div className="detalles-productos">
+              {pedido.productos.length > 0 ? (
+                <table className="detalles-tabla">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pedido.productos.map((producto, index) => {
+                      const nombre = producto.nombre || producto.producto?.nombre || 'Producto sin nombre';
+                      const cantidad = producto.cantidad || 1;
+                      const precio = normalizarPrecio(producto.precio || 0);
+                      const subtotal = precio * cantidad;
+                      return (
+                        <tr key={index}>
+                          <td>{nombre}</td>
+                          <td className="detalles-cantidad">{cantidad}</td>
+                          <td>{formatearPrecio(precio)}</td>
+                          <td className="detalles-subtotal">{formatearPrecio(subtotal)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="detalles-vacio">No hay productos en este pedido</p>
+              )}
+            </div>
+          </section>
+
+          {/* Información de pago */}
+          <section className="detalles-section">
+            <h3>Información de pago</h3>
+            <div className="detalles-grid">
+              <div className="detalles-item">
+                <span className="detalles-label">Método de pago</span>
+                <strong>{pedido.pago}</strong>
+              </div>
+              <div className="detalles-item">
+                <span className="detalles-label">Total</span>
+                <strong className="detalles-total">{formatearPrecio(pedido.total)}</strong>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="detalles-modal-footer">
+          <button 
+            type="button" 
+            className="detalles-modal-editar"
+            onClick={onEdit}
+          >
+            <FiEdit3 aria-hidden="true" />
+            Editar pedido
+          </button>
+          <button 
+            type="button" 
+            className="detalles-modal-cerrar"
+            onClick={onClose}
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
+  const [formData, setFormData] = useState({
+    estado: pedido.estado || 'Pendiente',
+    prioridad: pedido.prioridad || 'Sin prioridad',
+    repartidor: pedido.repartidor || 'Sin asignar',
+    direccion: pedido.direccion || '',
+    localidad: pedido.localidad || '',
+    codigoPostal: pedido.codigoPostal || '',
+    eta: pedido.eta || '',
+    pago: pedido.pago || 'Sin informar',
+  });
+
+  const [errores, setErrores] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (errores[name]) {
+      setErrores((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
+  };
+
+  const validarFormulario = () => {
+    const nuevosErrores = {};
+    if (!formData.direccion.trim()) {
+      nuevosErrores.direccion = 'La dirección es requerida';
+    }
+    if (!formData.localidad.trim()) {
+      nuevosErrores.localidad = 'La localidad es requerida';
+    }
+    if (!formData.codigoPostal.trim()) {
+      nuevosErrores.codigoPostal = 'El código postal es requerido';
+    }
+    setErrores(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
+  };
+
+  const handleGuardar = () => {
+    if (!validarFormulario()) return;
+
+    const pedidoActualizado = {
+      ...pedido,
+      ...formData,
+    };
+
+    onGuardar(pedidoActualizado);
+  };
+
+  return (
+    <>
+      <div className="editar-modal-overlay" onClick={onClose} />
+      <div className="editar-modal">
+        <div className="editar-modal-header">
+          <h2>Editar pedido {pedido.id}</h2>
+          <button 
+            type="button" 
+            className="editar-modal-close"
+            onClick={onClose}
+            aria-label="Cerrar edición"
+          >
+            <FiX aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="editar-modal-content">
+          {/* Estado y Prioridad */}
+          <section className="editar-section">
+            <h3>Estado y prioridad</h3>
+            <div className="editar-grid">
+              <div className="editar-campo">
+                <label htmlFor="estado">Estado</label>
+                <select
+                  id="estado"
+                  name="estado"
+                  value={formData.estado}
+                  onChange={handleChange}
+                >
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Preparando">Preparando</option>
+                  <option value="Enviado">Enviado</option>
+                  <option value="Entregado">Entregado</option>
+                </select>
+              </div>
+
+              <div className="editar-campo">
+                <label htmlFor="prioridad">Prioridad</label>
+                <select
+                  id="prioridad"
+                  name="prioridad"
+                  value={formData.prioridad}
+                  onChange={handleChange}
+                >
+                  <option value="Sin prioridad">Sin prioridad</option>
+                  <option value="Media">Media</option>
+                  <option value="Alta">Alta</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          {/* Información de entrega */}
+          <section className="editar-section">
+            <h3>Información de entrega</h3>
+            <div className="editar-grid">
+              <div className="editar-campo full-width">
+                <label htmlFor="direccion">Dirección</label>
+                <input
+                  id="direccion"
+                  type="text"
+                  name="direccion"
+                  value={formData.direccion}
+                  onChange={handleChange}
+                  placeholder="Calle y número"
+                />
+                {errores.direccion && (
+                  <span className="error-message">{errores.direccion}</span>
+                )}
+              </div>
+
+              <div className="editar-campo">
+                <label htmlFor="localidad">Localidad</label>
+                <input
+                  id="localidad"
+                  type="text"
+                  name="localidad"
+                  value={formData.localidad}
+                  onChange={handleChange}
+                  placeholder="Localidad"
+                />
+                {errores.localidad && (
+                  <span className="error-message">{errores.localidad}</span>
+                )}
+              </div>
+
+              <div className="editar-campo">
+                <label htmlFor="codigoPostal">Código postal</label>
+                <input
+                  id="codigoPostal"
+                  type="text"
+                  name="codigoPostal"
+                  value={formData.codigoPostal}
+                  onChange={handleChange}
+                  placeholder="CP"
+                />
+                {errores.codigoPostal && (
+                  <span className="error-message">{errores.codigoPostal}</span>
+                )}
+              </div>
+
+              <div className="editar-campo">
+                <label htmlFor="eta">Entrega estimada</label>
+                <input
+                  id="eta"
+                  type="text"
+                  name="eta"
+                  value={formData.eta}
+                  onChange={handleChange}
+                  placeholder="Ej: 2-3 días"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Repartidor y Pago */}
+          <section className="editar-section">
+            <h3>Repartidor y pago</h3>
+            <div className="editar-grid">
+              {vista === 'tienda' && (
+                <div className="editar-campo">
+                  <label htmlFor="repartidor">Repartidor</label>
+                  <input
+                    id="repartidor"
+                    type="text"
+                    name="repartidor"
+                    value={formData.repartidor}
+                    onChange={handleChange}
+                    placeholder="Nombre del repartidor"
+                  />
+                </div>
+              )}
+
+              <div className="editar-campo">
+                <label htmlFor="pago">Método de pago</label>
+                <select
+                  id="pago"
+                  name="pago"
+                  value={formData.pago}
+                  onChange={handleChange}
+                >
+                  <option value="Sin informar">Sin informar</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia</option>
+                  <option value="Tarjeta">Tarjeta</option>
+                  <option value="Pagado">Pagado</option>
+                  <option value="Pendiente de pago">Pendiente de pago</option>
+                </select>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="editar-modal-footer">
+          <button 
+            type="button" 
+            className="editar-modal-cancelar"
+            onClick={onClose}
+          >
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            className="editar-modal-guardar"
+            onClick={handleGuardar}
+          >
+            <FiCheckCircle aria-hidden="true" />
+            Guardar cambios
+          </button>
+        </div>
+      </div>
+    </>
   );
 }
 
