@@ -13,7 +13,7 @@ import './GaleriaProductos.css';
 const normalizarProducto = (producto) => ({
     id: producto.id_producto ?? producto.id ?? producto._id ?? producto.productoId,
     nombre: producto.nombre ?? 'Sin nombre',
-    imagen: producto.imagen, // <-- Se añade la lectura de la propiedad imagen
+    imagen: producto.imagen ?? producto.foto ?? producto.imagenUrl ?? producto.imagen_url ?? producto.image ?? producto.url ?? '',
     talle: producto.talle ?? producto.talla ?? 'Sin talle',
     stock: Number(producto.stock ?? 0),
     precio: typeof producto.precio === 'number'
@@ -55,7 +55,14 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
 
                 if (!activo) return;
 
-                setProductos(lista.map(normalizarProducto));
+                const productosNormalizados = lista.map(normalizarProducto);
+                console.log('Productos cargados:', productosNormalizados.map(p => ({
+                    nombre: p.nombre,
+                    imagen: p.imagen,
+                    tiene_imagen: !!p.imagen && p.imagen.trim() !== ''
+                })));
+
+                setProductos(productosNormalizados);
             } catch (error) {
                 if (!activo) return;
 
@@ -222,9 +229,9 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
                 </div>
 
                 <div className="productosOrdenados">
-                    {productosPagina.map((producto) => (
+                    {productosPagina.map((producto, index) => (
                         <TarjetaProducto
-                            key={producto.id}
+                            key={producto.id ?? `${producto.nombre}-${index}`}
                             {...producto}
                             onAgregar={() => handleAgregar(producto.id)}
                             onEliminar={() => handleEliminar(producto.id)}
