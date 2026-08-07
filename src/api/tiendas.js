@@ -23,3 +23,16 @@ export async function getSlogan(id) {
   // Tu backend devuelve { message, data: { slogan } }. Retornamos data directo.
   return json.data;
 }
+
+export async function getTodasLasTiendas() {
+
+    const res = await fetch(`${BASE_URL}/get/all`);
+
+    if (!res.ok) {
+        throw new Error(`Error ${res.status}: ${res.statusText}`);
+    }
+
+    const json = await res.json();
+
+    return json.data;
+}
