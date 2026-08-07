@@ -1,0 +1,524 @@
+/* =========================================================
+   CatalogoTiendas.css
+   Identidad visual: verde teal / azul oscuro / grises suaves
+   ========================================================= */
+
+:root {
+  --tt-teal-1: #00c9a7;
+  --tt-teal-2: #00b894;
+  --tt-dark: #0d1b38;
+  --tt-gray-1: #7b849d;
+  --tt-gray-2: #8a94a8;
+  --tt-border-1: #dfe4ec;
+  --tt-border-2: #e5e7eb;
+  --tt-white: #ffffff;
+}
+
+.cat-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* ---------------------------------------------------------
+   Header
+   --------------------------------------------------------- */
+.cat-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: var(--tt-white);
+  border: 1px solid var(--tt-border-2);
+  border-radius: 24px;
+  padding: 32px 36px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.05);
+  margin-bottom: 28px;
+}
+
+.cat-header__decoracion {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 184, 148, 0.09),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.cat-header__izquierda {
+  position: relative;
+  z-index: 1;
+}
+
+.cat-header__titulo {
+  color: var(--tt-dark);
+  font-weight: 900;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.cat-header__subtitulo {
+  color: var(--tt-gray-1);
+  font-size: 15px;
+  margin: 0 0 10px;
+}
+
+.cat-header__meta {
+  color: var(--tt-gray-2);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.cat-header__derecha {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.cat-header__numero {
+  color: var(--tt-dark);
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.cat-header__numero-label {
+  color: var(--tt-gray-1);
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* ---------------------------------------------------------
+   Buscador + filtros
+   --------------------------------------------------------- */
+.divBuscarProductos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tiendas-buscador {
+  position: relative;
+  flex: 1 1 320px;
+  display: flex;
+  align-items: center;
+  background: var(--tt-white);
+  border: 1.5px solid var(--tt-border-2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tiendas-buscador:focus-within {
+  border-color: var(--tt-teal-1);
+  box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.12);
+}
+
+.tiendas-buscador__icono {
+  color: var(--tt-gray-2);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.tiendas-buscador__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--tt-dark);
+}
+
+.tiendas-buscador__input::placeholder {
+  color: var(--tt-gray-2);
+}
+
+.tiendas-buscador__limpiar {
+  border: none;
+  background: transparent;
+  color: var(--tt-gray-2);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0 0 8px;
+}
+
+.tiendas-buscador__limpiar:hover {
+  color: var(--tt-dark);
+}
+
+.tiendas-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Tabs */
+.cat-tabs {
+  display: flex;
+  gap: 8px;
+  background: #f6f8fb;
+  border: 1px solid var(--tt-border-1);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.cat-tab {
+  border: none;
+  background: transparent;
+  color: var(--tt-gray-1);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cat-tab:hover {
+  color: var(--tt-dark);
+}
+
+.cat-tab--activo {
+  background: var(--tt-white);
+  color: var(--tt-dark);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+/* Select */
+.cat-panel__select-wrapper {
+  position: relative;
+}
+
+.cat-panel__select {
+  appearance: none;
+  background: var(--tt-white);
+  border: 1.5px solid var(--tt-border-2);
+  border-radius: 10px;
+  color: var(--tt-dark);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 36px 10px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-image: linear-gradient(45deg, transparent 50%, var(--tt-gray-2) 50%),
+    linear-gradient(135deg, var(--tt-gray-2) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.cat-panel__select:focus {
+  outline: none;
+  border-color: var(--tt-teal-1);
+  box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.12);
+}
+
+/* ---------------------------------------------------------
+   Grid + estados
+   --------------------------------------------------------- */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .cat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cat-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cat-header__derecha {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+.cat-estado {
+  background: var(--tt-white);
+  border: 1px dashed var(--tt-border-2);
+  border-radius: 20px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.cat-estado--error {
+  border-style: solid;
+  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.04);
+}
+
+.cat-estado__titulo {
+  color: var(--tt-dark);
+  font-weight: 800;
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+
+.cat-estado__texto {
+  color: var(--tt-gray-1);
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+/* ---------------------------------------------------------
+   Tarjeta de tienda
+   --------------------------------------------------------- */
+.tienda-card {
+  background: var(--tt-white);
+  border: 1px solid #e7ebf3;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.07);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  animation: tt-card-in 0.45s ease forwards;
+}
+
+@keyframes tt-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tienda-card--skeleton {
+  min-height: 240px;
+  background: linear-gradient(
+    100deg,
+    #f4f6f9 30%,
+    #eef1f6 50%,
+    #f4f6f9 70%
+  );
+  background-size: 200% 100%;
+  animation: tt-skeleton 1.4s ease infinite;
+}
+
+@keyframes tt-skeleton {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.tienda-card__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.tienda-card__nombre {
+  color: var(--tt-dark);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.tienda-card__slogan {
+  color: var(--tt-gray-1);
+  font-size: 14px;
+  margin: 0 0 14px;
+}
+
+.tienda-card__datos {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tienda-card__dato {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--tt-gray-1);
+  font-size: 13.5px;
+}
+
+.tienda-card__dato svg {
+  color: var(--tt-teal-2);
+  flex-shrink: 0;
+}
+
+.tienda-card__colores {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tienda-card__color {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--tt-white);
+  box-shadow: 0 0 0 1px var(--tt-border-1);
+}
+
+.tienda-card__boton {
+  margin-top: auto;
+  border: none;
+  background: linear-gradient(135deg, #00b894, #00d2a8);
+  color: var(--tt-white);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tienda-card__boton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 184, 148, 0.4);
+}
+
+/* ---------------------------------------------------------
+   Badges de actividad
+   --------------------------------------------------------- */
+.tienda-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tienda-badge--activa {
+  background: rgba(0, 201, 167, 0.12);
+  color: var(--tt-teal-2);
+}
+
+.tienda-badge__punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tt-teal-2);
+}
+
+.tienda-badge--inactiva {
+  background: #eef1f6;
+  color: var(--tt-gray-2);
+}
+
+/* ---------------------------------------------------------
+   Página de detalle
+   --------------------------------------------------------- */
+.tienda-detalle__volver {
+  border: none;
+  background: transparent;
+  color: var(--tt-gray-1);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.tienda-detalle__volver:hover {
+  color: var(--tt-dark);
+}
+
+.tienda-detalle__header {
+  background: var(--tt-white);
+  border: 1px solid var(--tt-border-2);
+  border-radius: 24px;
+  padding: 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
+}
+
+.tienda-detalle__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.tienda-detalle__nombre {
+  color: var(--tt-dark);
+  font-size: 30px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.tienda-detalle__slogan {
+  color: var(--tt-gray-1);
+  font-size: 15px;
+  margin: 10px 0 0;
+}
+
+.tienda-detalle__info {
+  background: var(--tt-white);
+  border: 1px solid var(--tt-border-2);
+  border-radius: 24px;
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.tienda-detalle__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tienda-detalle__label {
+  color: var(--tt-gray-2);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tienda-detalle__valor {
+  color: var(--tt-dark);
+  font-size: 15px;
+  font-weight: 600;
+}
