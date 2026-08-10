@@ -832,6 +832,16 @@
   margin-top: 22px;
 }
 
+.pedido-modal-info {
+  margin: 22px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .pedido-modal-field span {
   color: #344054;
   font-size: 14px;
@@ -1493,6 +1503,30 @@
 }
 
 .detalles-modal-footer .detalles-modal-editar:active {
+  transform: scale(0.98);
+}
+
+.detalles-modal-footer .detalles-modal-estado {
+  padding: 10px 24px;
+  background: #ffffff;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+}
+
+.detalles-modal-footer .detalles-modal-estado:hover {
+  background: var(--ring);
+}
+
+.detalles-modal-footer .detalles-modal-estado:active {
   transform: scale(0.98);
 }
 

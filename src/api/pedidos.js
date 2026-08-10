@@ -1,24 +1,28 @@
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-export async function actualizarEstadoPedido(id, estado) {
+export async function actualizarEstadoPedido(id, entregado) {
   if (!id || id === 'Sin ID') {
     throw new Error('No se pudo identificar el pedido. El ID está ausente o inválido.');
   }
-  if (!estado) throw new Error('Seleccioná un estado para el pedido.');
+  if (typeof entregado !== 'boolean') {
+    throw new Error("El campo 'entregado' es obligatorio y debe ser un booleano (true/false).");
+  }
 
   const token = localStorage.getItem('token');
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await fetch(`${API_URL}/pedidos/estado/${encodeURIComponent(id)}`, {
-    method: 'PUT',
+  // El backend solo maneja el booleano "entregado", no una lista de estados intermedios.
+  // No se puede revertir entregado: true -> false (responde 400).
+  const response = await fetch(`${API_URL}/pedidos/${encodeURIComponent(id)}/estado`, {
+    method: 'PATCH',
     headers,
-    body: JSON.stringify({ estado }),
+    body: JSON.stringify({ entregado }),
   });
 
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error(payload.message || payload.error || `No se pudo actualizar el estado (Error ${response.status}).`);
+  if (!response.ok || payload.success === false) {
+    const error = new Error(payload.message || `No se pudo actualizar el estado (Error ${response.status}).`);
     error.status = response.status;
     throw error;
   }
