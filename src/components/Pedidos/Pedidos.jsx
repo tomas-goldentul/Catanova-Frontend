@@ -22,7 +22,6 @@ import {
   FiUserCheck,
   FiUsers,
   FiX,
-  FiTrash2,
 } from 'react-icons/fi';
 import CrearPedido from './CrearPedido';
 import { actualizarEstadoPedido, editarPedido, obtenerPedido } from '../../api/pedidos';
