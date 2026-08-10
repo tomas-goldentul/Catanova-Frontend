@@ -45,4 +45,29 @@ export async function getCategoriasPorTienda(id) {
   return res.json();
 }
 
-//el futuro agregar crear categoria, editar (elegir que productos poner y sacar) y eliminar
+export async function crearCategoria(nombre) {
+  const res = await fetch(`${BASE_URL}/insert`, {
+    method: "POST",
+    // El backend espera el nombre de la categoría en el campo "nombreTienda"
+    // (nombre confuso, pero así está implementado) y no soporta id_tienda.
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombreTienda: nombre }),
+  });
+
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { _raw: text };
+  }
+
+  if (!res.ok) {
+    const mensaje = data.error || data.message || `Error ${res.status}: ${res.statusText}`;
+    throw new Error(mensaje);
+  }
+
+  return data;
+}
+
+//el futuro agregar editar (elegir que productos poner y sacar) y eliminar
