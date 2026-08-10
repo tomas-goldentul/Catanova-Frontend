@@ -1,153 +1,44 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getCategorias, crearCategoria } from '../../api/categorias';
 import './GestionCategorias.css';
 
-const MOCK_PRODUCTOS = [
-    { id: 1, nombre: 'Remera oversize', precio: 50000 },
-    { id: 2, nombre: 'Pantalón cargo', precio: 45000 },
-    { id: 3, nombre: 'Campera bomber', precio: 85000 },
-    { id: 4, nombre: 'Buzo hoodie', precio: 65000 },
-    { id: 5, nombre: 'Calza deportiva', precio: 35000 },
-];
-
-const MOCK_CATEGORIAS_INICIALES = [
-    {
-        id: 1,
-        nombre: 'Remeras',
-        productos: [
-            { id: 1, nombre: 'Remera oversize', cantidad: 2, precioUnitario: 50000 },
-        ],
-    },
-    {
-        id: 2,
-        nombre: 'Pantalones',
-        productos: [
-            { id: 2, nombre: 'Pantalón cargo', cantidad: 1, precioUnitario: 45000 },
-        ],
-    },
-];
-
-function FilaProducto({ item, onQuitar }) {
-    return (
-        <tr className="gc-tabla__fila">
-            <td className="gc-tabla__celda">{item.nombre}</td>
-            <td className="gc-tabla__celda gc-tabla__celda--centro">{item.cantidad}</td>
-            <td className="gc-tabla__celda gc-tabla__celda--centro">
-                ${item.precioUnitario.toLocaleString('es-AR')}
-            </td>
-            <td className="gc-tabla__celda gc-tabla__celda--centro">
-                ${(item.precioUnitario * item.cantidad).toLocaleString('es-AR')}
-            </td>
-            <td className="gc-tabla__celda gc-tabla__celda--accion">
-                <button className="gc-btn-quitar" onClick={() => onQuitar(item.id)} aria-label="Quitar producto">
-                    ✕
-                </button>
-            </td>
-        </tr>
-    );
+function interpretarError(mensaje) {
+    if (!mensaje) return 'No se pudo crear la categoría. Intentá de nuevo.';
+    if (/ya existe/i.test(mensaje)) return 'Ya existe una categoría con ese nombre.';
+    if (/ingresa un nombre/i.test(mensaje)) return 'Ingresá un nombre para la categoría.';
+    if (/failed to fetch|network/i.test(mensaje)) return 'No se pudo conectar con el servidor.';
+    return mensaje;
 }
 
-function SelectorProducto({ lista, onAgregar }) {
-    const [productoId, setProductoId] = useState('');
-    const [cantidad, setCantidad] = useState(1);
-
-    const handleAgregar = () => {
-        if (!productoId) return;
-        const producto = MOCK_PRODUCTOS.find(p => p.id === Number(productoId));
-        if (!producto) return;
-        onAgregar(producto, Number(cantidad));
-        setProductoId('');
-        setCantidad(1);
-    };
-
-    return (
-        <div className="gc-selector-row">
-            <div className="gc-campo">
-                <label className="gc-campo__label">Productos:</label>
-                <select
-                    className="gc-select"
-                    value={productoId}
-                    onChange={e => setProductoId(e.target.value)}
-                >
-                    <option value="">Selecciona un producto</option>
-                    {MOCK_PRODUCTOS.map(p => (
-                        <option key={p.id} value={p.id}>{p.nombre}</option>
-                    ))}
-                </select>
-            </div>
-            <div className="gc-campo gc-campo--cantidad">
-                <label className="gc-campo__label">Cantidad</label>
-                <input
-                    className="gc-input gc-input--cantidad"
-                    type="number"
-                    min="1"
-                    value={cantidad}
-                    onChange={e => setCantidad(e.target.value)}
-                />
-            </div>
-            <button className="gc-btn-agregar-item" onClick={handleAgregar}>
-                + Agregar
-            </button>
-        </div>
-    );
-}
-
-function TablaProductos({ lista, onQuitar }) {
-    if (lista.length === 0) return null;
-
-    return (
-        <div className="gc-lista-productos">
-            <span className="gc-lista-productos__titulo">Lista de productos</span>
-            <table className="gc-tabla">
-                <thead>
-                    <tr>
-                        <th className="gc-tabla__th"></th>
-                        <th className="gc-tabla__th gc-tabla__th--centro">Cantidad</th>
-                        <th className="gc-tabla__th gc-tabla__th--centro">Precio unitario</th>
-                        <th className="gc-tabla__th gc-tabla__th--centro">Total</th>
-                        <th className="gc-tabla__th"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {lista.map(item => (
-                        <FilaProducto key={item.id} item={item} onQuitar={onQuitar} />
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-}
-
-function PanelCrear({ onCrear, onCancelar }) {
+function PanelCrear({ existentes, onCrear, onCancelar }) {
     const [nombre, setNombre] = useState('');
-    const [lista, setLista] = useState([]);
     const [error, setError] = useState('');
+    const [guardando, setGuardando] = useState(false);
 
-    const handleAgregarProducto = (producto, cantidad) => {
-        setLista(prev => {
-            const existe = prev.find(i => i.id === producto.id);
-            if (existe) {
-                return prev.map(i =>
-                    i.id === producto.id ? { ...i, cantidad: i.cantidad + cantidad } : i
-                );
-            }
-            return [...prev, { id: producto.id, nombre: producto.nombre, cantidad, precioUnitario: producto.precio }];
-        });
-    };
-
-    const handleQuitarProducto = (id) => {
-        setLista(prev => prev.filter(i => i.id !== id));
-    };
-
-    const handleSubmit = () => {
-        if (!nombre.trim()) {
+    const handleSubmit = async () => {
+        const nombreLimpio = nombre.trim();
+        if (!nombreLimpio) {
             setError('Ingresá un nombre para la categoría.');
             return;
         }
-        if (lista.length === 0) {
-            setError('Agregá al menos un producto.');
+
+        // El backend compara nombres exactos (case-sensitive, sin trim ni normalización),
+        // así que replicamos esa misma comparación acá para avisar antes de pegarle a la API.
+        if (existentes.some(cat => cat.nombre === nombreLimpio)) {
+            setError('Ya existe una categoría con ese nombre.');
             return;
         }
-        onCrear({ nombre: nombre.trim(), productos: lista });
+
+        setError('');
+        setGuardando(true);
+        try {
+            const categoriaCreada = await crearCategoria(nombreLimpio);
+            onCrear(categoriaCreada);
+        } catch (err) {
+            setError(interpretarError(err.message));
+        } finally {
+            setGuardando(false);
+        }
     };
 
     return (
@@ -158,111 +49,61 @@ function PanelCrear({ onCrear, onCancelar }) {
                 <label className="gc-campo__label gc-campo__label--destacado" htmlFor="gc-nombre">
                     Nombre:
                 </label>
-                <div className="gc-input-busqueda-wrap">
-                    <span className="gc-input-busqueda-icono">🔍</span>
-                    <input
-                        id="gc-nombre"
-                        className="gc-input gc-input--busqueda"
-                        type="text"
-                        placeholder="Busca una categoría"
-                        value={nombre}
-                        onChange={e => { setNombre(e.target.value); setError(''); }}
-                    />
-                </div>
+                <input
+                    id="gc-nombre"
+                    className="gc-input"
+                    type="text"
+                    placeholder="Ej: Bebidas"
+                    value={nombre}
+                    onChange={e => { setNombre(e.target.value); setError(''); }}
+                    disabled={guardando}
+                />
             </div>
-
-            <SelectorProducto lista={lista} onAgregar={handleAgregarProducto} />
-            <TablaProductos lista={lista} onQuitar={handleQuitarProducto} />
 
             {error && <p className="gc-error">{error}</p>}
 
             <div className="gc-acciones gc-acciones--derecha">
-                <button className="gc-btn gc-btn--principal" onClick={handleSubmit}>Agregar</button>
-            </div>
-        </div>
-    );
-}
-
-function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar }) {
-    const [lista, setLista] = useState(categoria.productos);
-
-    const handleAgregarProducto = (producto, cantidad) => {
-        setLista(prev => {
-            const existe = prev.find(i => i.id === producto.id);
-            if (existe) {
-                return prev.map(i =>
-                    i.id === producto.id ? { ...i, cantidad: i.cantidad + cantidad } : i
-                );
-            }
-            return [...prev, { id: producto.id, nombre: producto.nombre, cantidad, precioUnitario: producto.precio }];
-        });
-    };
-
-    const handleQuitarProducto = (id) => {
-        setLista(prev => prev.filter(i => i.id !== id));
-    };
-
-    return (
-        <div className="gc-panel">
-            <h2 className="gc-panel__titulo">Editar Categoría</h2>
-
-            <SelectorProducto lista={lista} onAgregar={handleAgregarProducto} />
-            <TablaProductos lista={lista} onQuitar={handleQuitarProducto} />
-
-            <div className="gc-acciones gc-acciones--editar">
-                <button className="gc-btn gc-btn--peligro" onClick={onBorrar}>
-                    Borrar Categoría
+                <button className="gc-btn gc-btn--secundario" onClick={onCancelar} disabled={guardando}>
+                    Cancelar
                 </button>
-                <button className="gc-btn gc-btn--principal" onClick={() => onGuardar({ ...categoria, productos: lista })}>
-                    Agregar
+                <button className="gc-btn gc-btn--principal" onClick={handleSubmit} disabled={guardando}>
+                    {guardando ? 'Guardando...' : 'Agregar'}
                 </button>
-            </div>
-        </div>
-    );
-}
-
-function PanelBorrar({ categoria, onConfirmar, onVolver }) {
-    return (
-        <div className="gc-panel gc-panel--borrar">
-            <h2 className="gc-panel__titulo gc-panel__titulo--borrar">
-                ¿Seguro que quieres eliminar la Categoría?
-            </h2>
-            <p className="gc-panel__subtitulo">Al eliminarla no la podrás recuperar</p>
-            <div className="gc-acciones">
-                <button className="gc-btn gc-btn--eliminar" onClick={onConfirmar}>Eliminar</button>
-                <button className="gc-btn gc-btn--volver" onClick={onVolver}>Volver</button>
             </div>
         </div>
     );
 }
 
 function GestionCategorias() {
-    const [categorias, setCategorias] = useState(MOCK_CATEGORIAS_INICIALES);
+    const [categorias, setCategorias] = useState([]);
     const [vista, setVista] = useState('lista');
-    const [categoriaActiva, setCategoriaActiva] = useState(null);
+    const [cargando, setCargando] = useState(true);
+    const [errorLista, setErrorLista] = useState('');
 
-    const abrirEditar = (categoria) => {
-        setCategoriaActiva(categoria);
-        setVista('editar');
-    };
+    useEffect(() => {
+        let cancelado = false;
 
-    const volverALista = () => {
-        setVista('lista');
-        setCategoriaActiva(null);
-    };
+        (async () => {
+            setCargando(true);
+            setErrorLista('');
+            try {
+                const data = await getCategorias();
+                const lista = Array.isArray(data) ? data : data?.categorias ?? [];
+                if (!cancelado) setCategorias(lista);
+            } catch {
+                if (!cancelado) setErrorLista('No se pudieron cargar las categorías.');
+            } finally {
+                if (!cancelado) setCargando(false);
+            }
+        })();
 
-    const handleCrear = (nueva) => {
-        setCategorias(prev => [...prev, { id: Date.now(), ...nueva }]);
-        volverALista();
-    };
+        return () => { cancelado = true; };
+    }, []);
 
-    const handleGuardar = (editada) => {
-        setCategorias(prev => prev.map(c => c.id === editada.id ? editada : c));
-        volverALista();
-    };
+    const volverALista = () => setVista('lista');
 
-    const handleBorrar = () => {
-        setCategorias(prev => prev.filter(c => c.id !== categoriaActiva.id));
+    const handleCrear = (nuevaCategoria) => {
+        setCategorias(prev => [...prev, nuevaCategoria]);
         volverALista();
     };
 
@@ -277,24 +118,19 @@ function GestionCategorias() {
                         </button>
                     </div>
 
-                    {categorias.length === 0 ? (
+                    {cargando ? (
+                        <p className="gc-vacio">Cargando categorías...</p>
+                    ) : errorLista ? (
+                        <p className="gc-error">{errorLista}</p>
+                    ) : categorias.length === 0 ? (
                         <p className="gc-vacio">No hay categorías creadas todavía.</p>
                     ) : (
                         <ul className="gc-categorias-lista">
                             {categorias.map(cat => (
-                                <li key={cat.id} className="gc-categoria-item">
+                                <li key={cat.id_categoria ?? cat.id} className="gc-categoria-item">
                                     <div className="gc-categoria-info">
                                         <span className="gc-categoria-nombre">{cat.nombre}</span>
-                                        <span className="gc-categoria-count">
-                                            {cat.productos.length} {cat.productos.length === 1 ? 'producto' : 'productos'}
-                                        </span>
                                     </div>
-                                    <button
-                                        className="gc-btn gc-btn--secundario gc-btn--sm"
-                                        onClick={() => abrirEditar(cat)}
-                                    >
-                                        Editar
-                                    </button>
                                 </li>
                             ))}
                         </ul>
@@ -303,24 +139,7 @@ function GestionCategorias() {
             )}
 
             {vista === 'crear' && (
-                <PanelCrear onCrear={handleCrear} onCancelar={volverALista} />
-            )}
-
-            {vista === 'editar' && categoriaActiva && (
-                <PanelEditar
-                    categoria={categoriaActiva}
-                    onGuardar={handleGuardar}
-                    onBorrar={() => setVista('borrar')}
-                    onCancelar={volverALista}
-                />
-            )}
-
-            {vista === 'borrar' && categoriaActiva && (
-                <PanelBorrar
-                    categoria={categoriaActiva}
-                    onConfirmar={handleBorrar}
-                    onVolver={() => setVista('editar')}
-                />
+                <PanelCrear existentes={categorias} onCrear={handleCrear} onCancelar={volverALista} />
             )}
         </div>
     );

@@ -832,6 +832,16 @@
   margin-top: 22px;
 }
 
+.pedido-modal-info {
+  margin: 22px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .pedido-modal-field span {
   color: #344054;
   font-size: 14px;
@@ -1496,6 +1506,30 @@
   transform: scale(0.98);
 }
 
+.detalles-modal-footer .detalles-modal-estado {
+  padding: 10px 24px;
+  background: #ffffff;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+}
+
+.detalles-modal-footer .detalles-modal-estado:hover {
+  background: var(--ring);
+}
+
+.detalles-modal-footer .detalles-modal-estado:active {
+  transform: scale(0.98);
+}
+
 .editar-modal-footer {
   display: flex;
   gap: 12px;
@@ -1571,5 +1605,307 @@
   .editar-campo select {
     padding: 12px;
     font-size: 16px;
+  }
+}
+/* Estilos para modal grande con edición de productos */
+.editar-modal-grande {
+  max-width: 900px;
+}
+
+.editar-modal-error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.editar-modal-error-banner strong {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Estilos para tabla de productos */
+.editar-productos-lista {
+  background: var(--panel-soft);
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.editar-tabla-productos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.editar-tabla-productos thead {
+  border-bottom: 2px solid var(--border);
+}
+
+.editar-tabla-productos thead th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.editar-tabla-productos tbody td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.editar-tabla-productos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.editar-precio {
+  text-align: right;
+  font-weight: 600;
+}
+
+.editar-cantidad {
+  text-align: center;
+}
+
+.editar-subtotal {
+  text-align: right;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.editar-acciones {
+  text-align: center;
+}
+
+.editar-vacio {
+  text-align: center;
+  color: var(--muted);
+  padding: 20px;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Controles de cantidad */
+.cantidad-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  background: #ffffff;
+}
+
+.cantidad-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.cantidad-btn:hover:not(:disabled) {
+  background: #f2f4f7;
+}
+
+.cantidad-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  color: var(--muted);
+}
+
+.cantidad-input {
+  width: 45px;
+  text-align: center;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 0;
+}
+
+.cantidad-input::-webkit-inner-spin-button,
+.cantidad-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.cantidad-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.editar-eliminar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.editar-eliminar:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+.editar-eliminar:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Total del pedido */
+.editar-productos-total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-top: 2px solid var(--border);
+}
+
+.editar-productos-total span {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.editar-productos-total strong {
+  font-size: 18px;
+  color: var(--brand);
+  font-weight: 700;
+}
+
+/* Estados deshabilitados */
+.editar-campo input:disabled,
+.editar-campo select:disabled {
+  background: #f9fafb;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.editar-modal-close:disabled,
+.editar-modal-cancelar:disabled,
+.editar-modal-guardar:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Animación de carga */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsivo para tabla de productos */
+@media (max-width: 800px) {
+  .editar-modal-grande {
+    max-width: 95vw;
+  }
+
+  .editar-tabla-productos {
+    font-size: 13px;
+  }
+
+  .editar-tabla-productos thead th,
+  .editar-tabla-productos tbody td {
+    padding: 8px 6px;
+  }
+
+  .cantidad-controls {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .cantidad-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  .cantidad-input {
+    width: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .editar-modal-grande {
+    max-width: 95%;
+    max-height: 95vh;
+  }
+
+  .editar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editar-tabla-productos {
+    font-size: 12px;
+  }
+
+  .editar-tabla-productos thead {
+    display: none;
+  }
+
+  .editar-tabla-productos tbody tr {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 12px;
+  }
+
+  .editar-tabla-productos tbody td {
+    display: block;
+    padding: 8px 0;
+    border: none;
+    text-align: left;
+  }
+
+  .editar-tabla-productos tbody td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--subtle);
+    display: inline-block;
+    width: 70px;
+    margin-right: 8px;
+  }
+
+  .editar-precio,
+  .editar-subtotal {
+    text-align: left !important;
+  }
+
+  .editar-productos-total {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }
