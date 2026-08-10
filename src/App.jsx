@@ -7,7 +7,6 @@ import Productos from './components/Productos/productos';
 import Producto from './components/Producto/Producto';
 import Login from './components/Login/Login';
 import Pedidos from './components/Pedidos/Pedidos';
-import GestionCategorias from './components/GestionCategorias/GestionCategorias';
 
 function App() {
   const [tab, setTab] = useState('tienda');
@@ -53,13 +52,6 @@ function App() {
           onClick={() => setTab('pedidos')}
         >
           Ver pedidos
-        </button>
-        <button
-          type="button"
-          className={tab === 'categorias' ? 'tab active' : 'tab'}
-          onClick={() => setTab('categorias')}
-        >
-          Categorías
         </button>
       </div>
 
