@@ -17,6 +17,7 @@ import {
   FiRefreshCw,
   FiSearch,
   FiShoppingBag,
+  FiTrash2,
   FiTruck,
   FiUserCheck,
   FiUsers,
@@ -27,8 +28,9 @@ import { actualizarEstadoPedido, editarPedido } from '../../api/pedidos';
 import './Pedidos.css';
 
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const ESTADOS_PEDIDO = ['Pendiente', 'Preparando', 'Enviado', 'Entregado'];
-const ESTADOS = ['Todos', ...ESTADOS_PEDIDO];
+// El backend solo maneja el booleano "entregado", no hay estados intermedios
+// (Preparando/Enviado no existen en el modelo real).
+const ESTADOS = ['Todos', 'Pendiente', 'Entregado'];
 const ORDENES = [
   { value: 'fecha', label: 'Fecha reciente' },
   { value: 'total', label: 'Mayor total' },
@@ -51,7 +53,6 @@ function Pedidos() {
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
   const [pedidoEnEdicion, setPedidoEnEdicion] = useState(null);
   const [pedidoParaActualizar, setPedidoParaActualizar] = useState(null);
-  const [nuevoEstado, setNuevoEstado] = useState('Pendiente');
   const [guardandoEstado, setGuardandoEstado] = useState(false);
   const [errorEstado, setErrorEstado] = useState('');
 
@@ -72,8 +73,7 @@ function Pedidos() {
   };
   const abrirCambioEstado = (pedido) => {
     const detalle = normalizarPedido(pedido);
-    setPedidoParaActualizar({ id: detalle.id, pedido });
-    setNuevoEstado(detalle.estado);
+    setPedidoParaActualizar({ id: detalle.id, estadoActual: detalle.estado });
     setErrorEstado('');
     setMenuAbierto('');
   };
@@ -83,24 +83,20 @@ function Pedidos() {
       setErrorEstado('');
     }
   };
-  const guardarCambioEstado = async () => {
+  const marcarComoEntregado = async () => {
     if (!pedidoParaActualizar) return;
 
     setGuardandoEstado(true);
     setErrorEstado('');
 
     try {
-      await actualizarEstadoPedido(pedidoParaActualizar.id, nuevoEstado);
+      await actualizarEstadoPedido(pedidoParaActualizar.id, true);
       setPedidos((actuales) => actuales.map((pedido) => {
         if (String(normalizarPedido(pedido).id) !== String(pedidoParaActualizar.id)) return pedido;
-
-        const actualizado = { ...pedido, estado: nuevoEstado };
-        if (Object.hasOwn(pedido, 'entregado')) {
-          actualizado.entregado = nuevoEstado === 'Entregado';
-        }
-        return actualizado;
+        return { ...pedido, entregado: true, estado: 'Entregado' };
       }));
       setPedidoParaActualizar(null);
+      setPedidoSeleccionado(null);
     } catch (err) {
       setErrorEstado(err.message || 'No se pudo actualizar el estado del pedido.');
     } finally {
@@ -444,12 +440,13 @@ function Pedidos() {
           </nav>
         )}
 
-        {pedidoSeleccionado && !pedidoEnEdicion && (
-          <DetallesPedidoModal 
-            pedido={pedidoSeleccionado} 
+        {pedidoSeleccionado && !pedidoEnEdicion && !pedidoParaActualizar && (
+          <DetallesPedidoModal
+            pedido={pedidoSeleccionado}
             vista={vista}
             onClose={() => setPedidoSeleccionado(null)}
             onEdit={() => setPedidoEnEdicion(pedidoSeleccionado)}
+            onCambiarEstado={() => abrirCambioEstado(pedidoSeleccionado)}
           />
         )}
 
@@ -510,29 +507,27 @@ function Pedidos() {
                 <p>Pedido #{pedidoParaActualizar.id}</p>
               </div>
 
-              <label className="pedido-modal-field" htmlFor="nuevoEstadoPedido">
-                <span>Nuevo estado</span>
-                <select
-                  id="nuevoEstadoPedido"
-                  value={nuevoEstado}
-                  disabled={guardandoEstado}
-                  onChange={(event) => setNuevoEstado(event.target.value)}
-                >
-                  {ESTADOS_PEDIDO.map((opcion) => (
-                    <option key={opcion} value={opcion}>{opcion}</option>
-                  ))}
-                </select>
-              </label>
+              {pedidoParaActualizar.estadoActual === 'Entregado' ? (
+                <p className="pedido-modal-info">
+                  Este pedido ya fue marcado como <strong>Entregado</strong>. No se puede revertir a Pendiente.
+                </p>
+              ) : (
+                <p className="pedido-modal-info">
+                  Estado actual: <strong>Pendiente</strong>. Podés marcarlo como entregado.
+                </p>
+              )}
 
               {errorEstado && <p className="pedido-modal-error">{errorEstado}</p>}
 
               <div className="pedido-modal-actions">
                 <button type="button" className="pedido-modal-cancel" onClick={cerrarCambioEstado} disabled={guardandoEstado}>
-                  Cancelar
+                  Cerrar
                 </button>
-                <button type="button" className="pedido-modal-save" onClick={guardarCambioEstado} disabled={guardandoEstado}>
-                  {guardandoEstado ? 'Guardando...' : 'Guardar estado'}
-                </button>
+                {pedidoParaActualizar.estadoActual !== 'Entregado' && (
+                  <button type="button" className="pedido-modal-save" onClick={marcarComoEntregado} disabled={guardandoEstado}>
+                    {guardandoEstado ? 'Guardando...' : 'Marcar como entregado'}
+                  </button>
+                )}
               </div>
             </section>
           </div>
@@ -551,7 +546,7 @@ function KpiCard({ label, value, tone }) {
   );
 }
 
-function DetallesPedidoModal({ pedido, vista, onClose, onEdit }) {
+function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }) {
   return (
     <>
       <div className="detalles-modal-overlay" onClick={onClose} />
@@ -690,16 +685,26 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit }) {
         </div>
 
         <div className="detalles-modal-footer">
-          <button 
-            type="button" 
+          {vista === 'tienda' && (
+            <button
+              type="button"
+              className="detalles-modal-estado"
+              onClick={onCambiarEstado}
+            >
+              <FiCheckCircle aria-hidden="true" />
+              Cambiar estado
+            </button>
+          )}
+          <button
+            type="button"
             className="detalles-modal-editar"
             onClick={onEdit}
           >
             <FiEdit3 aria-hidden="true" />
             Editar pedido
           </button>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="detalles-modal-cerrar"
             onClick={onClose}
           >
@@ -1126,8 +1131,6 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   disabled={guardando}
                 >
                   <option value="Pendiente">Pendiente</option>
-                  <option value="Preparando">Preparando</option>
-                  <option value="Enviado">Enviado</option>
                   <option value="Entregado">Entregado</option>
                 </select>
               </div>
@@ -1568,7 +1571,9 @@ function normalizarEstado(pedido) {
     return 'Pendiente';
   }
 
-  return pedido.estado || 'Pendiente';
+  // El backend solo conoce "Pendiente"/"Entregado" (via el booleano entregado);
+  // cualquier otro valor de "estado" que haya quedado guardado localmente se ignora.
+  return pedido.estado === 'Entregado' ? 'Entregado' : 'Pendiente';
 }
 
 function normalizarPrecio(valor) {
@@ -1598,7 +1603,7 @@ function ordenarPedidos(a, b, tipo) {
 }
 
 function estadoRank(estado) {
-  return ['Pendiente', 'Preparando', 'Enviado', 'Entregado'].indexOf(estado);
+  return ['Pendiente', 'Entregado'].indexOf(estado);
 }
 
 function resumenProductos(productos) {
