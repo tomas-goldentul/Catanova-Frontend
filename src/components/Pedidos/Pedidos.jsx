@@ -23,7 +23,7 @@ import {
   FiX,
 } from 'react-icons/fi';
 import CrearPedido from './CrearPedido';
-import { actualizarEstadoPedido } from '../../api/pedidos';
+import { actualizarEstadoPedido, getPedidos } from '../../api/pedidos';
 import './Pedidos.css';
 
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';

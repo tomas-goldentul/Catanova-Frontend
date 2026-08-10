@@ -23,3 +23,9 @@ export async function actualizarEstadoPedido(id, estado) {
 
   return payload;
 }
+
+export async function getPedidos() {
+  const res = await fetch(`${BASE_URL}/`);
+  if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+  return res.json();
+}
