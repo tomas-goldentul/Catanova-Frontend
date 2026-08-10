@@ -24,7 +24,7 @@ import {
   FiX,
 } from 'react-icons/fi';
 import CrearPedido from './CrearPedido';
-import { actualizarEstadoPedido, editarPedido } from '../../api/pedidos';
+import { actualizarEstadoPedido, editarPedido, obtenerPedido } from '../../api/pedidos';
 import './Pedidos.css';
 
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -317,7 +317,7 @@ function Pedidos() {
                     </span>
                   </div>
 
-                  <p className="pedido-products">{resumenProductos(detalle.productos)}</p>
+                  <p className="pedido-products">{resumenProductos(detalle.detalles || detalle.productos)}</p>
 
                   <div className="pedido-people">
                     <PersonPill
@@ -484,8 +484,6 @@ function Pedidos() {
                 }, ...actuales];
               });
 
-              // Refrescar la lista desde el backend para mantener consistencia
-              setRefreshKey((actual) => actual + 1);
               setPedidoEnEdicion(null);
               setPedidoSeleccionado(null);
             }}
@@ -633,30 +631,30 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }
 
           {/* Productos */}
           <section className="detalles-section">
-            <h3>Productos ({pedido.productos.length})</h3>
+            <h3>Productos ({(pedido.detalles || []).length})</h3>
             <div className="detalles-productos">
-              {pedido.productos.length > 0 ? (
+              {pedido.detalles && Array.isArray(pedido.detalles) && pedido.detalles.length > 0 ? (
                 <table className="detalles-tabla">
                   <thead>
                     <tr>
                       <th>Producto</th>
                       <th>Cantidad</th>
-                      <th>Precio</th>
-                      <th>Subtotal</th>
+                      <th>Precio Unitario</th>
+                      <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {pedido.productos.map((producto, index) => {
-                      const nombre = producto.nombre || producto.producto?.nombre || 'Producto sin nombre';
-                      const cantidad = producto.cantidad || 1;
-                      const precio = normalizarPrecio(producto.precio || 0);
-                      const subtotal = precio * cantidad;
+                    {pedido.detalles.map((detalle, index) => {
+                      const nombre = detalle.nombre || detalle.producto?.nombre || 'Producto sin nombre';
+                      const cantidad = Number(detalle.cantidad) || 1;
+                      const precioUnitario = Number(detalle.precio_unitario || 0);
+                      const precioTotal = Number(detalle.precio_total || 0);
                       return (
                         <tr key={index}>
                           <td>{nombre}</td>
                           <td className="detalles-cantidad">{cantidad}</td>
-                          <td>{formatearPrecio(precio)}</td>
-                          <td className="detalles-subtotal">{formatearPrecio(subtotal)}</td>
+                          <td>${precioUnitario.toFixed(2)}</td>
+                          <td className="detalles-subtotal">${precioTotal.toFixed(2)}</td>
                         </tr>
                       );
                     })}
@@ -678,7 +676,7 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }
               </div>
               <div className="detalles-item">
                 <span className="detalles-label">Total</span>
-                <strong className="detalles-total">{formatearPrecio(pedido.total)}</strong>
+                <strong className="detalles-total">${Number(pedido.total || 0).toFixed(2)}</strong>
               </div>
             </div>
           </section>
@@ -721,9 +719,9 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
   const puedeEditar = detalleOriginal.estado !== 'Entregado';
 
   const [productos, setProductos] = useState(
-    detalleOriginal.productos.map((p, index) => ({
+    (detalleOriginal.detalles || detalleOriginal.productos || []).map((p, index) => ({
       ...p,
-      _tmpId: p.id || p.producto?.id || index,
+      _tmpId: p.id || p.producto?.id || p.id_detallepedido || index,
     }))
   );
 
@@ -830,12 +828,14 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
         productos: productosParaEnviar,
       };
 
-      const respuesta = await editarPedido(detalleOriginal.id, datosActualizados);
+      await editarPedido(detalleOriginal.id, datosActualizados);
 
-      // Crear el pedido actualizado para retornar
+      const pedidoResponse = await obtenerPedido(detalleOriginal.id);
       const pedidoActualizado = {
-        ...pedido,
-        ...datosActualizados,
+        ...pedidoResponse,
+        detalles: pedidoResponse.detalles || pedidoResponse.productos,
+        productos: pedidoResponse.detalles || pedidoResponse.productos || productosParaEnviar,
+        total: pedidoResponse.total ?? calcularTotal(),
       };
 
       onGuardar(pedidoActualizado);
@@ -850,9 +850,9 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
   const calcularTotal = () => {
     return productos.reduce((sum, p) => {
-      const precio = normalizarPrecio(p.precio || 0);
-      const cantidad = p.cantidad || 1;
-      return sum + (precio * cantidad);
+      const precioTotal = Number(p.precio_total || p.precio_unitario || p.precio || 0);
+      const cantidad = Number(p.cantidad) || 1;
+      return sum + precioTotal;
     }, 0);
   };
 
@@ -1010,12 +1010,12 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
           <section className="editar-section">
             <h3>Productos ({productos.length})</h3>
             <div className="editar-productos-lista">
-              {productos.length > 0 ? (
+              {productos && Array.isArray(productos) && productos.length > 0 ? (
                 <table className="editar-tabla-productos">
                   <thead>
                     <tr>
                       <th>Producto</th>
-                      <th>Precio</th>
+                      <th>Precio Unitario</th>
                       <th>Cantidad</th>
                       <th>Subtotal</th>
                       <th>Acciones</th>
@@ -1023,21 +1023,16 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   </thead>
                   <tbody>
                     {productos.map((producto) => {
-                      const nombre =
-                        producto.nombre ||
-                        producto.producto?.nombre ||
-                        'Producto sin nombre';
-                      const cantidad = producto.cantidad || 1;
-                      const precio = normalizarPrecio(
-                        producto.precio || 0
-                      );
-                      const subtotal = precio * cantidad;
+                      const nombre = producto.nombre || producto.producto?.nombre || 'Producto sin nombre';
+                      const cantidad = Number(producto.cantidad) || 1;
+                      const precioUnitario = Number(producto.precio_unitario || producto.precio || 0);
+                      const precioTotal = Number(producto.precio_total || 0) || (precioUnitario * cantidad);
 
                       return (
                         <tr key={producto._tmpId}>
                           <td>{nombre}</td>
                           <td className="editar-precio">
-                            {formatearPrecio(precio)}
+                            ${precioUnitario.toFixed(2)}
                           </td>
                           <td className="editar-cantidad">
                             <div className="cantidad-controls">
@@ -1084,7 +1079,7 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                             </div>
                           </td>
                           <td className="editar-subtotal">
-                            {formatearPrecio(subtotal)}
+                            ${precioTotal.toFixed(2)}
                           </td>
                           <td className="editar-acciones">
                             <button
@@ -1113,7 +1108,7 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
             </div>
             <div className="editar-productos-total">
               <span>Total del pedido:</span>
-              <strong>{formatearPrecio(calcularTotal())}</strong>
+              <strong>${calcularTotal().toFixed(2)}</strong>
             </div>
           </section>
 
@@ -1491,7 +1486,8 @@ function pedidoPerteneceATienda(pedido, tiendaId) {
 function extraerListaPedidos(data) {
   let lista = [];
   
-  if (Array.isArray(data)) lista = data;
+  if (data?.success === true && Array.isArray(data.data)) lista = data.data;
+  else if (Array.isArray(data)) lista = data;
   else if (Array.isArray(data?.pedidos)) lista = data.pedidos;
   else if (Array.isArray(data?.envios)) lista = data.envios;
   else if (Array.isArray(data?.orders)) lista = data.orders;
@@ -1517,8 +1513,8 @@ function extraerListaPedidos(data) {
 }
 
 function normalizarPedido(pedido) {
-  const productosBase = pedido.productos || pedido.items || pedido.detalle || [];
-  const productos = Array.isArray(productosBase) ? productosBase : [];
+  const detallesBase = pedido.detalles || pedido.productos || pedido.items || pedido.detalle || [];
+  const detalles = Array.isArray(detallesBase) ? detallesBase : [];
   const comprador = pedido.cliente || pedido.comprador || pedido.usuario || {};
   const repartidor = pedido.repartidor || pedido.delivery || pedido.cadete || {};
   const tienda = pedido.tienda || pedido.vendedor || pedido.store || {};
@@ -1550,7 +1546,8 @@ function normalizarPedido(pedido) {
     localidad: pedido.localidad || pedido.ciudad || direccion.localidad || direccion.ciudad || comprador.localidad || 'Sin localidad',
     estado: normalizarEstado(pedido),
     total: normalizarPrecio(pedido.precio_total ?? pedido.total ?? pedido.totalPedido ?? pedido.montoTotal ?? pedido.amount ?? 0),
-    productos,
+    productos: detalles,
+    detalles,
     fecha: pedido.fecha || pedido.createdAt || '',
     prioridad: pedido.prioridad || pedido.priority || 'Sin prioridad',
     pago: pedido.metodo_pago || pedido.pago || pedido.estadoPago || pedido.paymentStatus || 'Sin informar',
@@ -1579,6 +1576,34 @@ function normalizarEstado(pedido) {
 function normalizarPrecio(valor) {
   if (typeof valor === 'number') return valor;
   if (typeof valor === 'string') return Number(valor.replace(',', '.')) || 0;
+  if (typeof valor === 'object' && valor !== null) {
+    const candidate =
+      valor.precio_unitario ??
+      valor.precio ??
+      valor.precioUnitario ??
+      valor.precio_total ??
+      valor.precioTotal ??
+      valor.subtotal ??
+      valor.valor ??
+      valor.amount ??
+      valor.producto?.precio_unitario ??
+      valor.producto?.precio ??
+      valor.producto?.precioUnitario ??
+      valor.producto?.precio_total ??
+      valor.producto?.precioTotal ??
+      valor.item?.precio_unitario ??
+      valor.item?.precio ??
+      valor.item?.precioUnitario ??
+      valor.item?.precio_total ??
+      valor.item?.precioTotal ??
+      valor.producto?.valor ??
+      valor.producto?.amount ??
+      valor.item?.valor ??
+      valor.item?.amount ??
+      0;
+
+    return normalizarPrecio(candidate);
+  }
   return 0;
 }
 
@@ -1607,7 +1632,7 @@ function estadoRank(estado) {
 }
 
 function resumenProductos(productos) {
-  if (!productos.length) return 'Sin productos cargados';
+  if (!productos || !Array.isArray(productos) || !productos.length) return 'Sin productos cargados';
 
   return productos
     .slice(0, 3)
@@ -1623,8 +1648,8 @@ function formatearPrecio(valor) {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 20,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(valor);
 }
 

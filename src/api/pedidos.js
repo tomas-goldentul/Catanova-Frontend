@@ -81,5 +81,30 @@ export async function editarPedido(id, datosActualizados) {
     throw error;
   }
 
-  return result;
+  return result?.success === true && result.data != null ? result.data : result;
+}
+
+export async function obtenerPedido(id) {
+  if (!id || id === 'Sin ID') {
+    throw new Error('No se pudo identificar el pedido. El ID está ausente o inválido. Verifica que el pedido tenga id_pedido.');
+  }
+
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const response = await fetch(`${API_URL}/pedidos/${encodeURIComponent(id)}`, {
+    method: 'GET',
+    headers,
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(payload.message || payload.error || `No se pudo obtener el pedido (Error ${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return payload?.success === true && payload.data != null ? payload.data : payload;
 }
