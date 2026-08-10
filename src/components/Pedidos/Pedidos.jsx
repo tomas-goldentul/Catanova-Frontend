@@ -23,7 +23,7 @@ import {
   FiX,
 } from 'react-icons/fi';
 import CrearPedido from './CrearPedido';
-import { actualizarEstadoPedido } from '../../api/pedidos';
+import { actualizarEstadoPedido, editarPedido } from '../../api/pedidos';
 import './Pedidos.css';
 
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -155,7 +155,8 @@ function Pedidos() {
 
       try {
         const data = await fetchPedidos(vista, controller.signal);
-        setPedidos(extraerListaPedidos(data));
+        const lista = extraerListaPedidos(data);
+        setPedidos(lista);
       } catch (err) {
         if (err.name !== 'AbortError') {
           setError(err.message || 'No se pudieron cargar los pedidos.');
@@ -371,7 +372,13 @@ function Pedidos() {
                     <div className="pedido-menu">
                       {vista === 'tienda' && (
                         <>
-                          <button type="button">
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setPedidoEnEdicion(pedido);
+                              setMenuAbierto('');
+                            }}
+                          >
                             <FiEdit3 aria-hidden="true" />
                             Editar pedido
                           </button>
@@ -452,15 +459,38 @@ function Pedidos() {
             vista={vista}
             onClose={() => setPedidoEnEdicion(null)}
             onGuardar={(pedidoActualizado) => {
-              setPedidos((actuales) =>
-                actuales.map((p) =>
-                  normalizarPedido(p).id === normalizarPedido(pedidoActualizado).id
-                    ? pedidoActualizado
-                    : p
-                )
-              );
+              const idPedido = normalizarPedido(pedidoActualizado).id;
+              const idPedidoNumerico = Number(idPedido);
+              const idPedidoFinal = Number.isNaN(idPedidoNumerico) ? idPedido : idPedidoNumerico;
+
+              setPedidos((actuales) => {
+                const existe = actuales.some((pedidoActual) => String(normalizarPedido(pedidoActual).id) === String(idPedidoFinal));
+
+                if (existe) {
+                  return actuales.map((pedidoActual) => {
+                    const detalle = normalizarPedido(pedidoActual);
+                    if (String(detalle.id) !== String(idPedidoFinal)) return pedidoActual;
+
+                    return {
+                      ...pedidoActual,
+                      ...pedidoActualizado,
+                      id: idPedidoFinal,
+                      id_pedido: idPedidoFinal,
+                    };
+                  });
+                }
+
+                return [{
+                  ...pedidoActualizado,
+                  id: idPedidoFinal,
+                  id_pedido: idPedidoFinal,
+                }, ...actuales];
+              });
+
+              // Refrescar la lista desde el backend para mantener consistencia
+              setRefreshKey((actual) => actual + 1);
               setPedidoEnEdicion(null);
-              setPedidoSeleccionado(pedidoActualizado);
+              setPedidoSeleccionado(null);
             }}
           />
         )}
@@ -682,18 +712,30 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit }) {
 }
 
 function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
+  const detalleOriginal = normalizarPedido(pedido);
+  const puedeEditar = detalleOriginal.estado !== 'Entregado';
+
+  const [productos, setProductos] = useState(
+    detalleOriginal.productos.map((p, index) => ({
+      ...p,
+      _tmpId: p.id || p.producto?.id || index,
+    }))
+  );
+
   const [formData, setFormData] = useState({
-    estado: pedido.estado || 'Pendiente',
-    prioridad: pedido.prioridad || 'Sin prioridad',
-    repartidor: pedido.repartidor || 'Sin asignar',
-    direccion: pedido.direccion || '',
-    localidad: pedido.localidad || '',
-    codigoPostal: pedido.codigoPostal || '',
-    eta: pedido.eta || '',
-    pago: pedido.pago || 'Sin informar',
+    estado: detalleOriginal.estado || 'Pendiente',
+    prioridad: detalleOriginal.prioridad || 'Sin prioridad',
+    repartidor: detalleOriginal.repartidor || 'Sin asignar',
+    direccion: detalleOriginal.direccion || '',
+    localidad: detalleOriginal.localidad || '',
+    codigoPostal: detalleOriginal.codigoPostal || '',
+    eta: detalleOriginal.eta || '',
+    pago: detalleOriginal.pago || 'Sin informar',
   });
 
   const [errores, setErrores] = useState({});
+  const [guardando, setGuardando] = useState(false);
+  const [mensajeError, setMensajeError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -707,10 +749,49 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
         [name]: '',
       }));
     }
+    if (mensajeError) {
+      setMensajeError('');
+    }
+  };
+
+  const actualizarProducto = (tmpId, campo, valor) => {
+    setProductos((prev) =>
+      prev.map((p) =>
+        p._tmpId === tmpId ? { ...p, [campo]: valor } : p
+      )
+    );
+    if (mensajeError) {
+      setMensajeError('');
+    }
+  };
+
+  const incrementarCantidad = (tmpId) => {
+    setProductos((prev) =>
+      prev.map((p) =>
+        p._tmpId === tmpId
+          ? { ...p, cantidad: (p.cantidad || 1) + 1 }
+          : p
+      )
+    );
+  };
+
+  const decrementarCantidad = (tmpId) => {
+    setProductos((prev) =>
+      prev.map((p) =>
+        p._tmpId === tmpId && (p.cantidad || 1) > 1
+          ? { ...p, cantidad: (p.cantidad || 1) - 1 }
+          : p
+      )
+    );
+  };
+
+  const eliminarProducto = (tmpId) => {
+    setProductos((prev) => prev.filter((p) => p._tmpId !== tmpId));
   };
 
   const validarFormulario = () => {
     const nuevosErrores = {};
+
     if (!formData.direccion.trim()) {
       nuevosErrores.direccion = 'La dirección es requerida';
     }
@@ -720,72 +801,114 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
     if (!formData.codigoPostal.trim()) {
       nuevosErrores.codigoPostal = 'El código postal es requerido';
     }
+
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleGuardar = () => {
+  const handleGuardar = async () => {
     if (!validarFormulario()) return;
 
-    const pedidoActualizado = {
-      ...pedido,
-      ...formData,
-    };
+    setGuardando(true);
+    setMensajeError('');
 
-    onGuardar(pedidoActualizado);
+    try {
+      // Preparar los datos sin el campo _tmpId para la API
+      const productosParaEnviar = productos.map((p) => {
+        const producto = { ...p };
+        delete producto._tmpId;
+        return producto;
+      });
+
+      const datosActualizados = {
+        ...formData,
+        productos: productosParaEnviar,
+      };
+
+      const respuesta = await editarPedido(detalleOriginal.id, datosActualizados);
+
+      // Crear el pedido actualizado para retornar
+      const pedidoActualizado = {
+        ...pedido,
+        ...datosActualizados,
+      };
+
+      onGuardar(pedidoActualizado);
+    } catch (err) {
+      setMensajeError(
+        err.message || 'No se pudo guardar los cambios del pedido.'
+      );
+    } finally {
+      setGuardando(false);
+    }
   };
+
+  const calcularTotal = () => {
+    return productos.reduce((sum, p) => {
+      const precio = normalizarPrecio(p.precio || 0);
+      const cantidad = p.cantidad || 1;
+      return sum + (precio * cantidad);
+    }, 0);
+  };
+
+  if (!puedeEditar) {
+    return (
+      <>
+        <div className="editar-modal-overlay" onClick={onClose} />
+        <div className="editar-modal">
+          <div className="editar-modal-header">
+            <h2>No se puede editar este pedido</h2>
+            <button
+              type="button"
+              className="editar-modal-close"
+              onClick={onClose}
+              aria-label="Cerrar"
+            >
+              <FiX aria-hidden="true" />
+            </button>
+          </div>
+          <div className="editar-modal-content">
+            <p style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+              Los pedidos con estado "Entregado" no pueden ser editados.
+            </p>
+          </div>
+          <div className="editar-modal-footer">
+            <button
+              type="button"
+              className="editar-modal-cancelar"
+              onClick={onClose}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
       <div className="editar-modal-overlay" onClick={onClose} />
-      <div className="editar-modal">
+      <div className="editar-modal editar-modal-grande">
         <div className="editar-modal-header">
-          <h2>Editar pedido {pedido.id}</h2>
-          <button 
-            type="button" 
+          <h2>Editar pedido {detalleOriginal.id}</h2>
+          <button
+            type="button"
             className="editar-modal-close"
             onClick={onClose}
             aria-label="Cerrar edición"
+            disabled={guardando}
           >
             <FiX aria-hidden="true" />
           </button>
         </div>
 
         <div className="editar-modal-content">
-          {/* Estado y Prioridad */}
-          <section className="editar-section">
-            <h3>Estado y prioridad</h3>
-            <div className="editar-grid">
-              <div className="editar-campo">
-                <label htmlFor="estado">Estado</label>
-                <select
-                  id="estado"
-                  name="estado"
-                  value={formData.estado}
-                  onChange={handleChange}
-                >
-                  <option value="Pendiente">Pendiente</option>
-                  <option value="Preparando">Preparando</option>
-                  <option value="Enviado">Enviado</option>
-                  <option value="Entregado">Entregado</option>
-                </select>
-              </div>
-
-              <div className="editar-campo">
-                <label htmlFor="prioridad">Prioridad</label>
-                <select
-                  id="prioridad"
-                  name="prioridad"
-                  value={formData.prioridad}
-                  onChange={handleChange}
-                >
-                  <option value="Sin prioridad">Sin prioridad</option>
-                  <option value="Media">Media</option>
-                  <option value="Alta">Alta</option>
-                </select>
-              </div>
+          {mensajeError && (
+            <div className="editar-modal-error-banner">
+              <strong>Error:</strong> {mensajeError}
             </div>
-          </section>
+          )}
 
           {/* Información de entrega */}
           <section className="editar-section">
@@ -800,6 +923,7 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   value={formData.direccion}
                   onChange={handleChange}
                   placeholder="Calle y número"
+                  disabled={guardando}
                 />
                 {errores.direccion && (
                   <span className="error-message">{errores.direccion}</span>
@@ -815,6 +939,7 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   value={formData.localidad}
                   onChange={handleChange}
                   placeholder="Localidad"
+                  disabled={guardando}
                 />
                 {errores.localidad && (
                   <span className="error-message">{errores.localidad}</span>
@@ -830,6 +955,7 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   value={formData.codigoPostal}
                   onChange={handleChange}
                   placeholder="CP"
+                  disabled={guardando}
                 />
                 {errores.codigoPostal && (
                   <span className="error-message">{errores.codigoPostal}</span>
@@ -845,36 +971,24 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   value={formData.eta}
                   onChange={handleChange}
                   placeholder="Ej: 2-3 días"
+                  disabled={guardando}
                 />
               </div>
             </div>
           </section>
 
-          {/* Repartidor y Pago */}
+          {/* Método de pago */}
           <section className="editar-section">
-            <h3>Repartidor y pago</h3>
+            <h3>Método de pago</h3>
             <div className="editar-grid">
-              {vista === 'tienda' && (
-                <div className="editar-campo">
-                  <label htmlFor="repartidor">Repartidor</label>
-                  <input
-                    id="repartidor"
-                    type="text"
-                    name="repartidor"
-                    value={formData.repartidor}
-                    onChange={handleChange}
-                    placeholder="Nombre del repartidor"
-                  />
-                </div>
-              )}
-
               <div className="editar-campo">
-                <label htmlFor="pago">Método de pago</label>
+                <label htmlFor="pago">Forma de pago</label>
                 <select
                   id="pago"
                   name="pago"
                   value={formData.pago}
                   onChange={handleChange}
+                  disabled={guardando}
                 >
                   <option value="Sin informar">Sin informar</option>
                   <option value="Efectivo">Efectivo</option>
@@ -886,23 +1000,197 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
               </div>
             </div>
           </section>
+
+          {/* Productos */}
+          <section className="editar-section">
+            <h3>Productos ({productos.length})</h3>
+            <div className="editar-productos-lista">
+              {productos.length > 0 ? (
+                <table className="editar-tabla-productos">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Precio</th>
+                      <th>Cantidad</th>
+                      <th>Subtotal</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productos.map((producto) => {
+                      const nombre =
+                        producto.nombre ||
+                        producto.producto?.nombre ||
+                        'Producto sin nombre';
+                      const cantidad = producto.cantidad || 1;
+                      const precio = normalizarPrecio(
+                        producto.precio || 0
+                      );
+                      const subtotal = precio * cantidad;
+
+                      return (
+                        <tr key={producto._tmpId}>
+                          <td>{nombre}</td>
+                          <td className="editar-precio">
+                            {formatearPrecio(precio)}
+                          </td>
+                          <td className="editar-cantidad">
+                            <div className="cantidad-controls">
+                              <button
+                                type="button"
+                                className="cantidad-btn"
+                                onClick={() =>
+                                  decrementarCantidad(producto._tmpId)
+                                }
+                                disabled={guardando || cantidad <= 1}
+                                title="Decrementar cantidad"
+                              >
+                                −
+                              </button>
+                              <input
+                                type="number"
+                                min="1"
+                                value={cantidad}
+                                onChange={(e) => {
+                                  const newCant = Math.max(
+                                    1,
+                                    parseInt(e.target.value, 10) || 1
+                                  );
+                                  actualizarProducto(
+                                    producto._tmpId,
+                                    'cantidad',
+                                    newCant
+                                  );
+                                }}
+                                disabled={guardando}
+                                className="cantidad-input"
+                              />
+                              <button
+                                type="button"
+                                className="cantidad-btn"
+                                onClick={() =>
+                                  incrementarCantidad(producto._tmpId)
+                                }
+                                disabled={guardando}
+                                title="Incrementar cantidad"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </td>
+                          <td className="editar-subtotal">
+                            {formatearPrecio(subtotal)}
+                          </td>
+                          <td className="editar-acciones">
+                            <button
+                              type="button"
+                              className="editar-eliminar"
+                              onClick={() =>
+                                eliminarProducto(producto._tmpId)
+                              }
+                              disabled={guardando}
+                              title="Eliminar producto"
+                              aria-label="Eliminar producto"
+                            >
+                              <FiTrash2 aria-hidden="true" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="editar-vacio">
+                  No hay productos en este pedido
+                </p>
+              )}
+            </div>
+            <div className="editar-productos-total">
+              <span>Total del pedido:</span>
+              <strong>{formatearPrecio(calcularTotal())}</strong>
+            </div>
+          </section>
+
+          {/* Estado y Prioridad */}
+          <section className="editar-section">
+            <h3>Estado y prioridad</h3>
+            <div className="editar-grid">
+              <div className="editar-campo">
+                <label htmlFor="estado">Estado</label>
+                <select
+                  id="estado"
+                  name="estado"
+                  value={formData.estado}
+                  onChange={handleChange}
+                  disabled={guardando}
+                >
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Preparando">Preparando</option>
+                  <option value="Enviado">Enviado</option>
+                  <option value="Entregado">Entregado</option>
+                </select>
+              </div>
+
+              <div className="editar-campo">
+                <label htmlFor="prioridad">Prioridad</label>
+                <select
+                  id="prioridad"
+                  name="prioridad"
+                  value={formData.prioridad}
+                  onChange={handleChange}
+                  disabled={guardando}
+                >
+                  <option value="Sin prioridad">Sin prioridad</option>
+                  <option value="Media">Media</option>
+                  <option value="Alta">Alta</option>
+                </select>
+              </div>
+
+              {vista === 'tienda' && (
+                <div className="editar-campo">
+                  <label htmlFor="repartidor">Repartidor</label>
+                  <input
+                    id="repartidor"
+                    type="text"
+                    name="repartidor"
+                    value={formData.repartidor}
+                    onChange={handleChange}
+                    placeholder="Nombre del repartidor"
+                    disabled={guardando}
+                  />
+                </div>
+              )}
+            </div>
+          </section>
         </div>
 
         <div className="editar-modal-footer">
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="editar-modal-cancelar"
             onClick={onClose}
+            disabled={guardando}
           >
             Cancelar
           </button>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="editar-modal-guardar"
             onClick={handleGuardar}
+            disabled={guardando}
           >
-            <FiCheckCircle aria-hidden="true" />
-            Guardar cambios
+            {guardando ? (
+              <>
+                <FiRefreshCw aria-hidden="true" style={{ animation: 'spin 1s linear infinite' }} />
+                Guardando...
+              </>
+            ) : (
+              <>
+                <FiCheckCircle aria-hidden="true" />
+                Guardar cambios
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -1198,13 +1486,31 @@ function pedidoPerteneceATienda(pedido, tiendaId) {
 }
 
 function extraerListaPedidos(data) {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.pedidos)) return data.pedidos;
-  if (Array.isArray(data?.envios)) return data.envios;
-  if (Array.isArray(data?.orders)) return data.orders;
-  if (Array.isArray(data?.data)) return data.data;
-  if (Array.isArray(data?.results)) return data.results;
-  return [];
+  let lista = [];
+  
+  if (Array.isArray(data)) lista = data;
+  else if (Array.isArray(data?.pedidos)) lista = data.pedidos;
+  else if (Array.isArray(data?.envios)) lista = data.envios;
+  else if (Array.isArray(data?.orders)) lista = data.orders;
+  else if (Array.isArray(data?.data)) lista = data.data;
+  else if (Array.isArray(data?.results)) lista = data.results;
+  else return [];
+
+  // Eliminar duplicados basándose en el ID del pedido
+  const idsVistos = new Set();
+  const listaSinDuplicados = [];
+
+  for (const pedido of lista) {
+    const id = pedido.id_pedido || pedido.idPedido || pedido.id || pedido._id;
+    
+    // Si el ID no existe o ya lo vimos, saltar
+    if (!id || idsVistos.has(id)) continue;
+    
+    idsVistos.add(id);
+    listaSinDuplicados.push(pedido);
+  }
+
+  return listaSinDuplicados;
 }
 
 function normalizarPedido(pedido) {
@@ -1215,8 +1521,24 @@ function normalizarPedido(pedido) {
   const tienda = pedido.tienda || pedido.vendedor || pedido.store || {};
   const direccion = pedido.direccion || pedido.direccionEnvio || pedido.shippingAddress || comprador.direccion || {};
 
+  // Buscar ID - el campo principal en backend es id_pedido (número)
+  const idRaw = 
+    pedido.id_pedido ||
+    pedido.idPedido ||
+    pedido.id ||
+    pedido._id ||
+    pedido.pedidoId ||
+    pedido.num_pedido ||
+    pedido.numero ||
+    pedido.numero_pedido ||
+    pedido.order_id ||
+    pedido.orderId;
+
+  // Asegurar que el ID es un número válido
+  const id = idRaw ? String(idRaw).trim() : null;
+
   return {
-    id: pedido.id || pedido._id || 'Sin ID',
+    id: id || 'Sin ID',
     direccion: normalizarDireccion(direccion),
     comprador: comprador.nombre || comprador.name || pedido.clienteNombre || pedido.compradorNombre || 'Sin datos',
     tienda: tienda.nombre || tienda.name || pedido.tiendaNombre || pedido.nombreTienda || pedido.vendedor?.nombre || 'Tienda sin datos',
