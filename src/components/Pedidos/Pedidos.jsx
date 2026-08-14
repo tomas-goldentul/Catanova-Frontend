@@ -1247,17 +1247,17 @@ async function fetchPedidos(vista, signal) {
 
 async function fetchPedidosTienda(headers, signal) {
   const tiendaId = obtenerTiendaId();
-  const candidates = ['/pedidos/tienda', '/pedidos/store'];
-
-  if (tiendaId) {
-    candidates.push(
-      `/pedidos/tienda/${tiendaId}`,
-      `/pedidos/get/tienda/${tiendaId}`,
-      `/pedidos/getByTienda/${tiendaId}`,
-      `/pedidos/store/${tiendaId}`,
-      `/tiendas/${tiendaId}/pedidos`,
-    );
-  }
+  const rutasPrimarias = ['/pedidos/getAll'];
+  const candidates = [
+    ...rutasPrimarias,
+    '/pedidos/tienda',
+    '/pedidos/store',
+    '/pedidos/tienda/' + tiendaId,
+    '/pedidos/get/tienda/' + tiendaId,
+    '/pedidos/getByTienda/' + tiendaId,
+    '/pedidos/store/' + tiendaId,
+    '/tiendas/' + tiendaId + '/pedidos',
+  ].filter(Boolean);
 
   for (const path of candidates) {
     try {
@@ -1277,22 +1277,19 @@ async function fetchPedidosTienda(headers, signal) {
 
 async function fetchPedidosUsuario(headers, signal) {
   const usuarioId = obtenerUsuarioId();
+  const rutasPrimarias = usuarioId ? [`/pedidos/getAll/${usuarioId}`, '/pedidos/getAll'] : ['/pedidos/getAll'];
   const candidates = [
+    ...rutasPrimarias,
     '/pedidos/mis-pedidos',
     '/pedidos/mios',
     '/pedidos/usuario',
     '/pedidos/user',
-  ];
-
-  if (usuarioId) {
-    candidates.push(
-      `/pedidos/usuario/${usuarioId}`,
-      `/pedidos/get/usuario/${usuarioId}`,
-      `/pedidos/getByUsuario/${usuarioId}`,
-      `/pedidos/user/${usuarioId}`,
-      `/usuarios/${usuarioId}/pedidos`,
-    );
-  }
+    '/pedidos/usuario/' + usuarioId,
+    '/pedidos/get/usuario/' + usuarioId,
+    '/pedidos/getByUsuario/' + usuarioId,
+    '/pedidos/user/' + usuarioId,
+    '/usuarios/' + usuarioId + '/pedidos',
+  ].filter(Boolean);
 
   let lastError;
 
@@ -1536,10 +1533,19 @@ function normalizarPedido(pedido) {
   // Asegurar que el ID es un número válido
   const id = idRaw ? String(idRaw).trim() : null;
 
+  const usuario = pedido.usuario || pedido.cliente || pedido.comprador || {};
+  const nombreComprador =
+    comprador.nombre ||
+    comprador.name ||
+    [usuario.nombre || usuario.name, usuario.apellido || usuario.lastName || usuario.lastname].filter(Boolean).join(' ').trim() ||
+    pedido.clienteNombre ||
+    pedido.compradorNombre ||
+    'Sin datos';
+
   return {
     id: id || 'Sin ID',
     direccion: normalizarDireccion(direccion),
-    comprador: comprador.nombre || comprador.name || pedido.clienteNombre || pedido.compradorNombre || 'Sin datos',
+    comprador: nombreComprador,
     tienda: tienda.nombre || tienda.name || pedido.tiendaNombre || pedido.nombreTienda || pedido.vendedor?.nombre || 'Tienda sin datos',
     repartidor: repartidor.nombre || repartidor.name || pedido.repartidorNombre || pedido.vendedor?.nombre || 'Sin asignar',
     codigoPostal: pedido.codigoPostal || pedido.cp || direccion.codigoPostal || direccion.cp || comprador.codigoPostal || 'Sin CP',

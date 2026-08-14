@@ -1,6 +1,8 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FiHome, FiPlus, FiTrash2, FiTruck, FiX } from 'react-icons/fi';
 import './CrearPedido.css';
+
+const API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
 
 const CATALOGO_DEMO = [
   { id: 'p1', nombre: 'Remera oversize negra', talle: 'M', precio: 15000, stock: 12 },
@@ -25,6 +27,9 @@ function hoyISO() {
 
 function CrearPedido({ onCrear, onCancelar }) {
   const [cliente, setCliente] = useState({ nombre: '', telefono: '' });
+  const [usuarios, setUsuarios] = useState([]);
+  const [usuarioSeleccionadoId, setUsuarioSeleccionadoId] = useState('');
+  const [cargandoUsuarios, setCargandoUsuarios] = useState(false);
   const [entrega, setEntrega] = useState('local');
   const [direccionEnvio, setDireccionEnvio] = useState({ direccion: '', localidad: '', codigoPostal: '' });
 
@@ -55,6 +60,51 @@ function CrearPedido({ onCrear, onCancelar }) {
     setCliente((previo) => ({ ...previo, [campo]: valor }));
     limpiarError(campo);
   };
+
+  const manejarCambioUsuario = (event) => {
+    const selectedId = event.target.value;
+    setUsuarioSeleccionadoId(selectedId);
+
+    if (!selectedId) {
+      setCliente({ nombre: '', telefono: '' });
+      limpiarError('nombre');
+      limpiarError('telefono');
+      return;
+    }
+
+    const usuarioSeleccionado = usuarios.find((usuario) => Number(usuario.id_usuario) === Number(selectedId));
+    const nombreCompleto = usuarioSeleccionado ? `${usuarioSeleccionado.nombre || ''} ${usuarioSeleccionado.apellido || ''}`.trim() : '';
+
+    setCliente({
+      nombre: nombreCompleto,
+      telefono: usuarioSeleccionado?.telefono || '',
+    });
+
+    limpiarError('nombre');
+    limpiarError('telefono');
+  };
+
+  useEffect(() => {
+    const cargarUsuarios = async () => {
+      setCargandoUsuarios(true);
+      try {
+        const response = await fetch(`${API_URL}/usuarios`);
+        if (!response.ok) {
+          throw new Error('No se pudieron cargar los usuarios');
+        }
+
+        const data = await response.json();
+        setUsuarios(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+        setUsuarios([]);
+      } finally {
+        setCargandoUsuarios(false);
+      }
+    };
+
+    cargarUsuarios();
+  }, []);
 
   const actualizarDireccionEnvio = (campo, valor) => {
     setDireccionEnvio((previo) => ({ ...previo, [campo]: valor }));
@@ -132,8 +182,8 @@ function CrearPedido({ onCrear, onCancelar }) {
 
   const validarFormulario = () => {
     const nuevosErrores = {};
-    if (!cliente.nombre.trim()) nuevosErrores.nombre = 'Ingresá el nombre del cliente.';
-    if (!cliente.telefono.trim()) nuevosErrores.telefono = 'Ingresá un teléfono de contacto.';
+    if (!cliente.nombre.trim()) nuevosErrores.nombre = 'Seleccioná un usuario.';
+    if (!cliente.telefono.trim()) nuevosErrores.telefono = 'El usuario seleccionado no tiene teléfono.';
     if (entrega === 'envio' && !direccionEnvio.direccion.trim()) {
       nuevosErrores.direccion = 'Ingresá la dirección de envío.';
     }
@@ -147,26 +197,29 @@ function CrearPedido({ onCrear, onCancelar }) {
     event.preventDefault();
     if (!validarFormulario()) return;
 
+    const idUsuario = Number(usuarioSeleccionadoId);
+    const direccionPedido = entrega === 'envio'
+      ? [direccionEnvio.direccion.trim(), direccionEnvio.localidad.trim(), direccionEnvio.codigoPostal.trim()].filter(Boolean).join(', ')
+      : 'Retira en el local';
+
     const nuevoPedido = {
       id: generarId('PED'),
-      cliente: { nombre: cliente.nombre.trim(), telefono: cliente.telefono.trim() },
-      direccion:
-        entrega === 'envio'
-          ? {
-              calle: direccionEnvio.direccion.trim(),
-              localidad: direccionEnvio.localidad.trim(),
-              codigoPostal: direccionEnvio.codigoPostal.trim(),
-            }
-          : 'Retira en el local',
-      localidad: entrega === 'envio' ? direccionEnvio.localidad.trim() : '',
-      codigoPostal: entrega === 'envio' ? direccionEnvio.codigoPostal.trim() : '',
+      id_usuario: Number.isFinite(idUsuario) && idUsuario > 0 ? idUsuario : null,
+      cliente: {
+        nombre: cliente.nombre.trim(),
+        telefono: cliente.telefono.trim(),
+      },
+      clienteNombre: cliente.nombre.trim(),
+      clienteTelefono: cliente.telefono.trim(),
+      direccion: direccionPedido,
+      metodo_pago: metodoPago.toLowerCase(),
+      metodoPago: metodoPago,
       productos: items.map(({ nombre, cantidad, precio }) => ({ nombre, cantidad, precio })),
       precio_total: total,
       fecha: fecha ? new Date(fecha).toISOString() : new Date().toISOString(),
       prioridad,
       estado: estadoPedido,
       pago: estadoPago,
-      metodoPago,
       notas: notas.trim(),
       origenManual: true,
     };
@@ -192,14 +245,16 @@ function CrearPedido({ onCrear, onCancelar }) {
           <legend>Cliente</legend>
           <div className="crear-pedido-grid">
             <div className="crear-pedido-campo">
-              <label htmlFor="clienteNombre">Nombre</label>
-              <input
-                id="clienteNombre"
-                type="text"
-                placeholder="Ej: Martina Gómez"
-                value={cliente.nombre}
-                onChange={(event) => actualizarCliente('nombre', event.target.value)}
-              />
+              <label htmlFor="usuarioSelect">Usuario</label>
+              <select id="usuarioSelect" value={usuarioSeleccionadoId} onChange={manejarCambioUsuario}>
+                <option value="">Seleccioná un usuario</option>
+                {usuarios.map((usuario) => (
+                  <option key={usuario.id_usuario} value={usuario.id_usuario}>
+                    {`${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || 'Usuario sin nombre'}
+                  </option>
+                ))}
+              </select>
+              {cargandoUsuarios && <span className="crear-pedido-cargando">Cargando usuarios...</span>}
               {errores.nombre && <span className="crear-pedido-error">{errores.nombre}</span>}
             </div>
 
