@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import './Login.css';
+import { FaGoogle, FaApple, FaEye, FaEyeSlash } from 'react-icons/fa';
+import logo from '../../assets/logo.png';
 import { login as apiLogin, registerUsuario as apiRegisterUsuario } from '../../api/auth';
 
 const emptyRegisterForm = {
@@ -11,6 +13,12 @@ const emptyRegisterForm = {
   foto_perfil: '',
 };
 
+const FEATURES = [
+  'Gestioná tu catálogo de productos en un solo lugar',
+  'Seguí tus pedidos y ventas al instante',
+  'Mostrá tu tienda como un profesional',
+];
+
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +28,8 @@ export default function Login({ onLogin }) {
   const [user, setUserLocal] = useState(null);
   const [mode, setMode] = useState('login');
   const [registerForm, setRegisterForm] = useState(emptyRegisterForm);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -202,21 +212,47 @@ export default function Login({ onLogin }) {
   const title = mode === 'login' ? 'Preparado para gestionar tu negocio' : 'Crear tu cuenta';
   const submitLabel = mode === 'login' ? (loading ? 'Ingresando...' : 'Ingresar') : (loading ? 'Registrando...' : 'Registrarme');
 
+  const inputClass = (showState, setShowState, value, setValue) => (
+    <>
+      <input
+        type={showState ? 'text' : 'password'}
+        placeholder={mode === 'login' ? 'Ingresa tu contraseña' : 'Mínimo 6 caracteres'}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        required
+        name={mode === 'register' ? 'password' : undefined}
+      />
+      <button
+        type="button"
+        className="password-toggle"
+        aria-label={showState ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        onClick={() => setShowState((v) => !v)}
+      >
+        {showState ? <FaEyeSlash /> : <FaEye />}
+      </button>
+    </>
+  );
+
   return (
     <div className="login-root">
       <div className="login-left">
         <div className="login-card">
+          <div className="login-brand">
+            <img src={logo} alt="Catanova" className="login-logo" />
+            <span className="login-brand-name">Catanova</span>
+          </div>
+
           <div className="login-mode-switch">
             <button
               type="button"
-              className={mode === 'login' ? 'mode-tab active' : 'mode-tab'}
+              className={`mode-tab ${mode === 'login' ? 'active' : ''}`}
               onClick={() => switchMode('login')}
             >
               Iniciar sesión
             </button>
             <button
               type="button"
-              className={mode === 'register' ? 'mode-tab active' : 'mode-tab'}
+              className={`mode-tab ${mode === 'register' ? 'active' : ''}`}
               onClick={() => switchMode('register')}
             >
               Registrarse
@@ -227,7 +263,7 @@ export default function Login({ onLogin }) {
 
           {mode === 'login' ? (
             <form onSubmit={handleLoginSubmit} className="login-form">
-              <label className="field">
+              <div className="field">
                 <span>Email</span>
                 <input
                   type="email"
@@ -236,36 +272,32 @@ export default function Login({ onLogin }) {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-              </label>
+              </div>
 
-              <label className="field">
+              <div className="field">
                 <span>Contraseña</span>
-                <input
-                  type="password"
-                  placeholder="Ingresa tu contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </label>
+                <div className="password-wrap">
+                  {inputClass(showPassword, setShowPassword, password, setPassword)}
+                </div>
+              </div>
 
-              <button
-                className="primary"
-                type="submit"
-                disabled={loading || messageType === 'success'}
-                style={{
-                  opacity: loading ? 0.7 : 1,
-                  cursor: (loading || messageType === 'success') ? 'not-allowed' : 'pointer',
-                  backgroundColor: messageType === 'success' ? '#2ecc71' : '',
-                  transition: 'all 0.3s ease',
-                }}
-              >
+              <div className="login-extra">
+                <label className="remember">
+                  <input type="checkbox" />
+                  <span>Recordarme</span>
+                </label>
+                <button type="button" className="forgot">
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+
+              <button className="primary" type="submit" disabled={loading || messageType === 'success'}>
                 {submitLabel}
               </button>
             </form>
           ) : (
             <form onSubmit={handleRegisterSubmit} className="login-form register-form">
-              <label className="field">
+              <div className="field">
                 <span>Email</span>
                 <input
                   type="email"
@@ -275,22 +307,22 @@ export default function Login({ onLogin }) {
                   onChange={handleRegisterChange}
                   required
                 />
-              </label>
+              </div>
 
-              <label className="field">
+              <div className="field">
                 <span>Contraseña</span>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Mínimo 6 caracteres"
-                  value={registerForm.password}
-                  onChange={handleRegisterChange}
-                  required
-                />
-              </label>
+                <div className="password-wrap">
+                  {inputClass(
+                    showRegisterPassword,
+                    setShowRegisterPassword,
+                    registerForm.password,
+                    (v) => handleRegisterChange({ target: { name: 'password', value: v } })
+                  )}
+                </div>
+              </div>
 
               <div className="field-row">
-                <label className="field half">
+                <div className="field half">
                   <span>Nombre</span>
                   <input
                     type="text"
@@ -300,9 +332,9 @@ export default function Login({ onLogin }) {
                     onChange={handleRegisterChange}
                     required
                   />
-                </label>
+                </div>
 
-                <label className="field half">
+                <div className="field half">
                   <span>Apellido</span>
                   <input
                     type="text"
@@ -312,10 +344,10 @@ export default function Login({ onLogin }) {
                     onChange={handleRegisterChange}
                     required
                   />
-                </label>
+                </div>
               </div>
 
-              <label className="field">
+              <div className="field">
                 <span>Teléfono</span>
                 <input
                   type="tel"
@@ -324,9 +356,9 @@ export default function Login({ onLogin }) {
                   value={registerForm.telefono}
                   onChange={handleRegisterChange}
                 />
-              </label>
+              </div>
 
-              <label className="field">
+              <div className="field">
                 <span>Foto de perfil (URL)</span>
                 <input
                   type="url"
@@ -335,7 +367,7 @@ export default function Login({ onLogin }) {
                   value={registerForm.foto_perfil}
                   onChange={handleRegisterChange}
                 />
-              </label>
+              </div>
 
               <button className="primary" type="submit" disabled={loading}>
                 {submitLabel}
@@ -345,45 +377,46 @@ export default function Login({ onLogin }) {
 
           {mode === 'login' && (
             <>
-              <div className="divider"><span>o</span></div>
+              <div className="divider">
+                <span>o continuá con</span>
+              </div>
 
               <div className="socials">
-                <button className="social google" type="button">Usar Google</button>
-                <button className="social apple" type="button">Usar Apple</button>
+                <button type="button" className="social google">
+                  <FaGoogle />
+                  <span>Google</span>
+                </button>
+                <button type="button" className="social apple">
+                  <FaApple />
+                  <span>Apple</span>
+                </button>
               </div>
 
               <p className="small">
-                ¿No tenés cuenta? <button type="button" className="inline-link" onClick={() => switchMode('register')}>Registrate</button>
+                ¿No tenés cuenta?{' '}
+                <button type="button" className="inline-link" onClick={() => switchMode('register')}>
+                  Registrate
+                </button>
               </p>
             </>
           )}
 
           {mode === 'register' && (
             <p className="small">
-              ¿Ya tenés cuenta? <button type="button" className="inline-link" onClick={() => switchMode('login')}>Iniciá sesión</button>
+              ¿Ya tenés cuenta?{' '}
+              <button type="button" className="inline-link" onClick={() => switchMode('login')}>
+                Iniciá sesión
+              </button>
             </p>
           )}
 
           {message && (
-            <p
-              className="login-message"
-              style={{
-                color: messageType === 'success' ? '#2ecc71' : '#e74c3c',
-                fontWeight: '600',
-                padding: '10px',
-                backgroundColor: messageType === 'success' ? '#eafaf1' : '#fdedec',
-                borderRadius: '5px',
-                textAlign: 'center',
-                marginTop: '15px',
-              }}
-            >
-              {message}
-            </p>
+            <div className={`login-message ${messageType === 'success' ? 'success' : 'error'}`}>{message}</div>
           )}
 
           {user && (
             <div className="login-user">
-              <h3>Usuario</h3>
+              <h3 className="login-user-title">Usuario</h3>
               <pre>{JSON.stringify(user, null, 2)}</pre>
             </div>
           )}
@@ -391,11 +424,23 @@ export default function Login({ onLogin }) {
       </div>
 
       <div className="login-right">
-        <img
-          src="https://fashionboard.dk/wp-content/uploads/2024/01/replenishment-1.png"
-          alt="E-commerce store warehouse"
-          className="ecommerce-image"
-        />
+        <div className="login-right-overlay">
+          <div className="login-right-content">
+            <img src={logo} alt="Catanova" className="login-right-logo" />
+            <h2 className="login-right-title">Tu negocio, en orden.</h2>
+            <p className="login-right-subtitle">
+              El panel de administración inteligente para emprendedores del rubro textil.
+            </p>
+            <ul className="login-right-features">
+              {FEATURES.map((item) => (
+                <li key={item}>
+                  <span className="feature-check">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
