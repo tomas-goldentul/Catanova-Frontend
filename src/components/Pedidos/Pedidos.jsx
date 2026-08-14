@@ -24,10 +24,15 @@ import {
   FiX,
 } from 'react-icons/fi';
 import CrearPedido from './CrearPedido';
-import { actualizarEstadoPedido, editarPedido, obtenerPedido } from '../../api/pedidos';
+import {
+  actualizarEstadoPedido,
+  editarPedido,
+  obtenerPedido,
+  obtenerPedidos,
+  obtenerPedidosPorUsuario,
+} from '../../api/pedidos';
 import './Pedidos.css';
 
-const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
 // El backend solo maneja el booleano "entregado", no hay estados intermedios
 // (Preparando/Enviado no existen en el modelo real).
 const ESTADOS = ['Todos', 'Pendiente', 'Entregado'];
@@ -851,7 +856,6 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
   const calcularTotal = () => {
     return productos.reduce((sum, p) => {
       const precioTotal = Number(p.precio_total || p.precio_unitario || p.precio || 0);
-      const cantidad = Number(p.cantidad) || 1;
       return sum + precioTotal;
     }, 0);
   };
@@ -1234,97 +1238,20 @@ function ProgressBar({ estado }) {
 }
 
 async function fetchPedidos(vista, signal) {
-  const headers = {};
-  const token = localStorage.getItem('token');
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  if (vista === 'usuario') {
-    return fetchPedidosUsuario(headers, signal);
-  }
-
-  return fetchPedidosTienda(headers, signal);
+  if (vista === 'usuario') return fetchPedidosUsuario(signal);
+  return fetchPedidosTienda(signal);
 }
 
-async function fetchPedidosTienda(headers, signal) {
-  const tiendaId = obtenerTiendaId();
-  const rutasPrimarias = ['/pedidos/getAll'];
-  const candidates = [
-    ...rutasPrimarias,
-    '/pedidos/tienda',
-    '/pedidos/store',
-    '/pedidos/tienda/' + tiendaId,
-    '/pedidos/get/tienda/' + tiendaId,
-    '/pedidos/getByTienda/' + tiendaId,
-    '/pedidos/store/' + tiendaId,
-    '/tiendas/' + tiendaId + '/pedidos',
-  ].filter(Boolean);
-
-  for (const path of candidates) {
-    try {
-      return await requestPedidos(path, headers, signal);
-    } catch (err) {
-      if (signal.aborted || ![400, 401, 403, 404, 405].includes(err.status)) {
-        throw err;
-      }
-    }
-  }
-
-  const data = await requestPedidos('/pedidos/getAll', headers, signal);
-  const lista = extraerListaPedidos(data);
-
-  return tiendaId ? lista.filter((pedido) => pedidoPerteneceATienda(pedido, tiendaId)) : lista;
+async function fetchPedidosTienda(signal) {
+  return obtenerPedidos(signal);
 }
 
-async function fetchPedidosUsuario(headers, signal) {
+async function fetchPedidosUsuario(signal) {
   const usuarioId = obtenerUsuarioId();
-  const rutasPrimarias = usuarioId ? [`/pedidos/getAll/${usuarioId}`, '/pedidos/getAll'] : ['/pedidos/getAll'];
-  const candidates = [
-    ...rutasPrimarias,
-    '/pedidos/mis-pedidos',
-    '/pedidos/mios',
-    '/pedidos/usuario',
-    '/pedidos/user',
-    '/pedidos/usuario/' + usuarioId,
-    '/pedidos/get/usuario/' + usuarioId,
-    '/pedidos/getByUsuario/' + usuarioId,
-    '/pedidos/user/' + usuarioId,
-    '/usuarios/' + usuarioId + '/pedidos',
-  ].filter(Boolean);
-
-  let lastError;
-
-  for (const path of candidates) {
-    try {
-      return await requestPedidos(path, headers, signal);
-    } catch (err) {
-      lastError = err;
-      if (signal.aborted || ![400, 401, 403, 404, 405].includes(err.status)) {
-        throw err;
-      }
-    }
-  }
-
-  const data = await requestPedidos('/pedidos/getAll', headers, signal);
-  const lista = extraerListaPedidos(data);
-
   if (!usuarioId) {
-    throw lastError || new Error('Inicia sesion para ver tus pedidos.');
+    throw new Error('Inicia sesión para ver tus pedidos.');
   }
-
-  return lista.filter((pedido) => pedidoPerteneceAUsuario(pedido, usuarioId));
-}
-
-async function requestPedidos(path, headers, signal) {
-  const response = await fetch(`${API_URL}${path}`, { headers, signal });
-  const payload = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    const error = new Error(payload.message || payload.error || `Error ${response.status}`);
-    error.status = response.status;
-    throw error;
-  }
-
-  return payload;
+  return obtenerPedidosPorUsuario(usuarioId, signal);
 }
 
 function obtenerUsuarioId() {
@@ -1338,22 +1265,6 @@ function obtenerUsuarioId() {
     fuente.usuarioId ||
     fuente.userId ||
     fuente.sub ||
-    ''
-  );
-}
-
-function obtenerTiendaId() {
-  const fuente = obtenerSesionActual();
-
-  return (
-    fuente.id_tienda ||
-    fuente.idTienda ||
-    fuente.tiendaId ||
-    fuente.storeId ||
-    fuente.tienda?.id ||
-    fuente.tienda?._id ||
-    fuente.store?.id ||
-    localStorage.getItem('id_tienda') ||
     ''
   );
 }
@@ -1444,53 +1355,12 @@ function decodificarJwt(token) {
   }
 }
 
-function pedidoPerteneceAUsuario(pedido, usuarioId) {
-  const id = String(usuarioId);
-  const comprador = pedido.cliente || pedido.comprador || pedido.usuario || {};
-  const candidatos = [
-    pedido.id_usuario,
-    pedido.usuarioId,
-    pedido.userId,
-    pedido.clienteId,
-    pedido.id_cliente,
-    comprador.id,
-    comprador._id,
-    comprador.id_usuario,
-    comprador.usuarioId,
-  ];
-
-  return candidatos.some((value) => value != null && String(value) === id);
-}
-
-function pedidoPerteneceATienda(pedido, tiendaId) {
-  const id = String(tiendaId);
-  const tienda = pedido.tienda || pedido.vendedor || pedido.store || {};
-  const candidatos = [
-    pedido.id_tienda,
-    pedido.tiendaId,
-    pedido.storeId,
-    pedido.vendedorId,
-    pedido.id_vendedor,
-    tienda.id,
-    tienda._id,
-    tienda.id_tienda,
-    tienda.tiendaId,
-  ];
-
-  return candidatos.some((value) => value != null && String(value) === id);
-}
-
 function extraerListaPedidos(data) {
-  let lista = [];
-  
-  if (data?.success === true && Array.isArray(data.data)) lista = data.data;
-  else if (Array.isArray(data)) lista = data;
-  else if (Array.isArray(data?.pedidos)) lista = data.pedidos;
-  else if (Array.isArray(data?.envios)) lista = data.envios;
-  else if (Array.isArray(data?.orders)) lista = data.orders;
-  else if (Array.isArray(data?.data)) lista = data.data;
-  else if (Array.isArray(data?.results)) lista = data.results;
-  else return [];
+  const lista = data?.success === true && Array.isArray(data.data) ? data.data
+    : Array.isArray(data) ? data
+      : data?.pedidos ?? data?.envios ?? data?.orders ?? data?.data ?? data?.results ?? [];
+
+  if (!Array.isArray(lista)) return [];
 
   // Eliminar duplicados basándose en el ID del pedido
   const idsVistos = new Set();
@@ -1551,7 +1421,10 @@ function normalizarPedido(pedido) {
     codigoPostal: pedido.codigoPostal || pedido.cp || direccion.codigoPostal || direccion.cp || comprador.codigoPostal || 'Sin CP',
     localidad: pedido.localidad || pedido.ciudad || direccion.localidad || direccion.ciudad || comprador.localidad || 'Sin localidad',
     estado: normalizarEstado(pedido),
-    total: normalizarPrecio(pedido.precio_total ?? pedido.total ?? pedido.totalPedido ?? pedido.montoTotal ?? pedido.amount ?? 0),
+    total: normalizarPrecio(
+      pedido.precio_total ?? pedido.total ?? pedido.totalPedido ?? pedido.montoTotal ?? pedido.amount ??
+      detalles.reduce((acumulado, detalle) => acumulado + normalizarPrecio(detalle.precio_total ?? detalle.total ?? 0), 0),
+    ),
     productos: detalles,
     detalles,
     fecha: pedido.fecha || pedido.createdAt || '',

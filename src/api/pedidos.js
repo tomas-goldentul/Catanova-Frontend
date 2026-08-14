@@ -1,5 +1,34 @@
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+function headersPedido() {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function leerListaPedidos(response, mensaje) {
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || data.error || `${mensaje} (Error ${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+  return Array.isArray(data) ? data : (data.data ?? data.pedidos ?? []);
+}
+
+export async function obtenerPedidos(signal) {
+  const response = await fetch(`${API_URL}/pedidos/getAll`, { headers: headersPedido(), signal });
+  return leerListaPedidos(response, 'No se pudieron obtener los pedidos');
+}
+
+export async function obtenerPedidosPorUsuario(idUsuario, signal) {
+  if (!idUsuario) throw new Error('El id_usuario es obligatorio para consultar sus pedidos.');
+  const response = await fetch(`${API_URL}/pedidos/getAll/${encodeURIComponent(idUsuario)}`, {
+    headers: headersPedido(),
+    signal,
+  });
+  return leerListaPedidos(response, 'No se pudieron obtener los pedidos del usuario');
+}
+
 function normalizarPedidoCompatible(pedido) {
   if (!pedido || typeof pedido !== 'object') return pedido;
 
