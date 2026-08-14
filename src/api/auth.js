@@ -50,11 +50,25 @@ export function login(body) {
 }
 
 export function registerUsuario(body) {
-  return request('/register/usuario', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  const candidates = ['/api/auth/register/usuario', '/register/usuario', '/auth/register/usuario', '/api/register/usuario'];
+  let lastErr;
+
+  return (async () => {
+    for (const path of candidates) {
+      try {
+        return await request(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      } catch (err) {
+        lastErr = err;
+        console.warn('registerUsuario attempt failed for', path, err.message || err);
+      }
+    }
+
+    throw lastErr || new Error('No register endpoint responded');
+  })();
 }
 
 export function registerTienda(body) {
