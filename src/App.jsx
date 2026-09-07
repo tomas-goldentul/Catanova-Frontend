@@ -7,10 +7,12 @@ import Productos from './components/Productos/productos';
 import Producto from './components/Producto/Producto';
 import Login from './components/Login/Login';
 import Pedidos from './components/Pedidos/Pedidos';
+import CatalogoTiendas from './components/CatalogoTiendas/CatalogoTiendas';
 
 function App() {
   const [tab, setTab] = useState('tienda');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [tiendaSeleccionada, setTiendaSeleccionada] = useState(null);
 
   return (
     <div className="app-container">
@@ -35,6 +37,13 @@ function App() {
           onClick={() => setTab('catalogo')}
         >
           Catálogo
+        </button>
+        <button
+          type="button"
+          className={tab === 'catalogoTiendas' ? 'tab active' : 'tab'}
+          onClick={() => setTab('catalogoTiendas')}
+        >
+          Catálogo de Tiendas
         </button>
         <button
           type="button"
@@ -65,6 +74,7 @@ function App() {
       {tab === 'galeria' && <GaleriaProductos onIrAMenuPrincipal={() => setTab('tienda')} />}
       {tab === 'catalogo' && (
         <Catalogo
+          tiendaSeleccionada={tiendaSeleccionada}
           onVerProducto={(id) => {
             setProductoSeleccionado(id);
             setTab('producto');
@@ -82,7 +92,14 @@ function App() {
       )}
       {tab === 'login' && <Login />}
       {tab === 'pedidos' && <Pedidos />}
-      {tab === 'categorias' && <GestionCategorias />}
+      {tab === 'catalogoTiendas' && (
+        <CatalogoTiendas
+          onEntrar={(tienda) => {
+            setTiendaSeleccionada(tienda.id_tienda);
+            setTab('catalogo');
+          }}
+        />
+      )}
     </div>
   );
 }
