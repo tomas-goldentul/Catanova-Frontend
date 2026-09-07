@@ -4,6 +4,12 @@ import { getCategorias } from '../../api/categorias';
 import { IconoImagen, IconoCerrar } from '../Icons/Icons';
 import './AgregarProducto.css';
 
+const IconoCheck = () => (
+    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12" />
+    </svg>
+);
+
 function AgregarProducto({ onCrear, onCancelar }) {
     const [formulario, setFormulario] = useState({
         nombre: '',
@@ -21,7 +27,6 @@ function AgregarProducto({ onCrear, onCancelar }) {
     const [subiendoImagen, setSubiendoImagen] = useState(false);
     const [errores, setErrores] = useState({});
 
-    // Obtener todas las categorías disponibles desde la DB
     useEffect(() => {
         const cargarCategorias = async () => {
             try {
@@ -33,8 +38,6 @@ function AgregarProducto({ onCrear, onCancelar }) {
 
                 setCategorias(categoriasDB);
 
-                // Seleccionar automáticamente la primera categoría
-                // solamente si existen categorías
                 if (categoriasDB.length > 0) {
                     setFormulario(datosPrevios => ({
                         ...datosPrevios,
@@ -85,8 +88,6 @@ function AgregarProducto({ onCrear, onCancelar }) {
             nuevosErrores.precio = 'Ingresá un precio mayor a cero.';
         }
 
-        // Si el producto se publica en tienda,
-        // debe tener una categoría seleccionada.
         if (formulario.activo && !formulario.categoria) {
             nuevosErrores.categoria = 'Seleccioná una categoría.';
         }
@@ -112,8 +113,6 @@ function AgregarProducto({ onCrear, onCancelar }) {
         }
 
         try {
-            // Si hay imagen seleccionada, primero se sube al servidor
-            // para obtener el path que se guardará en el producto.
             let imagenPath = '';
             if (imagenArchivo) {
                 setSubiendoImagen(true);
@@ -131,24 +130,15 @@ function AgregarProducto({ onCrear, onCancelar }) {
                 stock: Number(formulario.stock),
                 precio: Number(formulario.precio),
                 activo: formulario.activo,
-
-                // Si el producto se publica, se guarda su categoría.
-                // Si no se publica, no se le asigna categoría.
-                id_categoria: formulario.activo
-                    ? Number(formulario.categoria)
-                    : null,
-
-                // Descripción propia del producto
+                estado: formulario.activo,
+                id_categoria: Number(formulario.categoria) || null,
                 descripcion: formulario.descripcion.trim(),
-
                 imagen: imagenPath,
                 id_tienda: tiendaIdFinal,
             };
 
             const data = await insertProducto(payload);
 
-            // Asumo que el backend retorna el producto creado;
-            // ajustá según tu API si devuelve otra estructura.
             const productoCreado =
                 data.producto ?? data.data ?? data;
 
@@ -169,7 +159,7 @@ function AgregarProducto({ onCrear, onCancelar }) {
             <div className="agregarProductoHeader">
                 <div>
                     <span className="agregarProductoEyebrow">
-                        Inventario
+                        <IconoCheck /> Nuevo producto
                     </span>
 
                     <h2 id="agregarProductoTitulo">
@@ -353,7 +343,6 @@ function AgregarProducto({ onCrear, onCancelar }) {
                         Publicar en tienda
                     </label>
 
-                    {/* CATEGORÍA: SOLO SI EL PRODUCTO ESTÁ PUBLICADO */}
                     {formulario.activo && (
                         <div className="agregarProductoCampo agregarProductoCampo--doble">
                             <label htmlFor="productoCategoria">
@@ -435,4 +424,3 @@ function AgregarProducto({ onCrear, onCancelar }) {
 }
 
 export default AgregarProducto;
-

@@ -7,8 +7,13 @@ import Paginacion from '../Paginacion/Paginacion';
 import AgregarProducto from '../AgregarProducto/AgregarProducto';
 import FiltroProductos from './FiltroProductos';
 import { getTodosLosProductos, getTodosProductosPorTienda, updateEstadoProducto, borrarProducto } from '../../api/productos';
-import { IconoBuscar, IconoFiltrar, IconoMas } from '../Icons/Icons';
+import { IconoBuscar, IconoFiltrar, IconoMas, IconoPaquete, IconoTienda, IconoOjoTachado, IconoInventario } from '../Icons/Icons';
 import './GaleriaProductos.css';
+
+const parsearActivo = (valor) => {
+    if (valor === true || valor === 1 || valor === '1' || valor === 'true' || valor === 'TRUE') return true;
+    return false;
+};
 
 const normalizarProducto = (producto) => ({
     id: producto.id_producto ?? producto.id ?? producto._id ?? producto.productoId,
@@ -21,17 +26,25 @@ const normalizarProducto = (producto) => ({
         : (typeof producto.precio === 'string'
             ? `$${Number(producto.precio).toLocaleString('es-AR')}`
             : '$0'),
-    activo: producto.activo ?? producto.estado ?? true,
+    activo: parsearActivo(producto.activo ?? producto.estado),
 });
 
-const PRODUCTOS_POR_PAGINA = 6; // Límite de 6 productos por página
+const PRODUCTOS_POR_PAGINA = 6;
 
 const obtenerPrecioNumerico = (precio) => {
     const numero = Number(String(precio).replace(/[^\d.-]/g, ''));
     return Number.isFinite(numero) ? numero : 0;
 };
 
-function GaleriaProductos({ onIrAMenuPrincipal }) {
+const IconoProductosVacios = () => (
+    <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 21h8M12 17v4" />
+        <path d="M7 9h2M7 12h4" />
+    </svg>
+);
+
+function GaleriaProductos({ onIrAMenuPrincipal, tabActiva, onNavegar, onVerEnTienda }) {
     const [productos, setProductos] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
     const [mostrarAgregarProducto, setMostrarAgregarProducto] = useState(false);
@@ -89,7 +102,7 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
     const productosFiltrados = productos
         .filter((productoActual) => {
             const coincideBusqueda = productoActual.nombre.toLowerCase().includes(busqueda.toLowerCase());
-            const coincideActivo = soloActivos ? productoActual.activo : true; // <-- Conexión con el filtro de solo activos
+            const coincideActivo = soloActivos ? productoActual.activo : true;
             return coincideBusqueda && coincideActivo;
         })
         .sort((a, b) => {
@@ -109,6 +122,11 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
     const enTienda = productos.filter(productoActual => productoActual.activo).length;
     const sinPublicar = productos.filter(productoActual => !productoActual.activo).length;
     const stockBajo = productos.filter(productoActual => productoActual.stock < 10).length;
+
+    const base = Math.max(productos.length, 1);
+    const enTiendaPct = Math.round((enTienda / base) * 100);
+    const sinPublicarPct = Math.round((sinPublicar / base) * 100);
+    const stockBajoPct = Math.round((stockBajo / base) * 100);
 
     const handleEliminar = async (id) => {
         await borrarProducto(id);
@@ -141,6 +159,10 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
         }
     };
 
+    const handleEditar = () => {
+        setMensaje('La edición de productos estará disponible próximamente.');
+    };
+
     const handleCrearProducto = (nuevoProducto) => {
         setProductos(productosPrevios => [
             normalizarProducto(nuevoProducto),
@@ -151,44 +173,59 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
         setMostrarAgregarProducto(false);
     };
 
+    const irVerEnTienda = (id) => {
+        if (onVerEnTienda) {
+            onVerEnTienda(id);
+            return;
+        }
+        setMensaje('Dirigite a la sección Catálogo para ver tu tienda pública.');
+    };
+
     return (
         <>
-            <Header onLogoClick={onIrAMenuPrincipal} />
+            <Header
+                onLogoClick={onIrAMenuPrincipal}
+                tabActiva={tabActiva}
+                onNavegar={onNavegar}
+            />
             <div className="galeria">
 
-                <div className="divBuscarProductos">
-                    <h1>Galería de Productos:</h1>
-                    <div className="accionesBuscador">
-                        
-                        <div className="galeriaBuscadorContenedor">
-                            <IconoBuscar />
-                            <input
-                                type="text"
-                                className="galeriaBuscador"
-                                placeholder="Busca un producto"
-                                value={busqueda}
-                                onChange={(event) => {
-                                    setBusqueda(event.target.value);
+                <div className="galeriaHero">
+                    <div className="galeriaHeroTitulo">
+                        <div className="galeriaHeroTexto">
+                            <h1>Galería de Productos</h1>
+                            <p>{productos.length} productos en tu catálogo</p>
+                        </div>
+                        <div className="galeriaHeroAcciones">
+                            <div className="galeriaBuscadorContenedor">
+                                <IconoBuscar />
+                                <input
+                                    type="text"
+                                    className="galeriaBuscador"
+                                    placeholder="Buscar producto..."
+                                    value={busqueda}
+                                    onChange={(event) => {
+                                        setBusqueda(event.target.value);
+                                        setPaginaActual(1);
+                                    }}
+                                />
+                            </div>
+                            <button
+                                className="galeriaFiltrar"
+                                onClick={() => {
+                                    setMostrarFiltro((valorActual) => !valorActual);
                                     setPaginaActual(1);
                                 }}
-                            />
+                            >
+                                <IconoFiltrar /> Filtrar
+                            </button>
+                            <button
+                                className="galeriaCrearNuevoProd"
+                                onClick={() => setMostrarAgregarProducto(true)}
+                            >
+                                <IconoMas /> Nuevo producto
+                            </button>
                         </div>
-
-                        <button
-                            className="galeriaFiltrar"
-                            onClick={() => {
-                                setMostrarFiltro((valorActual) => !valorActual);
-                                setPaginaActual(1);
-                            }}
-                        >
-                            <IconoFiltrar /> Filtrar
-                        </button>
-                        <button
-                            className="galeriaCrearNuevoProd"
-                            onClick={() => setMostrarAgregarProducto(true)}
-                        >
-                            <IconoMas /> Nuevo producto
-                        </button>
                     </div>
                 </div>
 
@@ -222,28 +259,70 @@ function GaleriaProductos({ onIrAMenuPrincipal }) {
                 )}
 
                 <div className="estadisticasGenerales">
-                    <StatCard label="Total productos" value={productosFiltrados.length}/>
-                    <StatCard label="En tienda" value={enTienda}/>
-                    <StatCard label="Sin publicar" value={sinPublicar}/>
-                    <StatCard label="Stock bajo" value={stockBajo}/>
+                    <StatCard
+                        label="Total Productos"
+                        value={productosFiltrados.length}
+                        icono={IconoPaquete}
+                        color="#6366f1"
+                        tendencia={`${enTiendaPct}% en tienda`}
+                        tendenciaPositiva={true}
+                    />
+                    <StatCard
+                        label="En Tienda"
+                        value={enTienda}
+                        icono={IconoTienda}
+                        color="#00b894"
+                        tendencia={`+${enTiendaPct}%`}
+                        tendenciaPositiva={true}
+                    />
+                    <StatCard
+                        label="Sin Publicar"
+                        value={sinPublicar}
+                        icono={IconoOjoTachado}
+                        color="#f59e0b"
+                        tendencia={`${sinPublicarPct}% del total`}
+                        tendenciaPositiva={false}
+                    />
+                    <StatCard
+                        label="Stock Bajo"
+                        value={stockBajo}
+                        icono={IconoInventario}
+                        color="#ef4444"
+                        tendencia={`${stockBajoPct}% del total`}
+                        tendenciaPositiva={false}
+                    />
                 </div>
 
-                <div className="productosOrdenados">
-                    {productosPagina.map((producto, index) => (
-                        <TarjetaProducto
-                            key={producto.id ?? `${producto.nombre}-${index}`}
-                            {...producto}
-                            onAgregar={() => handleAgregar(producto.id)}
-                            onEliminar={() => handleEliminar(producto.id)}
-                        />
-                    ))}
-                </div>
+                {productosPagina.length > 0 ? (
+                    <div className="productosOrdenados">
+                        {productosPagina.map((producto, index) => (
+                            <TarjetaProducto
+                                key={producto.id ?? `${producto.nombre}-${index}`}
+                                {...producto}
+                                onAgregar={() => handleAgregar(producto.id)}
+                                onEliminar={() => handleEliminar(producto.id)}
+                                onEditar={handleEditar}
+                                onVerEnTienda={() => irVerEnTienda(producto.id)}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="galeriaVacio">
+                        <div className="galeriaVacioIcono">
+                            <IconoProductosVacios />
+                        </div>
+                        <h3>No se encontraron productos</h3>
+                        <p>Probá ajustando los filtros o agregá un nuevo producto a tu catálogo.</p>
+                    </div>
+                )}
 
-                <Paginacion
-                    total={totalPaginas}
-                    paginaActual={paginaActual}
-                    onChange={setPaginaActual}
-                />
+                {totalPaginas > 1 && (
+                    <Paginacion
+                        total={totalPaginas}
+                        paginaActual={paginaActual}
+                        onChange={setPaginaActual}
+                    />
+                )}
 
             </div>
             <Footer />

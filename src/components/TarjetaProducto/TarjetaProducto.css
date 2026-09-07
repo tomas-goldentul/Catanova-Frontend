@@ -1,23 +1,23 @@
 .tarjetaProducto {
     background: #ffffff;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    border: 1px solid #ececee;
+    border-radius: 16px;
+    overflow: visible;
     position: relative;
-    transition: box-shadow 0.25s, transform 0.25s;
-    animation: tarjeta-fadeUp 0.4s ease both;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: tarjeta-fadeUp 0.45s ease both;
 }
 
 .tarjetaProducto:hover {
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
-    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(13, 27, 56, 0.1);
+    transform: translateY(-5px);
+    border-color: transparent;
 }
 
 @keyframes tarjeta-fadeUp {
     from {
         opacity: 0;
-        transform: translateY(16px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -25,25 +25,109 @@
     }
 }
 
+/* ── Menú de acción (tres puntos) ── */
+.tarjetaProductoMenuContenedor {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 5;
+}
+
+.tarjetaProductoMenuBtn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tarjetaProductoMenuBtn:hover {
+    background: #ffffff;
+    color: #0d1b38;
+    box-shadow: 0 4px 14px rgba(13, 27, 56, 0.12);
+}
+
+.tarjetaProductoMenu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    min-width: 176px;
+    background: #ffffff;
+    border: 1px solid #f0f1f5;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(13, 27, 56, 0.16);
+    padding: 6px;
+    animation: tarjetaMenuFade 0.18s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes tarjetaMenuFade {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tarjetaProductoMenuItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    transition: background 0.15s;
+}
+
+.tarjetaProductoMenuItem svg {
+    opacity: 0.6;
+}
+
+.tarjetaProductoMenuItem:hover {
+    background: #f5f7fa;
+}
+
+.tarjetaProductoMenuItem--peligro {
+    color: #dc2626;
+}
+
+.tarjetaProductoMenuItem--peligro:hover {
+    background: #fef2f2;
+}
+
+/* ── Badges de estado ── */
 .tarjetaProductoDatosDistintivos {
     position: absolute;
-    top: 5%;
-    right: 4%;
+    top: 10px;
+    left: 10px;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    align-items: flex-end;
-    z-index: 1;
+    align-items: flex-start;
+    z-index: 2;
 }
 
 .tarjetaProductoDatoD {
-    font-size: 70%;
-    font-weight: 700;
-    letter-spacing: -1%;
-    padding: 5%;
-    padding-left: 11%;
-    padding-right: 11%;
-    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding: 4px 10px;
+    border-radius: 100px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -51,18 +135,21 @@
 }
 
 .tarjetaProductoDatoD--no-publicado {
-    background: #fee2e2;
-    color: #991b1b;
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
 }
 
 .tarjetaProductoDatoD--stock-bajo {
-    background: #fef3c7;
+    background: #fffbeb;
     color: #b45309;
+    border: 1px solid #fde68a;
 }
 
+/* ── Imagen ── */
 .tarjetaProductoImagen {
-    background: #f0f2f5;
-    height: 130px;
+    background: linear-gradient(145deg, #eef1f5, #e8ecf1);
+    height: 180px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -70,13 +157,20 @@
     gap: 6px;
     color: #9ca3af;
     overflow: hidden;
+    position: relative;
+    border-radius: 16px 16px 0 0;
 }
 
 .tarjetaProductoImagen img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    padding: 8px;
+    padding: 12px;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tarjetaProducto:hover .tarjetaProductoImagen img {
+    transform: scale(1.05);
 }
 
 .tarjetaProductoImagen svg {
@@ -89,28 +183,34 @@
     font-weight: 500;
 }
 
+/* ── Contenido ── */
 .tarjetaProductoContenido {
-    padding: 5%;
+    padding: 18px 16px 16px;
 }
 
 .tarjetaProductoNombre {
-    font-size: 100%;
+    font-size: 15px;
     font-weight: 700;
-    margin-bottom: 2.2%;
+    margin-bottom: 6px;
+    color: #111827;
+    line-height: 1.3;
 }
 
 .tarjetaProductoDatos {
-    font-size: 73%;
-    color: #6b7280;
-    margin-bottom: 2%;
-    line-height: 1.5;
+    font-size: 13px;
+    color: #4b5563;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    font-weight: 500;
 }
 
 .tarjetaProductoPrecio {
-    font-size: 17px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 800;
     font-family: 'DM Mono', monospace;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+    color: #111827;
+    letter-spacing: -0.5px;
 }
 
 /* ── Acciones ── */
@@ -126,40 +226,45 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    background: #00c9a7;
+    background: linear-gradient(135deg, #00a88c, #008f78);
     color: #ffffff;
     border: none;
-    border-radius: 7px;
-    padding: 8px 14px;
+    border-radius: 10px;
+    padding: 10px 16px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     font-family: inherit;
-    transition: background 0.2s, transform 0.15s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 201, 167, 0.22);
 }
 
 .tarjetaProductoAgregar:hover {
-    background: #00a88c;
-    transform: scale(1.02);
+    background: linear-gradient(135deg, #008f78, #007d69);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 201, 167, 0.3);
 }
 
-.tarjetaProductoEliminar {
-    width: 36px;
-    height: 36px;
-    background: #fee2e2;
-    color: #e8453c;
-    border: none;
-    border-radius: 7px;
+.tarjetaProductoVer {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+    background: #e6f6f1;
+    color: #0e6b5a;
+    border: 1px solid #c9eade;
+    border-radius: 10px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
-    flex-shrink: 0;
-    transition: background 0.2s, color 0.2s, transform 0.15s;
+    font-family: inherit;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.tarjetaProductoEliminar:hover {
-    background: #e8453c;
-    color: #ffffff;
-    transform: scale(1.05);
+.tarjetaProductoVer:hover {
+    background: #d7f1e7;
+    border-color: #a8ddcb;
+    transform: translateY(-1px);
 }

@@ -62,7 +62,14 @@ function App() {
           onIrAMenuPrincipal={() => setTab('tienda')}
         />
       )}
-      {tab === 'galeria' && <GaleriaProductos onIrAMenuPrincipal={() => setTab('tienda')} />}
+      {tab === 'galeria' && (
+        <GaleriaProductos
+          onIrAMenuPrincipal={() => setTab('tienda')}
+          tabActiva={tab}
+          onNavegar={setTab}
+          onVerEnTienda={() => setTab('catalogo')}
+        />
+      )}
       {tab === 'catalogo' && (
         <Catalogo
           onVerProducto={(id) => {
