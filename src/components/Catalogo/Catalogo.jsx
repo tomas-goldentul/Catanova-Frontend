@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import './Catalogo.css';
-import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import BurbujaChatanova from '../BurbujaChatanova/BurbujaChatanova';
 import Categoria from '../Categoria/Categoria';
@@ -312,7 +311,7 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
 //   COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════
 
-function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
+function Catalogo({ onVerProducto }) {
   const [categorias, setCategorias]         = useState([]);
   const [tabActivo, setTabActivo]           = useState(null);
   const [infoTienda, setInfoTienda]         = useState({ nombre: '', slogan: '' });
@@ -457,7 +456,6 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal }) {
 
   return (
     <>
-      <Navbar onLogoClick={onIrAMenuPrincipal} />
       <main className="cat-main">
 
         {/* ── Header tienda ── */}

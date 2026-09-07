@@ -1,5 +1,4 @@
 import './MiTienda.css';
-import Navbar from '../Navbar/Navbar';
 import StoreHeader from '../StoreHeader/StoreHeader';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import Footer from '../Footer/Footer';
@@ -101,16 +100,11 @@ function crearCards(onIrAGaleria) {
   ];
 }
 
-function MiTienda({ onIrAGaleria, onVerTiendaPublica, onIrAMenuPrincipal, onNavegar, tabActiva }) {
+function MiTienda({ onIrAGaleria, onVerTiendaPublica }) {
   const cards = crearCards(onIrAGaleria);
 
   return (
     <>
-      <Navbar
-        onLogoClick={onIrAMenuPrincipal}
-        onNavegar={onNavegar}
-        tabActiva={tabActiva}
-      />
       <main className="menu-main">
         <StoreHeader onVerTiendaPublica={onVerTiendaPublica} />
         <div className="menu-section-header">

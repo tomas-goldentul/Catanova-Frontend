@@ -1,0 +1,226 @@
+.perfil-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(13, 27, 56, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 200;
+  animation: perfilModalIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes perfilModalIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.perfil-card {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(13, 27, 56, 0.35);
+  animation: perfilCardIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes perfilCardIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.perfil-cerrar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  z-index: 2;
+}
+
+.perfil-cerrar:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.perfil-banner {
+  height: 110px;
+  background: linear-gradient(120deg, #0d1b38, #0f2a5e 55%, #00b894);
+  border-radius: 20px 20px 0 0;
+}
+
+.perfil-cabecera {
+  text-align: center;
+  padding: 0 24px 20px;
+  margin-top: -46px;
+}
+
+.perfil-foto {
+  width: 94px;
+  height: 94px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  background: linear-gradient(135deg, #00c9a7, #00b894);
+  border: 4px solid #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 184, 148, 0.35);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.perfil-fotoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.perfil-fotoIniciales {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.perfil-nombre {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.perfil-rol {
+  display: inline-block;
+  background: rgba(0, 184, 148, 0.14);
+  color: #00a884;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+.perfil-email {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.perfil-datos {
+  padding: 4px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.perfil-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #f8fafc;
+  border: 1px solid #eef1f6;
+  border-radius: 12px;
+  padding: 11px 14px;
+}
+
+.perfil-filaEtiqueta {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.perfil-filaValor {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0f172a;
+  text-align: right;
+  word-break: break-word;
+}
+
+.perfil-sinDatos {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.perfil-cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.perfil-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 184, 148, 0.2);
+  border-top-color: #00b894;
+  animation: perfilSpin 0.8s linear infinite;
+}
+
+@keyframes perfilSpin {
+  to { transform: rotate(360deg); }
+}
+
+.perfil-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 64px 24px;
+  text-align: center;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+.perfil-errorBtn {
+  border: none;
+  background: #0d1b38;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.perfil-errorBtn:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 640px) {
+  .perfil-modal {
+    padding: 12px;
+  }
+
+  .perfil-card {
+    border-radius: 16px;
+  }
+}

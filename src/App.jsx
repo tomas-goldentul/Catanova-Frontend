@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './App.css';
+import Navbar from './components/Navbar/Navbar';
 import MiTienda from './components/MiTienda/MiTienda';
 import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
 import Catalogo from './components/Catalogo/Catalogo';
@@ -14,61 +15,20 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="app-tabs">
-        <button
-          type="button"
-          className={tab === 'tienda' ? 'tab active' : 'tab'}
-          onClick={() => setTab('tienda')}
-        >
-          Mi Tienda
-        </button>
-        <button
-          type="button"
-          className={tab === 'galeria' ? 'tab active' : 'tab'}
-          onClick={() => setTab('galeria')}
-        >
-          Galería de Productos
-        </button>
-        <button
-          type="button"
-          className={tab === 'catalogo' ? 'tab active' : 'tab'}
-          onClick={() => setTab('catalogo')}
-        >
-          Catálogo
-        </button>
-        <button
-          type="button"
-          className={tab === 'productos' ? 'tab active' : 'tab'}
-          onClick={() => setTab('productos')}
-        >
-          Productos API
-        </button>
-        <button type="button" className={tab === 'login' ? 'tab active' : 'tab'} onClick={() => setTab('login')}>
-          Login
-        </button>
-        <button
-          type="button"
-          className={tab === 'pedidos' ? 'tab active' : 'tab'}
-          onClick={() => setTab('pedidos')}
-        >
-          Ver pedidos
-        </button>
-      </div>
+      <Navbar
+        onLogoClick={() => setTab('tienda')}
+        tabActiva={tab}
+        onNavegar={setTab}
+      />
 
       {tab === 'tienda' && (
         <MiTienda
           onIrAGaleria={() => setTab('galeria')}
           onVerTiendaPublica={() => setTab('catalogo')}
-          onIrAMenuPrincipal={() => setTab('tienda')}
-          onNavegar={setTab}
-          tabActiva={tab}
         />
       )}
       {tab === 'galeria' && (
         <GaleriaProductos
-          onIrAMenuPrincipal={() => setTab('tienda')}
-          tabActiva={tab}
-          onNavegar={setTab}
           onVerEnTienda={() => setTab('catalogo')}
         />
       )}
@@ -78,7 +38,6 @@ function App() {
             setProductoSeleccionado(id);
             setTab('producto');
           }}
-          onIrAMenuPrincipal={() => setTab('tienda')}
         />
       )}
       {tab === 'productos' && <Productos />}
@@ -86,7 +45,6 @@ function App() {
         <Producto
           productoId={productoSeleccionado}
           onVolver={() => setTab('catalogo')}
-          onIrAMenuPrincipal={() => setTab('tienda')}
         />
       )}
       {tab === 'login' && <Login />}

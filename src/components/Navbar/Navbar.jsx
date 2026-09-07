@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import './Navbar.css';
 import logo from '../../assets/logo.png';
+import Perfil from '../Perfil/Perfil';
 import { IconoEngranaje, IconoPerfil, IconoConfig, IconoSalir, IconoChevronAbajo } from '../Icons/Icons';
 
 const IconoAvatar = () => (
@@ -11,20 +12,20 @@ const IconoAvatar = () => (
 );
 
 const ENLACES = [
-  { clave: 'escritorio', etiqueta: 'Escritorio' },
+  { clave: 'tienda', etiqueta: 'Mi Tienda' },
+  { clave: 'galeria', etiqueta: 'Galería de Productos' },
   { clave: 'catalogo', etiqueta: 'Catálogo' },
-  { clave: 'pedidos', etiqueta: 'Pedidos' },
-  { clave: 'analisis', etiqueta: 'Análisis' },
+  { clave: 'productos', etiqueta: 'Productos API' },
+  { clave: 'pedidos', etiqueta: 'Ver pedidos' },
 ];
 
 const DESTINOS = {
-  escritorio: 'tienda',
+  tienda: 'tienda',
+  galeria: 'galeria',
   catalogo: 'catalogo',
+  productos: 'productos',
   pedidos: 'pedidos',
-  analisis: 'tienda',
 };
-
-const TABS_ESC = ['tienda', 'galeria', 'productos', 'producto', 'login'];
 
 const leerSesion = () => {
   let usuario = null;
@@ -46,6 +47,7 @@ const nombreParaMostrar = (usuario) => {
 
 function Navbar({ onLogoClick, tabActiva, onNavegar }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [perfilAbierto, setPerfilAbierto] = useState(false);
   const [sesion, setSesion] = useState(leerSesion);
   const contenedorRef = useRef(null);
 
@@ -70,7 +72,7 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
   }, []);
 
   const esActivo = (clave) => {
-    if (clave === 'escritorio') return TABS_ESC.includes(tabActiva);
+    if (clave === 'catalogo') return tabActiva === 'catalogo' || tabActiva === 'producto';
     return tabActiva === DESTINOS[clave];
   };
 
@@ -91,6 +93,11 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
     setMenuAbierto((valor) => !valor);
   };
 
+  const abrirPerfil = () => {
+    setMenuAbierto(false);
+    setPerfilAbierto(true);
+  };
+
   const cerrarSesion = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('tipo');
@@ -105,6 +112,7 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
   const fotoPerfil = sesion.usuario?.foto_perfil || sesion.usuario?.avatar || '';
 
   return (
+    <>
     <nav className="navbar">
       <div className="nav-left">
         <ul className="nav-links">
@@ -163,7 +171,7 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
 
         {sesion.logueado && menuAbierto && (
           <div className="nav-menu" role="menu" aria-label="Menú de usuario">
-            <button type="button" role="menuitem" onClick={() => setMenuAbierto(false)}>
+            <button type="button" role="menuitem" onClick={abrirPerfil}>
               <IconoPerfil /> Perfil
             </button>
             <button type="button" role="menuitem" onClick={() => setMenuAbierto(false)}>
@@ -177,6 +185,9 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
         )}
       </div>
     </nav>
+
+    <Perfil abierto={perfilAbierto} onCerrar={() => setPerfilAbierto(false)} />
+    </>
   );
 }
 

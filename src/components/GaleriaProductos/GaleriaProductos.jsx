@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import Header from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import StatCard from '../StatCard/StatCard';
 import TarjetaProducto from '../TarjetaProducto/TarjetaProducto';
@@ -44,7 +43,7 @@ const IconoProductosVacios = () => (
     </svg>
 );
 
-function GaleriaProductos({ onIrAMenuPrincipal, tabActiva, onNavegar, onVerEnTienda }) {
+function GaleriaProductos({ onVerEnTienda }) {
     const [productos, setProductos] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
     const [mostrarAgregarProducto, setMostrarAgregarProducto] = useState(false);
@@ -183,11 +182,6 @@ function GaleriaProductos({ onIrAMenuPrincipal, tabActiva, onNavegar, onVerEnTie
 
     return (
         <>
-            <Header
-                onLogoClick={onIrAMenuPrincipal}
-                tabActiva={tabActiva}
-                onNavegar={onNavegar}
-            />
             <div className="galeria">
 
                 <div className="galeriaHero">

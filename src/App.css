@@ -19,35 +19,3 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
-
-.app-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 10px 16px;
-  background: #0d1b38;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.tab {
-  background: transparent;
-  border: none;
-  color: #8899bb;
-  padding: 7px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.18s;
-}
-
-.tab:hover {
-  background: rgba(255,255,255,0.07);
-  color: white;
-}
-
-.tab.active {
-  background: rgba(0, 184, 148, 0.15);
-  color: #00c9a7;
-  font-weight: 600;
-}
