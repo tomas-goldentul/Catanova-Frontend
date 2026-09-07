@@ -4,7 +4,7 @@ import Footer from '../Footer/Footer';
 import Categoria from '../Categoria/Categoria';
 import { getCategoriasPorTienda } from '../../api/categorias';
 import { getProductosPorCategoria } from '../../api/productos';
-import { getNombre, getSlogan } from '../../api/tiendas';
+import { getNombre, getSlogan, abrirTienda, cerrarTienda } from '../../api/tiendas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
 import { getCantidadVentasProducto } from '../../api/ventas';
 import { getCantidadFavoritosProducto } from '../../api/favoritos';
@@ -310,7 +310,7 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
 //   COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════
 
-function Catalogo({ onVerProducto }) {
+function Catalogo({ onVerProducto, onIrAMenuPrincipal, tiendaSeleccionada }) {
   const [categorias, setCategorias]         = useState([]);
   const [tabActivo, setTabActivo]           = useState(null);
   const [infoTienda, setInfoTienda]         = useState({ nombre: '', slogan: '' });
@@ -323,7 +323,11 @@ function Catalogo({ onVerProducto }) {
 
   useEffect(() => {
     const tiendaIdRaw = localStorage.getItem('id_tienda');
-    const idTienda = tiendaIdRaw ? Number(tiendaIdRaw) : null;
+    const idTiendaSesion = tiendaIdRaw ? Number(tiendaIdRaw) : null;
+    
+    const idTienda = esTienda
+      ? idTiendaSesion
+      : tiendaSeleccionada;
 
     async function cargarDatos() {
       try {
@@ -345,8 +349,10 @@ function Catalogo({ onVerProducto }) {
         const normalizadas = await Promise.all(
           categoriasDB.map(async cat => {
             console.log(categoriasDB);
-            const tiendaId = idTienda;
-            const productos = await getProductosPorCategoria(cat.id_categoria ?? cat.id, tiendaId);
+            const productos = await getProductosPorCategoria(
+              cat.id_categoria ?? cat.id,
+              idTienda
+            );
 
             console.log("Categoría:", cat.nombre, cat.id_categoria ?? cat.id);
             console.log("Productos:", productos);
@@ -400,7 +406,22 @@ function Catalogo({ onVerProducto }) {
     }
 
     cargarDatos();
-  }, []);
+  }, [tiendaSeleccionada, esTienda]);
+
+  // ── Abrir / cerrar tienda según navegación ──
+  useEffect(() => {
+    if (!tiendaSeleccionada) return;
+
+    abrirTienda(tiendaSeleccionada).catch((err) => {
+      console.error("No se pudo marcar la tienda como abierta:", err);
+    });
+
+    return () => {
+      cerrarTienda(tiendaSeleccionada).catch((err) => {
+        console.error("No se pudo marcar la tienda como cerrada:", err);
+      });
+    };
+  }, [tiendaSeleccionada]);
 
   // ── Navegación ──
 

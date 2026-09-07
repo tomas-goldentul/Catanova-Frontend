@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { getTodasLasTiendas, abrirTienda, cerrarTienda } from "../api/tiendas.js";
+import { getTodasLasTiendas, abrirTienda, cerrarTienda } from "../../api/tiendas.js";
 import "./CatalogoTiendas.css";
 
 /**
@@ -110,17 +109,6 @@ export default function TiendaDetalle() {
       <header className="tienda-detalle__header">
         <div className="tienda-detalle__cabecera">
           <h1 className="tienda-detalle__nombre">{tienda.nombre}</h1>
-
-          {tienda.abierta ? (
-            <span className="tienda-badge tienda-badge--activa">
-              <span className="tienda-badge__punto" />
-              Activa ahora
-            </span>
-          ) : (
-            <span className="tienda-badge tienda-badge--inactiva">
-              Sin actividad
-            </span>
-          )}
         </div>
 
         {tienda.slogan && (

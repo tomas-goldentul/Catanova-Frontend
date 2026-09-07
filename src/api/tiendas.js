@@ -36,3 +36,32 @@ export async function getTodasLasTiendas() {
 
     return json.data;
 }
+
+export async function abrirTienda(id) {
+  const res = await fetch(`${BASE_URL}/abrir/${id}`, {
+    method: "PUT",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+
+  const json = await res.json();
+
+  return json.data;
+}
+
+
+export async function cerrarTienda(id) {
+  const res = await fetch(`${BASE_URL}/cerrar/${id}`, {
+    method: "PUT",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+
+  const json = await res.json();
+
+  return json.data;
+}

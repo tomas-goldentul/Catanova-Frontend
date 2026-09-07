@@ -9,18 +9,62 @@ import Productos from './components/Productos/productos';
 import Producto from './components/Producto/Producto';
 import Login from './components/Login/Login';
 import Pedidos from './components/Pedidos/Pedidos';
+import CatalogoTiendas from './components/CatalogoTiendas/CatalogoTiendas';
 
 function App() {
   const [tab, setTab] = useState('tienda');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [tiendaSeleccionada, setTiendaSeleccionada] = useState(null);
 
   return (
     <div className="app-container">
-      <Navbar
-        onLogoClick={() => setTab('tienda')}
-        tabActiva={tab}
-        onNavegar={setTab}
-      />
+      <div className="app-tabs">
+        <button
+          type="button"
+          className={tab === 'tienda' ? 'tab active' : 'tab'}
+          onClick={() => setTab('tienda')}
+        >
+          Mi Tienda
+        </button>
+        <button
+          type="button"
+          className={tab === 'galeria' ? 'tab active' : 'tab'}
+          onClick={() => setTab('galeria')}
+        >
+          Galería de Productos
+        </button>
+        <button
+          type="button"
+          className={tab === 'catalogo' ? 'tab active' : 'tab'}
+          onClick={() => setTab('catalogo')}
+        >
+          Catálogo
+        </button>
+        <button
+          type="button"
+          className={tab === 'catalogoTiendas' ? 'tab active' : 'tab'}
+          onClick={() => setTab('catalogoTiendas')}
+        >
+          Catálogo de Tiendas
+        </button>
+        <button
+          type="button"
+          className={tab === 'productos' ? 'tab active' : 'tab'}
+          onClick={() => setTab('productos')}
+        >
+          Productos API
+        </button>
+        <button type="button" className={tab === 'login' ? 'tab active' : 'tab'} onClick={() => setTab('login')}>
+          Login
+        </button>
+        <button
+          type="button"
+          className={tab === 'pedidos' ? 'tab active' : 'tab'}
+          onClick={() => setTab('pedidos')}
+        >
+          Ver pedidos
+        </button>
+      </div>
 
       {tab === 'tienda' && (
         <MiTienda
@@ -35,6 +79,7 @@ function App() {
       )}
       {tab === 'catalogo' && (
         <Catalogo
+          tiendaSeleccionada={tiendaSeleccionada}
           onVerProducto={(id) => {
             setProductoSeleccionado(id);
             setTab('producto');
@@ -50,9 +95,20 @@ function App() {
       )}
       {tab === 'login' && <Login />}
       {tab === 'pedidos' && <Pedidos />}
+<<<<<<< HEAD
       {tab === 'categorias' && <GestionCategorias />}
 
       <Chatbot />
+=======
+      {tab === 'catalogoTiendas' && (
+        <CatalogoTiendas
+          onEntrar={(tienda) => {
+            setTiendaSeleccionada(tienda.id_tienda);
+            setTab('catalogo');
+          }}
+        />
+      )}
+>>>>>>> be2c8d6d08a0c131219b8b69f3e59adf67c440c4
     </div>
   );
 }
