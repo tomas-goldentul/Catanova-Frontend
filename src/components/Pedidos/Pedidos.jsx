@@ -31,6 +31,7 @@ import {
   obtenerPedidos,
   obtenerPedidosPorUsuario,
 } from '../../api/pedidos';
+import { obtenerUsuarioPorCuenta } from '../../api/usuarios';
 import './Pedidos.css';
 
 // El backend solo maneja el booleano "entregado", no hay estados intermedios
@@ -643,6 +644,7 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }
                   <thead>
                     <tr>
                       <th>Producto</th>
+                      <th>Tienda</th>
                       <th>Cantidad</th>
                       <th>Precio Unitario</th>
                       <th>Total</th>
@@ -650,13 +652,15 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }
                   </thead>
                   <tbody>
                     {pedido.detalles.map((detalle, index) => {
-                      const nombre = detalle.nombre || detalle.producto?.nombre || 'Producto sin nombre';
+                      const nombre = detalle.nombre_producto || detalle.nombre || detalle.producto?.nombre || 'Producto sin nombre';
+                      const nombreTienda = detalle.nombre_tienda || 'Sin datos';
                       const cantidad = Number(detalle.cantidad) || 1;
                       const precioUnitario = Number(detalle.precio_unitario || 0);
                       const precioTotal = Number(detalle.precio_total || 0);
                       return (
                         <tr key={index}>
                           <td>{nombre}</td>
+                          <td>{nombreTienda}</td>
                           <td className="detalles-cantidad">{cantidad}</td>
                           <td>${precioUnitario.toFixed(2)}</td>
                           <td className="detalles-subtotal">${precioTotal.toFixed(2)}</td>
@@ -855,7 +859,11 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
   const calcularTotal = () => {
     return productos.reduce((sum, p) => {
-      const precioTotal = Number(p.precio_total || p.precio_unitario || p.precio || 0);
+      const precioUnitario = Number(p.precio_unitario || p.precio || 0);
+      const cantidad = Number(p.cantidad) || 1;
+      // Si hay precio unitario recalculamos con la cantidad editada; si no, usamos el
+      // precio_total original (snapshot del backend) como último recurso.
+      const precioTotal = precioUnitario > 0 ? precioUnitario * cantidad : Number(p.precio_total || 0);
       return sum + precioTotal;
     }, 0);
   };
@@ -1027,10 +1035,10 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   </thead>
                   <tbody>
                     {productos.map((producto) => {
-                      const nombre = producto.nombre || producto.producto?.nombre || 'Producto sin nombre';
+                      const nombre = producto.nombre_producto || producto.nombre || producto.producto?.nombre || 'Producto sin nombre';
                       const cantidad = Number(producto.cantidad) || 1;
                       const precioUnitario = Number(producto.precio_unitario || producto.precio || 0);
-                      const precioTotal = Number(producto.precio_total || 0) || (precioUnitario * cantidad);
+                      const precioTotal = precioUnitario > 0 ? precioUnitario * cantidad : Number(producto.precio_total || 0);
 
                       return (
                         <tr key={producto._tmpId}>
@@ -1247,7 +1255,7 @@ async function fetchPedidosTienda(signal) {
 }
 
 async function fetchPedidosUsuario(signal) {
-  const usuarioId = obtenerUsuarioId();
+  const usuarioId = await resolverUsuarioId(signal);
   if (!usuarioId) {
     throw new Error('Inicia sesión para ver tus pedidos.');
   }
@@ -1267,6 +1275,36 @@ function obtenerUsuarioId() {
     fuente.sub ||
     ''
   );
+}
+
+// El login solo devuelve id_cuenta (tabla cuentas); /pedidos filtra por id_usuario
+// (tabla usuarios, distinta). Las sesiones guardadas antes de este fix no tienen
+// id_usuario todavía, así que se resuelve una vez vía /usuarios/by-cuenta y se cachea.
+async function resolverUsuarioId(signal) {
+  const directo = obtenerUsuarioId();
+  if (directo) return directo;
+
+  const fuente = obtenerSesionActual();
+  const idCuenta = fuente.id_cuenta || fuente.idCuenta;
+  if (!idCuenta) return '';
+
+  const usuario = await obtenerUsuarioPorCuenta(idCuenta, signal);
+  const idUsuario = usuario?.id_usuario || '';
+
+  if (idUsuario) {
+    guardarIdUsuarioEnSesion(idUsuario);
+  }
+
+  return idUsuario;
+}
+
+function guardarIdUsuarioEnSesion(idUsuario) {
+  try {
+    const actual = leerJsonLocalStorage('user') || {};
+    localStorage.setItem('user', JSON.stringify({ ...actual, id_usuario: idUsuario }));
+  } catch {
+    // Ignorar errores de almacenamiento local.
+  }
 }
 
 function obtenerVistaDesdeSesion() {
@@ -1321,7 +1359,14 @@ function obtenerTipoSesion() {
 }
 
 function obtenerSesionActual() {
-  return leerJsonLocalStorage('user') || leerJsonLocalStorage('usuario') || decodificarJwt(localStorage.getItem('token')) || {};
+  // Se combinan las tres fuentes (en vez de usar la primera que exista) porque el objeto
+  // guardado en localStorage puede no traer el id del usuario (p. ej. si el login solo
+  // devolvió token + tipo); el JWT suele tener el id aunque falte en 'user'/'usuario'.
+  const desdeJwt = decodificarJwt(localStorage.getItem('token')) || {};
+  const desdeUsuario = leerJsonLocalStorage('usuario') || {};
+  const desdeUser = leerJsonLocalStorage('user') || {};
+
+  return { ...desdeJwt, ...desdeUsuario, ...desdeUser };
 }
 
 function obtenerTiendaIdDesdeFuente(fuente) {
@@ -1405,6 +1450,7 @@ function normalizarPedido(pedido) {
 
   const usuario = pedido.usuario || pedido.cliente || pedido.comprador || {};
   const nombreComprador =
+    [pedido.nombre_usuario, pedido.apellido_usuario].filter(Boolean).join(' ').trim() ||
     comprador.nombre ||
     comprador.name ||
     [usuario.nombre || usuario.name, usuario.apellido || usuario.lastName || usuario.lastname].filter(Boolean).join(' ').trim() ||
@@ -1412,11 +1458,20 @@ function normalizarPedido(pedido) {
     pedido.compradorNombre ||
     'Sin datos';
 
+  // Un pedido puede tener productos de distintas tiendas (cada producto tiene su propio
+  // id_tienda), no hay un "tienda" único a nivel de pedido en el backend.
+  const nombresTienda = [...new Set(detalles.map((d) => d.nombre_tienda).filter(Boolean))];
+  const tiendaLabel = nombresTienda.length === 1
+    ? nombresTienda[0]
+    : nombresTienda.length > 1
+      ? `${nombresTienda.length} tiendas`
+      : tienda.nombre || tienda.name || pedido.tiendaNombre || pedido.nombreTienda || pedido.vendedor?.nombre || 'Tienda sin datos';
+
   return {
     id: id || 'Sin ID',
     direccion: normalizarDireccion(direccion),
     comprador: nombreComprador,
-    tienda: tienda.nombre || tienda.name || pedido.tiendaNombre || pedido.nombreTienda || pedido.vendedor?.nombre || 'Tienda sin datos',
+    tienda: tiendaLabel,
     repartidor: repartidor.nombre || repartidor.name || pedido.repartidorNombre || pedido.vendedor?.nombre || 'Sin asignar',
     codigoPostal: pedido.codigoPostal || pedido.cp || direccion.codigoPostal || direccion.cp || comprador.codigoPostal || 'Sin CP',
     localidad: pedido.localidad || pedido.ciudad || direccion.localidad || direccion.ciudad || comprador.localidad || 'Sin localidad',
@@ -1516,7 +1571,7 @@ function resumenProductos(productos) {
   return productos
     .slice(0, 3)
     .map((producto) => {
-      const nombre = producto.nombre || producto.producto?.nombre || 'Producto';
+      const nombre = producto.nombre_producto || producto.nombre || producto.producto?.nombre || 'Producto';
       const cantidad = producto.cantidad || 1;
       return `${nombre} x${cantidad}`;
     })

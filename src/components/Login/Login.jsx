@@ -3,6 +3,7 @@ import './Login.css';
 import { FaGoogle, FaApple, FaEye, FaEyeSlash } from 'react-icons/fa';
 import logo from '../../assets/logo.png';
 import { login as apiLogin, registerUsuario as apiRegisterUsuario } from '../../api/auth';
+import { obtenerUsuarioPorCuenta } from '../../api/usuarios';
 
 const emptyRegisterForm = {
   email: '',
@@ -18,6 +19,24 @@ const FEATURES = [
   'Seguí tus pedidos y ventas al instante',
   'Mostrá tu tienda como un profesional',
 ];
+
+function decodificarJwtLocal(token) {
+  if (!token || !token.includes('.')) return null;
+
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(payload)
+        .split('')
+        .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join(''),
+    );
+
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -59,11 +78,29 @@ export default function Login({ onLogin }) {
           localStorage.removeItem('id_tienda');
         }
 
-        const finalUser = result.usuario || result.user || {
+        // El JWT suele traer el id del usuario aunque el backend no devuelva un
+        // objeto usuario/user completo; se combina para no perder el id.
+        const desdeJwt = decodificarJwtLocal(result.token) || {};
+        const finalUser = {
+          ...desdeJwt,
           email: result.email,
           tipo: result.tipo,
           id_tienda: result.id_tienda,
+          ...(result.usuario || result.user || {}),
         };
+
+        // El login solo devuelve id_cuenta (tabla cuentas), pero /pedidos filtra por
+        // id_usuario (tabla usuarios, distinta). Para compradores hay que resolverlo aparte.
+        if (finalUser.tipo === 'usuario' && !finalUser.id_usuario && finalUser.id_cuenta) {
+          try {
+            const usuario = await obtenerUsuarioPorCuenta(finalUser.id_cuenta);
+            if (usuario?.id_usuario) {
+              finalUser.id_usuario = usuario.id_usuario;
+            }
+          } catch (lookupErr) {
+            console.warn('No se pudo resolver id_usuario a partir de id_cuenta', lookupErr);
+          }
+        }
 
         try {
           if (finalUser) localStorage.setItem('user', JSON.stringify(finalUser));
