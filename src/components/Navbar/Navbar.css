@@ -109,15 +109,27 @@
   flex-shrink: 0;
 }
 
+.nav-avatarFoto {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .nav-usuarioInfo {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
 }
 
 .nav-usuarioNombre {
   font-size: 13px;
   font-weight: 600;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-engranaje {

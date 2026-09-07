@@ -73,6 +73,7 @@ export default function Login({ onLogin }) {
 
         setUserLocal(finalUser);
         if (onLogin) onLogin(result);
+        window.dispatchEvent(new Event('catanova:auth'));
         setMessageType('success');
         setMessage('Contraseña correcta');
       } else {

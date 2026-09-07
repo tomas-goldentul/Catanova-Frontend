@@ -26,9 +26,38 @@ const DESTINOS = {
 
 const TABS_ESC = ['tienda', 'galeria', 'productos', 'producto', 'login'];
 
+const leerSesion = () => {
+  let usuario = null;
+  try {
+    const crudo = localStorage.getItem('user');
+    usuario = crudo ? JSON.parse(crudo) : null;
+  } catch (e) {
+    usuario = null;
+  }
+  return { logueado: Boolean(localStorage.getItem('token')), usuario };
+};
+
+const nombreParaMostrar = (usuario) => {
+  const nombre = usuario?.nombre?.trim() || usuario?.name?.trim() || '';
+  const apellido = usuario?.apellido?.trim() || usuario?.last_name?.trim() || '';
+  const texto = [nombre, apellido].filter(Boolean).join(' ').trim();
+  return texto || usuario?.email?.trim() || 'Mi cuenta';
+};
+
 function Navbar({ onLogoClick, tabActiva, onNavegar }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [sesion, setSesion] = useState(leerSesion);
   const contenedorRef = useRef(null);
+
+  useEffect(() => {
+    const sincronizar = () => setSesion(leerSesion());
+    window.addEventListener('catanova:auth', sincronizar);
+    window.addEventListener('storage', sincronizar);
+    return () => {
+      window.removeEventListener('catanova:auth', sincronizar);
+      window.removeEventListener('storage', sincronizar);
+    };
+  }, []);
 
   useEffect(() => {
     const cerrarMenu = (evento) => {
@@ -53,6 +82,27 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
     setMenuAbierto(false);
     navegar(DESTINOS[clave]);
   };
+
+  const abrirCuenta = () => {
+    if (!sesion.logueado) {
+      navegar('login');
+      return;
+    }
+    setMenuAbierto((valor) => !valor);
+  };
+
+  const cerrarSesion = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('tipo');
+    localStorage.removeItem('id_tienda');
+    localStorage.removeItem('user');
+    setSesion({ logueado: false, usuario: null });
+    setMenuAbierto(false);
+    window.dispatchEvent(new Event('catanova:auth'));
+    navegar('login');
+  };
+
+  const fotoPerfil = sesion.usuario?.foto_perfil || sesion.usuario?.avatar || '';
 
   return (
     <nav className="navbar">
@@ -91,13 +141,19 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
           className="nav-usuario"
           aria-expanded={menuAbierto}
           aria-haspopup="true"
-          onClick={() => setMenuAbierto((valor) => !valor)}
+          onClick={abrirCuenta}
         >
           <span className="nav-avatar">
-            <IconoAvatar />
+            {fotoPerfil ? (
+              <img src={fotoPerfil} alt="" className="nav-avatarFoto" />
+            ) : (
+              <IconoAvatar />
+            )}
           </span>
           <span className="nav-usuarioInfo">
-            <span className="nav-usuarioNombre">Mi cuenta</span>
+            <span className="nav-usuarioNombre">
+              {sesion.logueado ? nombreParaMostrar(sesion.usuario) : 'Inicia sesión'}
+            </span>
             <IconoChevronAbajo />
           </span>
           <span className="nav-engranaje">
@@ -105,7 +161,7 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
           </span>
         </button>
 
-        {menuAbierto && (
+        {sesion.logueado && menuAbierto && (
           <div className="nav-menu" role="menu" aria-label="Menú de usuario">
             <button type="button" role="menuitem" onClick={() => setMenuAbierto(false)}>
               <IconoPerfil /> Perfil
@@ -114,7 +170,7 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
               <IconoConfig /> Configuración
             </button>
             <div className="nav-menuDivisor" />
-            <button type="button" role="menuitem" className="nav-menuSalir" onClick={() => navegar('login')}>
+            <button type="button" role="menuitem" className="nav-menuSalir" onClick={cerrarSesion}>
               <IconoSalir /> Cerrar sesión
             </button>
           </div>

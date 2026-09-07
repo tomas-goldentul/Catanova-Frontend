@@ -60,6 +60,8 @@ function App() {
           onIrAGaleria={() => setTab('galeria')}
           onVerTiendaPublica={() => setTab('catalogo')}
           onIrAMenuPrincipal={() => setTab('tienda')}
+          onNavegar={setTab}
+          tabActiva={tab}
         />
       )}
       {tab === 'galeria' && (

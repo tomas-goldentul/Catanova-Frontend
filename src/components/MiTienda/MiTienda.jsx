@@ -101,12 +101,16 @@ function crearCards(onIrAGaleria) {
   ];
 }
 
-function MiTienda({ onIrAGaleria, onVerTiendaPublica, onIrAMenuPrincipal }) {
+function MiTienda({ onIrAGaleria, onVerTiendaPublica, onIrAMenuPrincipal, onNavegar, tabActiva }) {
   const cards = crearCards(onIrAGaleria);
 
   return (
     <>
-      <Navbar onLogoClick={onIrAMenuPrincipal} />
+      <Navbar
+        onLogoClick={onIrAMenuPrincipal}
+        onNavegar={onNavegar}
+        tabActiva={tabActiva}
+      />
       <main className="menu-main">
         <StoreHeader onVerTiendaPublica={onVerTiendaPublica} />
         <div className="menu-section-header">
