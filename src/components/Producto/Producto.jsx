@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { FaArrowLeft, FaChartLine, FaEye, FaDollarSign, FaHeart, FaTag, FaTrash, FaPen, FaSyncAlt, FaClipboardList, FaPlus, FaTimes } from 'react-icons/fa';
-import Header from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import { getProductoPorId, actualizarProducto, borrarProducto, agregarStock, editarStock } from '../../api/productos';
 import { obtenerEtiquetasProducto, agregarEtiqueta, borrarEtiqueta } from '../../api/etiquetas';
@@ -18,7 +17,7 @@ import {
 } from '../../api/vistas';
 import './Producto.css';
 
-function Producto({ productoId, onVolver, onIrAMenuPrincipal }) {
+function Producto({ productoId, onVolver }) {
     const [producto, setProducto] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -363,8 +362,6 @@ function Producto({ productoId, onVolver, onIrAMenuPrincipal }) {
 
     return (
         <>
-        <Header onLogoClick={onIrAMenuPrincipal} />
-
         <section className="cuerpo">
             <section className="producto">
             {/* Volver */}

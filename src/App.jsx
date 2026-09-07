@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './App.css';
+import Navbar from './components/Navbar/Navbar';
 import MiTienda from './components/MiTienda/MiTienda';
 import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
 import Catalogo from './components/Catalogo/Catalogo';
@@ -68,10 +69,13 @@ function App() {
         <MiTienda
           onIrAGaleria={() => setTab('galeria')}
           onVerTiendaPublica={() => setTab('catalogo')}
-          onIrAMenuPrincipal={() => setTab('tienda')}
         />
       )}
-      {tab === 'galeria' && <GaleriaProductos onIrAMenuPrincipal={() => setTab('tienda')} />}
+      {tab === 'galeria' && (
+        <GaleriaProductos
+          onVerEnTienda={() => setTab('catalogo')}
+        />
+      )}
       {tab === 'catalogo' && (
         <Catalogo
           tiendaSeleccionada={tiendaSeleccionada}
@@ -79,7 +83,6 @@ function App() {
             setProductoSeleccionado(id);
             setTab('producto');
           }}
-          onIrAMenuPrincipal={() => setTab('tienda')}
         />
       )}
       {tab === 'productos' && <Productos />}
@@ -87,7 +90,6 @@ function App() {
         <Producto
           productoId={productoSeleccionado}
           onVolver={() => setTab('catalogo')}
-          onIrAMenuPrincipal={() => setTab('tienda')}
         />
       )}
       {tab === 'login' && <Login />}

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import './Catalogo.css';
-import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import BurbujaChatanova from '../BurbujaChatanova/BurbujaChatanova';
 import Categoria from '../Categoria/Categoria';
@@ -478,7 +477,6 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal, tiendaSeleccionada }) {
 
   return (
     <>
-      <Navbar onLogoClick={onIrAMenuPrincipal} />
       <main className="cat-main">
 
         {/* ── Header tienda ── */}
