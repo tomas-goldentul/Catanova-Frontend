@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './App.css';
 import Navbar from './components/Navbar/Navbar';
+import Chatbot from './components/Chatbot/Chatbot';
 import MiTienda from './components/MiTienda/MiTienda';
 import GaleriaProductos from './components/GaleriaProductos/GaleriaProductos';
 import Catalogo from './components/Catalogo/Catalogo';
@@ -50,6 +51,8 @@ function App() {
       {tab === 'login' && <Login />}
       {tab === 'pedidos' && <Pedidos />}
       {tab === 'categorias' && <GestionCategorias />}
+
+      <Chatbot />
     </div>
   );
 }

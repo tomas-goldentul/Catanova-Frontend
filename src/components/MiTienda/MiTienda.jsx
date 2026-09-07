@@ -2,7 +2,6 @@ import './MiTienda.css';
 import StoreHeader from '../StoreHeader/StoreHeader';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import Footer from '../Footer/Footer';
-import BurbujaChatanova from '../BurbujaChatanova/BurbujaChatanova';
 
 const IconProductos = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -118,7 +117,6 @@ function MiTienda({ onIrAGaleria, onVerTiendaPublica }) {
         </div>
       </main>
       <Footer />
-      <BurbujaChatanova />
     </>
   );
 }

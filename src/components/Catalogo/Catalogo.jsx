@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import './Catalogo.css';
 import Footer from '../Footer/Footer';
-import BurbujaChatanova from '../BurbujaChatanova/BurbujaChatanova';
 import Categoria from '../Categoria/Categoria';
 import { getCategoriasPorTienda } from '../../api/categorias';
 import { getProductosPorCategoria } from '../../api/productos';
@@ -569,7 +568,6 @@ function Catalogo({ onVerProducto }) {
 
       </main>
       <Footer />
-      <BurbujaChatanova />
     </>
   );
 }

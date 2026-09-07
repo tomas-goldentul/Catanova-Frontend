@@ -80,10 +80,21 @@ export function registerTienda(body) {
 }
 
 export function getPerfil() {
-  return request('/perfil', {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const candidates = ['/api/auth/perfil', '/perfil'];
+  let lastErr;
+  return (async () => {
+    for (const path of candidates) {
+      try {
+        return await request(path, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    throw lastErr || new Error('No se pudo obtener el perfil');
+  })();
 }
 
 export default { login, registerUsuario, registerTienda };
