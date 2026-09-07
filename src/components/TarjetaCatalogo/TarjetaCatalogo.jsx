@@ -13,6 +13,7 @@ function TarjetaCatalogo({
   favoritos,
   stock,
   onVerProducto,
+  onComprar,
   tipoSesion,
 }) {
   const esTienda = tipoSesion === 'tienda';
@@ -66,7 +67,7 @@ function TarjetaCatalogo({
       ) : (
         <div className="cat-card__footer">
           <div className="cat-card__stock">Stock restante: {stock}</div>
-          <button className="cat-card__btn-comprar" onClick={() => onVerProducto(id)}>
+          <button className="cat-card__btn-comprar" onClick={() => onComprar ? onComprar(id) : onVerProducto(id)}>
             Comprar
           </button>
         </div>

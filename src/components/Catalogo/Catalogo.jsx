@@ -310,7 +310,7 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
 //   COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════
 
-function Catalogo({ onVerProducto, onIrAMenuPrincipal, tiendaSeleccionada }) {
+function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccionada }) {
   const [categorias, setCategorias]         = useState([]);
   const [tabActivo, setTabActivo]           = useState(null);
   const [infoTienda, setInfoTienda]         = useState({ nombre: '', slogan: '' });
@@ -562,6 +562,7 @@ function Catalogo({ onVerProducto, onIrAMenuPrincipal, tiendaSeleccionada }) {
                     tipoSesion={tipoSesion}
                     onEditar={esTienda ? () => abrirEditar(cat) : undefined}
                     onVerProducto={onVerProducto}
+                    onComprar={onComprar}
                   />
                 ))
               )}

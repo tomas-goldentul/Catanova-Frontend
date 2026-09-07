@@ -16,8 +16,19 @@ function App() {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [tiendaSeleccionada, setTiendaSeleccionada] = useState(null);
 
+  const irAComprar = (id) => {
+    setProductoSeleccionado(id);
+    setTab('comprar');
+  };
+
   return (
     <div className="app-container">
+      <Navbar
+        tabActiva={tab}
+        onNavegar={(destino) => setTab(destino)}
+        onLogoClick={() => setTab('tienda')}
+      />
+
       <div className="app-tabs">
         <button
           type="button"
@@ -64,6 +75,13 @@ function App() {
         >
           Ver pedidos
         </button>
+        <button
+          type="button"
+          className={tab === 'comprar' ? 'tab active' : 'tab'}
+          onClick={() => setTab('comprar')}
+        >
+          Comprar
+        </button>
       </div>
 
       {tab === 'tienda' && (
@@ -84,6 +102,7 @@ function App() {
             setProductoSeleccionado(id);
             setTab('producto');
           }}
+          onComprar={irAComprar}
         />
       )}
       {tab === 'productos' && <Productos />}
@@ -95,11 +114,16 @@ function App() {
       )}
       {tab === 'login' && <Login />}
       {tab === 'pedidos' && <Pedidos />}
-<<<<<<< HEAD
+      {tab === 'comprar' && (
+        <Producto
+          productoId={productoSeleccionado}
+          onVolver={() => setTab('catalogo')}
+        />
+      )}
       {tab === 'categorias' && <GestionCategorias />}
 
       <Chatbot />
-=======
+
       {tab === 'catalogoTiendas' && (
         <CatalogoTiendas
           onEntrar={(tienda) => {
@@ -108,7 +132,7 @@ function App() {
           }}
         />
       )}
->>>>>>> be2c8d6d08a0c131219b8b69f3e59adf67c440c4
+
     </div>
   );
 }

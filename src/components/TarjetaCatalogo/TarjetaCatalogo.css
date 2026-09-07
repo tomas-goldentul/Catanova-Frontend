@@ -113,16 +113,23 @@
 }
 
 .cat-card__btn-comprar {
-  background: #ff6b6b;
+  background: #e0245e;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-weight: 700;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 800;
+  font-size: 13px;
   cursor: pointer;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 12px rgba(224, 36, 94, 0.35);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  flex-shrink: 0;
 }
 
 .cat-card__btn-comprar:hover {
-  background: #e85a5a;
+  background: #c81e54;
+  box-shadow: 0 6px 16px rgba(224, 36, 94, 0.45);
+  transform: translateY(-1px);
 }
 
