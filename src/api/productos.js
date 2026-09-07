@@ -29,6 +29,35 @@ export async function getProductoPorId(id) {
   return producto;
 }
 
+export async function subirImagen(archivo) {
+  if (!archivo) {
+    throw new Error("No se seleccionó ninguna imagen.");
+  }
+
+  const formData = new FormData();
+  formData.append("imagen", archivo);
+
+  const res = await fetch(`${BASE_URL}/upload`, {
+    method: "POST",
+    body: formData,
+  });
+
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    data = { _raw: text };
+  }
+
+  if (!res.ok) {
+    const mensaje = data?.message || data?._raw || `Error ${res.status}: ${res.statusText}`;
+    throw new Error(mensaje);
+  }
+
+  return data.data || data;
+}
+
 export async function insertProducto(datosProducto) {
   
   console.log("Enviando producto:", datosProducto);
