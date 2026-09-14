@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FiPlus, FiTrash2, FiX } from 'react-icons/fi';
-import { crearPedido } from '../../api/pedidos';
+import { crearPedido, obtenerPedido } from '../../api/pedidos';
 import { getTodosLosProductos } from '../../api/productos';
 import './CrearPedido.css';
 
@@ -58,7 +58,11 @@ function CrearPedido({ onCrear, onCancelar }) {
     event.preventDefault();
     if (!usuario || !direccion.trim() || !items.length) return setError('Seleccioná un usuario, indicá una dirección y agregá al menos un producto.');
     setGuardando(true); setError('');
-    try { onCrear(await crearPedido({ id_usuario: id(usuario), direccion, metodo_pago: metodoPago, productos: items })); }
+    try {
+      const creado = await crearPedido({ id_usuario: id(usuario), direccion, metodo_pago: metodoPago, productos: items });
+      const pedidoCompleto = await obtenerPedido(creado?.id_pedido);
+      onCrear(pedidoCompleto);
+    }
     catch (err) { setError(err.message || 'No se pudo crear el pedido.'); }
     finally { setGuardando(false); }
   };

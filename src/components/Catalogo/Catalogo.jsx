@@ -367,6 +367,7 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
                   precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
                   cantidad: Number(p.cantidad) || 1,
                   stock: p.stock,
+                  imagen: p.imagen,
                   ventas: await getCantidadVentasProducto(p.id_producto ?? p.id),
                   vistas: await getCantidadVistasProducto(p.id_producto ?? p.id),
                   favoritos: await getCantidadFavoritosProducto(p.id_producto ?? p.id),
@@ -380,6 +381,7 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
                 precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
                 cantidad: 1,
                 stock: p.stock,
+                imagen: p.imagen,
               }));
             }
 

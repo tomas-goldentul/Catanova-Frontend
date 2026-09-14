@@ -3,11 +3,13 @@ import {
   IconoVistas,
   IconoFavoritos
 } from '../Icons/Icons';
+import { getImagenUrl, DEFAULT_IMAGE_URL } from '../../api/helper.js';
 import './TarjetaCatalogo.css';
 
 function TarjetaCatalogo({
   id,
   nombre,
+  imagen,
   ventas,
   vistas,
   favoritos,
@@ -22,9 +24,13 @@ function TarjetaCatalogo({
     <div className="cat-card">
       <div className="cat-card__img-wrapper">
         <img
-          src={`https://picsum.photos/seed/prod${id}/200/180`}
+          src={getImagenUrl(imagen)}
           alt={nombre}
           className="cat-card__img"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = DEFAULT_IMAGE_URL;
+          }}
         />
 
         <div className="cat-card__overlay">

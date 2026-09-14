@@ -16,6 +16,7 @@ import {
   getVistas,
 } from '../../api/vistas';
 import './Producto.css';
+import { getImagenUrl } from '../../api/helper.js';
 
 function Producto({ productoId, onVolver }) {
     const [producto, setProducto] = useState(null);
@@ -53,7 +54,7 @@ function Producto({ productoId, onVolver }) {
                     precio,
                     stock: Number(item.stock ?? 0),
                     colores: Number(item.colores ?? 1),
-                    imagen: item.imagen ?? item.foto ?? 'https://i.imgur.com/6vxWj7O.png',
+                    imagen: item.imagen ?? item.foto ?? '',
                     ventas,
                     vistas: Number(item.vistas ?? 0),
                     favoritos: Number(item.favoritos ?? 0),
@@ -387,7 +388,7 @@ function Producto({ productoId, onVolver }) {
                         {/* Imagen + datos */}
                         <div className='ImgData'>
                             <img
-                                src={producto.imagen}
+                                src={getImagenUrl(producto.imagen)}
                                 alt={producto.nombre}
                             />
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { insertProducto, subirImagen } from '../../api/productos';
-import { getCategorias } from '../../api/categorias';
+import { getCategoriasPorTienda } from '../../api/categorias';
 import { IconoImagen, IconoCerrar } from '../Icons/Icons';
 import './AgregarProducto.css';
 
@@ -30,7 +30,15 @@ function AgregarProducto({ onCrear, onCancelar }) {
     useEffect(() => {
         const cargarCategorias = async () => {
             try {
-                const data = await getCategorias();
+                const tiendaIdRaw = localStorage.getItem('id_tienda');
+                const tiendaId = tiendaIdRaw ? Number(tiendaIdRaw) : null;
+
+                if (!tiendaId || !Number.isFinite(tiendaId)) {
+                    setCategorias([]);
+                    return;
+                }
+
+                const data = await getCategoriasPorTienda(tiendaId);
 
                 const categoriasDB = Array.isArray(data)
                     ? data

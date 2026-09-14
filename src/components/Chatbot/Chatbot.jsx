@@ -119,6 +119,8 @@ function Chatbot() {
       nombre: sesion.usuario?.nombre?.trim() || sesion.usuario?.name?.trim() || '',
       tipo: sesion.tipo,
       logueado: sesion.logueado,
+      id_tienda: sesion.usuario?.id_tienda || null,
+      id_usuario: sesion.usuario?.id_usuario || null,
     };
 
     setMensajes((previos) => [...previos, { rol: 'yo', texto: contenido }]);
@@ -161,6 +163,8 @@ function Chatbot() {
       nombre: sesion.usuario?.nombre?.trim() || sesion.usuario?.name?.trim() || '',
       tipo: sesion.tipo,
       logueado: sesion.logueado,
+      id_tienda: sesion.usuario?.id_tienda || null,
+      id_usuario: sesion.usuario?.id_usuario || null,
     });
   };
 
@@ -296,7 +300,7 @@ function Chatbot() {
 
       <button
         type="button"
-        className="chatbot-burbuja"
+        className="chatbot-toggle"
         onClick={toggleAbierto}
         aria-label={abierto ? 'Cerrar asistente' : 'Abrir asistente'}
         aria-expanded={abierto}
