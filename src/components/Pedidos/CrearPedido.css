@@ -386,6 +386,125 @@
   border-color: #1f2937;
 }
 
+.crear-pedido-selector-usuario {
+  display: flex;
+  gap: 10px;
+}
+
+.crear-pedido-selector-usuario input {
+  flex: 1;
+}
+
+.crear-pedido-nuevo-usuario-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 0 14px;
+  background: var(--panel);
+  color: var(--brand);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+.crear-pedido-nuevo-usuario-btn:hover {
+  background: #f9fafb;
+  border-color: #98a2b3;
+}
+
+.crear-pedido-nuevo-usuario-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.crear-pedido-sin-usuarios {
+  margin: 6px 0 0;
+  color: var(--subtle);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.crear-pedido-alta-usuario {
+  border: 1px dashed var(--border-strong);
+  border-radius: 14px;
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9fafb;
+}
+
+.crear-pedido-alta-usuario-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 14px;
+}
+
+.crear-pedido-alta-usuario-titulo strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.crear-pedido-alta-usuario-titulo span {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 550;
+}
+
+.crear-pedido-alta-usuario-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.crear-pedido-btn-alta-secundario,
+.crear-pedido-btn-alta-principal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  border-radius: 12px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.crear-pedido-btn-alta-secundario {
+  border: 1px solid var(--border-strong);
+  background: var(--panel);
+  color: #344054;
+}
+
+.crear-pedido-btn-alta-secundario:hover {
+  background: #f2f4f7;
+}
+
+.crear-pedido-btn-alta-principal {
+  border: 1px solid var(--text);
+  background: var(--text);
+  color: #ffffff;
+}
+
+.crear-pedido-btn-alta-principal:hover {
+  background: #1f2937;
+}
+
+.crear-pedido-btn-alta-secundario:disabled,
+.crear-pedido-btn-alta-principal:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 900px) {
   .crear-pedido-grid,
   .crear-pedido-grid--envio,
@@ -420,6 +539,14 @@
 
   .crear-pedido-campo--doble {
     grid-column: span 1;
+  }
+
+  .crear-pedido-selector-usuario {
+    flex-direction: column;
+  }
+
+  .crear-pedido-nuevo-usuario-btn {
+    width: 100%;
   }
 
   .crear-pedido-acciones {
