@@ -45,13 +45,11 @@ export async function getCategoriasPorTienda(id) {
   return res.json();
 }
 
-export async function crearCategoria(nombre) {
+export async function crearCategoria({ nombre, id_tienda }) {
   const res = await fetch(`${BASE_URL}/insert`, {
     method: "POST",
-    // El backend espera el nombre de la categoría en el campo "nombreTienda"
-    // (nombre confuso, pero así está implementado) y no soporta id_tienda.
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nombreTienda: nombre }),
+    body: JSON.stringify({ nombre, id_tienda }),
   });
 
   const text = await res.text();

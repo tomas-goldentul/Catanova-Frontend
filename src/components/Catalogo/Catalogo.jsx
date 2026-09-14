@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './Catalogo.css';
 import Footer from '../Footer/Footer';
 import Categoria from '../Categoria/Categoria';
-import { getCategoriasPorTienda } from '../../api/categorias';
+import { crearCategoria, getCategoriasPorTienda } from '../../api/categorias';
 import { getProductosPorCategoria } from '../../api/productos';
 import { getNombre, getSlogan, abrirTienda, cerrarTienda } from '../../api/tiendas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
@@ -134,30 +134,21 @@ function TablaProductos({ lista, onQuitar }) {
 
 function PanelCrear({ onCrear, onCancelar }) {
   const [nombre, setNombre] = useState('');
-  const [lista, setLista] = useState([]);
   const [error, setError] = useState('');
+  const [guardando, setGuardando] = useState(false);
 
-  const agregarProducto = (producto, cantidad) => {
-    setLista(prev => {
-      const existe = prev.find(i => i.id === producto.id);
-      if (existe) {
-        return prev.map(i =>
-          i.id === producto.id ? { ...i, cantidad: i.cantidad + cantidad } : i
-        );
-      }
-      return [...prev, {
-        id:             producto.id,
-        nombre:         producto.nombre,
-        cantidad,
-        precioUnitario: producto.precio,
-      }];
-    });
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!nombre.trim()) { setError('Ingresá un nombre para la categoría.'); return; }
-    if (lista.length === 0) { setError('Agregá al menos un producto.'); return; }
-    onCrear({ nombre: nombre.trim(), productos: lista });
+    setGuardando(true);
+    setError('');
+
+    try {
+      await onCrear({ nombre: nombre.trim() });
+    } catch (err) {
+      setError(err.message || 'No se pudo crear la categoría. Intentá nuevamente.');
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -181,20 +172,14 @@ function PanelCrear({ onCrear, onCancelar }) {
         </div>
       </div>
 
-      <SelectorProducto onAgregar={agregarProducto} />
-      <TablaProductos
-        lista={lista}
-        onQuitar={id => setLista(prev => prev.filter(i => i.id !== id))}
-      />
-
       {error && <p className="cat-panel__error">{error}</p>}
 
       <div className="cat-panel__acciones cat-panel__acciones--derecha">
-        <button className="cat-panel__btn cat-panel__btn--secundario" onClick={onCancelar}>
+        <button className="cat-panel__btn cat-panel__btn--secundario" onClick={onCancelar} disabled={guardando}>
           Cancelar
         </button>
-        <button className="cat-panel__btn cat-panel__btn--principal" onClick={handleSubmit}>
-          Agregar
+        <button className="cat-panel__btn cat-panel__btn--principal" onClick={handleSubmit} disabled={guardando}>
+          {guardando ? 'Guardando...' : 'Agregar'}
         </button>
       </div>
     </div>
@@ -453,15 +438,35 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
 
   // ── CRUD sobre el estado local ──
 
-  const handleCrear = (nueva) => {
-    const nuevaCategoria = { id: Date.now(), ...nueva };
+  const handleCrear = async (nueva) => {
+    const tiendaIdRaw = localStorage.getItem('id_tienda');
+    const idTienda = Number(tiendaIdRaw);
+
+    if (!tiendaIdRaw || !Number.isFinite(idTienda)) {
+      throw new Error('No se encontró una tienda válida en la sesión.');
+    }
+
+    const categoriaCreada = await crearCategoria({
+      nombre: nueva.nombre,
+      id_tienda: idTienda,
+    });
+    const id = categoriaCreada?.id_categoria;
+
+    if (id === undefined || id === null) {
+      throw new Error('La categoría se creó, pero la API no devolvió su identificador.');
+    }
+
+    const nuevaCategoria = {
+      id,
+      nombre: categoriaCreada.nombre ?? nueva.nombre,
+      productos: [],
+    };
     setCategorias(prev => {
       const actualizado = [...prev, nuevaCategoria];
       setTabActivo(nuevaCategoria.id);
       return actualizado;
     });
     cerrarPanel();
-    // Al conectar el back: await crearCategoria(nueva) → usar id retornado
   };
 
   const handleGuardar = (editada) => {
