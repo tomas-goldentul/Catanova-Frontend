@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './Login.css';
 import { FaGoogle, FaApple, FaEye, FaEyeSlash } from 'react-icons/fa';
 import logo from '../../assets/logo.png';
-import { login as apiLogin, registerUsuario as apiRegisterUsuario } from '../../api/auth';
+import { login as apiLogin, registerUsuario as apiRegisterUsuario, registerTienda as apiRegisterTienda } from '../../api/auth';
 import { obtenerUsuarioPorCuenta } from '../../api/usuarios';
 
 const emptyRegisterForm = {
@@ -12,6 +12,9 @@ const emptyRegisterForm = {
   apellido: '',
   telefono: '',
   foto_perfil: '',
+  nombre_tienda: '',
+  descripcion_tienda: '',
+  direccion_tienda: '',
 };
 
 const FEATURES = [
@@ -49,6 +52,7 @@ export default function Login({ onLogin }) {
   const [registerForm, setRegisterForm] = useState(emptyRegisterForm);
   const [showPassword, setShowPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [registerRole, setRegisterRole] = useState(null);
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -171,8 +175,12 @@ export default function Login({ onLogin }) {
       return 'El nombre es obligatorio.';
     }
 
-    if (!registerForm.apellido.trim()) {
+    if (registerRole === 'usuario' && !registerForm.apellido.trim()) {
       return 'El apellido es obligatorio.';
+    }
+
+    if (registerRole === 'tienda' && !registerForm.nombre_tienda.trim()) {
+      return 'El nombre de la tienda es obligatorio.';
     }
 
     if (registerForm.telefono.trim() && registerForm.telefono.trim().length < 6) {
@@ -205,20 +213,42 @@ export default function Login({ onLogin }) {
     setMessageType(null);
 
     try {
-      const payload = {
+      const basePayload = {
         email: registerForm.email.trim(),
         password: registerForm.password,
         nombre: registerForm.nombre.trim(),
-        apellido: registerForm.apellido.trim(),
         ...(registerForm.telefono.trim() ? { telefono: registerForm.telefono.trim() } : {}),
         ...(registerForm.foto_perfil.trim() ? { foto_perfil: registerForm.foto_perfil.trim() } : {}),
       };
 
-      const result = await apiRegisterUsuario(payload);
+      let result;
+      let successMessage;
+
+      if (registerRole === 'tienda') {
+        const tiendaPayload = {
+          ...basePayload,
+          nombre_tienda: registerForm.nombre_tienda.trim(),
+          ...(registerForm.descripcion_tienda.trim()
+            ? { descripcion_tienda: registerForm.descripcion_tienda.trim() }
+            : {}),
+          ...(registerForm.direccion_tienda.trim()
+            ? { direccion_tienda: registerForm.direccion_tienda.trim() }
+            : {}),
+        };
+        result = await apiRegisterTienda(tiendaPayload);
+        successMessage = result?.message || 'Tienda registrada correctamente.';
+      } else {
+        result = await apiRegisterUsuario({
+          ...basePayload,
+          apellido: registerForm.apellido.trim(),
+        });
+        successMessage = result?.message || 'Usuario registrado correctamente.';
+      }
 
       setMessageType('success');
-      setMessage(result?.message || 'Usuario registrado correctamente.');
+      setMessage(successMessage);
       setRegisterForm(emptyRegisterForm);
+      setRegisterRole(null);
       setEmail(registerForm.email.trim());
       setTimeout(() => {
         setMode('login');
@@ -227,7 +257,7 @@ export default function Login({ onLogin }) {
       console.error('Register error', err);
       setMessageType('error');
 
-      let friendlyMessage = 'No se pudo registrar el usuario. Verificá los datos e intentá nuevamente.';
+      let friendlyMessage = 'No se pudo completar el registro. Verificá los datos e intentá nuevamente.';
 
       if (err.body && err.body.message) {
         friendlyMessage = err.body.message;
@@ -245,9 +275,20 @@ export default function Login({ onLogin }) {
     setMode(nextMode);
     setMessage(null);
     setMessageType(null);
+    if (nextMode === 'register') {
+      setRegisterRole(null);
+      setRegisterForm(emptyRegisterForm);
+    }
   };
 
-  const title = mode === 'login' ? 'Preparado para gestionar tu negocio' : 'Crear tu cuenta';
+  const title =
+    mode === 'login'
+      ? 'Preparado para gestionar tu negocio'
+      : registerRole
+        ? registerRole === 'tienda'
+          ? 'Crear tu cuenta de tienda'
+          : 'Crear tu cuenta de usuario'
+        : 'Crear tu cuenta';
   const submitLabel = mode === 'login' ? (loading ? 'Ingresando...' : 'Ingresar') : (loading ? 'Registrando...' : 'Registrarme');
 
   const inputClass = (showState, setShowState, value, setValue) => (
@@ -333,8 +374,40 @@ export default function Login({ onLogin }) {
                 {submitLabel}
               </button>
             </form>
+          ) : registerRole === null ? (
+            <div className="register-role-step" key="role-step">
+              <p className="register-role-intro">Elegí cómo querés usar Catanova</p>
+              <div className="register-role-grid">
+                <button
+                  type="button"
+                  className="register-role-card"
+                  onClick={() => setRegisterRole('usuario')}
+                >
+                  <span className="register-role-icon" aria-hidden="true">
+                    👤
+                  </span>
+                  <span className="register-role-name">Usuario</span>
+                  <span className="register-role-desc">Comprá y seguí tus pedidos como cliente.</span>
+                </button>
+                <button
+                  type="button"
+                  className="register-role-card"
+                  onClick={() => setRegisterRole('tienda')}
+                >
+                  <span className="register-role-icon" aria-hidden="true">
+                    🏪
+                  </span>
+                  <span className="register-role-name">Tienda</span>
+                  <span className="register-role-desc">Vendé y gestioná tu catálogo de productos.</span>
+                </button>
+              </div>
+            </div>
           ) : (
-            <form onSubmit={handleRegisterSubmit} className="login-form register-form">
+            <form
+              onSubmit={handleRegisterSubmit}
+              key={registerRole}
+              className={`login-form register-form role-${registerRole}`}
+            >
               <div className="field">
                 <span>Email</span>
                 <input
@@ -359,34 +432,76 @@ export default function Login({ onLogin }) {
                 </div>
               </div>
 
+              {registerRole === 'tienda' && (
+                <div className="field">
+                  <span>Nombre de la tienda</span>
+                  <input
+                    type="text"
+                    name="nombre_tienda"
+                    placeholder="Mi Tienda Textil"
+                    value={registerForm.nombre_tienda}
+                    onChange={handleRegisterChange}
+                    required
+                  />
+                </div>
+              )}
+
+              {registerRole === 'tienda' && (
+                <div className="field">
+                  <span>Descripción</span>
+                  <input
+                    type="text"
+                    name="descripcion_tienda"
+                    placeholder="Contanos brevemente sobre tu tienda"
+                    value={registerForm.descripcion_tienda}
+                    onChange={handleRegisterChange}
+                  />
+                </div>
+              )}
+
               <div className="field-row">
                 <div className="field half">
                   <span>Nombre</span>
                   <input
                     type="text"
                     name="nombre"
-                    placeholder="Juan"
+                    placeholder={registerRole === 'tienda' ? 'Nombre del responsable' : 'Juan'}
                     value={registerForm.nombre}
                     onChange={handleRegisterChange}
                     required
                   />
                 </div>
 
-                <div className="field half">
-                  <span>Apellido</span>
-                  <input
-                    type="text"
-                    name="apellido"
-                    placeholder="Pérez"
-                    value={registerForm.apellido}
-                    onChange={handleRegisterChange}
-                    required
-                  />
-                </div>
+                {registerRole === 'usuario' && (
+                  <div className="field half">
+                    <span>Apellido</span>
+                    <input
+                      type="text"
+                      name="apellido"
+                      placeholder="Pérez"
+                      value={registerForm.apellido}
+                      onChange={handleRegisterChange}
+                      required
+                    />
+                  </div>
+                )}
               </div>
 
+              {registerRole === 'tienda' && (
+                <div className="field">
+                  <span>Dirección</span>
+                  <input
+                    type="text"
+                    name="direccion_tienda"
+                    placeholder="Av. Siempre Viva 123"
+                    value={registerForm.direccion_tienda}
+                    onChange={handleRegisterChange}
+                  />
+                </div>
+              )}
+
               <div className="field">
-                <span>Teléfono</span>
+                <span>Teléfono (opcional)</span>
                 <input
                   type="tel"
                   name="telefono"
@@ -397,7 +512,7 @@ export default function Login({ onLogin }) {
               </div>
 
               <div className="field">
-                <span>Foto de perfil (URL)</span>
+                <span>Foto de perfil (opcional)</span>
                 <input
                   type="url"
                   name="foto_perfil"
@@ -407,8 +522,24 @@ export default function Login({ onLogin }) {
                 />
               </div>
 
+              <button
+                type="button"
+                className="register-back"
+                onClick={() => {
+                  setRegisterRole(null);
+                  setMessage(null);
+                  setMessageType(null);
+                }}
+              >
+                ← Cambiar tipo de cuenta
+              </button>
+
               <button className="primary" type="submit" disabled={loading}>
-                {submitLabel}
+                {loading
+                  ? 'Registrando...'
+                  : registerRole === 'tienda'
+                    ? 'Registrar tienda'
+                    : 'Registrarme'}
               </button>
             </form>
           )}

@@ -385,6 +385,180 @@
   color: #5b6b85;
 }
 
+/* ── Animations ── */
+@keyframes login-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes login-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.login-card {
+  animation: login-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.login-form,
+.register-role-step {
+  animation: login-fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Register role selection ── */
+.register-role-step {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-role-intro {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #39415c;
+  text-align: center;
+}
+
+.register-role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.register-role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 18px;
+  border-radius: 16px;
+  border: 1.5px solid #e3e8f0;
+  background: #fbfcfe;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.register-role-card:hover {
+  transform: translateY(-4px);
+  border-color: #00b894;
+  background: #f7fefc;
+  box-shadow: 0 12px 26px rgba(0, 184, 148, 0.16);
+}
+
+.register-role-card:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.register-role-icon {
+  font-size: 34px;
+  line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.register-role-card:hover .register-role-icon {
+  transform: scale(1.18) translateY(-2px);
+}
+
+.register-role-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0d1b38;
+}
+
+.register-role-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #8a95a8;
+}
+
+/* Register form (after role chosen) */
+.register-form .field,
+.register-form .field-row {
+  animation: login-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.register-form .field-row .field:nth-child(1),
+.register-form .field:nth-child(1) {
+  animation-delay: 0.02s;
+}
+
+.register-form .field:nth-child(2) {
+  animation-delay: 0.06s;
+}
+
+.register-form .field:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.register-form .field:nth-child(4) {
+  animation-delay: 0.14s;
+}
+
+.register-form .field:nth-child(5) {
+  animation-delay: 0.18s;
+}
+
+.register-form .field:nth-child(6) {
+  animation-delay: 0.22s;
+}
+
+.register-form .field:nth-child(7) {
+  animation-delay: 0.26s;
+}
+
+.register-back {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #00b894;
+  cursor: pointer;
+  font-family: inherit;
+  align-self: flex-start;
+  margin-top: -6px;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.register-back:hover {
+  color: #0aa07f;
+  transform: translateX(3px);
+}
+
+/* Smooth mode-switch transitions */
+.mode-tab {
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.login-form input {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+@media (max-width: 900px) {
+  .register-role-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Right: branding panel ── */
 .login-right {
   flex: 1;

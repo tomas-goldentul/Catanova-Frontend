@@ -28,73 +28,66 @@ async function request(path, options = {}) {
   return json;
 }
 
+// Prueba varios endpoints. Solo continúa con el siguiente cuando el servidor
+// no respondió (error de red) o la ruta no existe (404). Si el servidor
+// responde con un error real (400, 401, ...), ese es el resultado final.
+async function tryCandidates(candidates, label, optionsFn) {
+  let lastErr;
+  for (const path of candidates) {
+    try {
+      return await request(path, optionsFn(path));
+    } catch (err) {
+      lastErr = err;
+      if (err.status !== undefined && err.status !== 404) {
+        throw err;
+      }
+      console.warn(`${label} falló en`, path, err.message || err);
+    }
+  }
+  throw lastErr || new Error(`No endpoint responded`);
+}
+
 export function login(body) {
-  // Try several common login endpoints in case backend uses a prefix
-  const candidates = ['/login', '/auth/login', '/api/login', '/api/auth/login'];
-  let lastErr;
-  return (async () => {
-    for (const path of candidates) {
-      try {
-        return await request(path, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-      } catch (err) {
-        lastErr = err;
-        console.warn('login attempt failed for', path, err.message || err);
-      }
-    }
-    throw lastErr || new Error('No login endpoint responded');
-  })();
-}
-
-export function registerUsuario(body) {
-  const candidates = ['/api/auth/register/usuario', '/register/usuario', '/auth/register/usuario', '/api/register/usuario'];
-  let lastErr;
-
-  return (async () => {
-    for (const path of candidates) {
-      try {
-        return await request(path, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-      } catch (err) {
-        lastErr = err;
-        console.warn('registerUsuario attempt failed for', path, err.message || err);
-      }
-    }
-
-    throw lastErr || new Error('No register endpoint responded');
-  })();
-}
-
-export function registerTienda(body) {
-  return request('/register/tienda', {
+  return tryCandidates(['/login', '/auth/login', '/api/login', '/api/auth/login'], 'login', () => ({
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-  });
+  }));
+}
+
+export function registerUsuario(body) {
+  return tryCandidates(
+    ['/api/auth/register/usuario', '/register/usuario', '/auth/register/usuario', '/api/register/usuario'],
+    'registerUsuario',
+    () => ({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  );
+}
+
+export function registerTienda(body) {
+  return tryCandidates(
+    ['/api/auth/register/tienda', '/register/tienda', '/auth/register/tienda'],
+    'registerTienda',
+    () => ({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  );
 }
 
 export function getPerfil() {
-  const candidates = ['/api/auth/perfil', '/perfil'];
-  let lastErr;
-  return (async () => {
-    for (const path of candidates) {
-      try {
-        return await request(path, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-      } catch (err) {
-        lastErr = err;
-      }
-    }
-    throw lastErr || new Error('No se pudo obtener el perfil');
-  })();
+  return tryCandidates(
+    ['/api/auth/perfil', '/perfil'],
+    'getPerfil',
+    () => ({
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  );
 }
 
 export default { login, registerUsuario, registerTienda };
