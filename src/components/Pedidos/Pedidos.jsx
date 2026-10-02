@@ -13,13 +13,10 @@ import {
   FiMoreVertical,
   FiPackage,
   FiPlus,
-  FiPrinter,
   FiRefreshCw,
   FiSearch,
-  FiShoppingBag,
   FiTrash2,
   FiTruck,
-  FiUserCheck,
   FiUsers,
   FiX,
 } from 'react-icons/fi';
@@ -46,7 +43,7 @@ const ITEMS_POR_PAGINA = 4;
 
 function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
-  const [vista, setVista] = useState(() => obtenerVistaInicial());
+  const [vista] = useState('tienda');
   const [busqueda, setBusqueda] = useState('');
   const [estado, setEstado] = useState('Todos');
   const [orden, setOrden] = useState('fecha');
@@ -179,12 +176,10 @@ function Pedidos() {
       <div className="pedidos-shell">
         <header className="pedidos-header">
           <div className="pedidos-heading">
-            <span className="pedidos-kicker">{vista === 'usuario' ? 'Panel del comprador' : 'Panel del vendedor'}</span>
-            <h1>{vista === 'usuario' ? 'Mis compras' : 'Pedidos y envios'}</h1>
+            <span className="pedidos-kicker">Panel del vendedor</span>
+            <h1>Pedidos y envios</h1>
             <p>
-              {vista === 'usuario'
-                ? 'Seguimiento de compras, tiendas, pagos y entregas en una vista compacta.'
-                : 'Operacion diaria, entregas, pagos y responsables en una vista compacta.'}
+              Operacion diaria, entregas, pagos y responsables en una vista compacta.
             </p>
           </div>
 
@@ -193,59 +188,26 @@ function Pedidos() {
               <FiRefreshCw aria-hidden="true" />
               Actualizar
             </button>
-            {vista === 'tienda' && (
-              <>
-                <button type="button" className="pedidos-secondary">
-                  <FiPrinter aria-hidden="true" />
-                  Imprimir
-                </button>
-                <button
-                  type="button"
-                  className="pedidos-create"
-                  onClick={() => setMostrarCrearPedido((actual) => !actual)}
-                >
-                  <FiPlus aria-hidden="true" />
-                  Crear pedido
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              className="pedidos-create"
+              onClick={() => setMostrarCrearPedido((actual) => !actual)}
+            >
+              <FiPlus aria-hidden="true" />
+              Crear pedido
+            </button>
           </div>
         </header>
 
-        {vista === 'tienda' && mostrarCrearPedido && (
+        {mostrarCrearPedido && (
           <CrearPedido onCrear={crearPedidoManual} onCancelar={() => setMostrarCrearPedido(false)} />
         )}
 
-        <div className="pedidos-perspective-panel">
-          <div className="pedidos-perspective-copy">
-            <span>Punto de vista</span>
-            <strong>{vista === 'usuario' ? 'Comprador' : 'Vendedor'}</strong>
-          </div>
-          <div className="pedidos-view-switch" aria-label="Elegir punto de vista">
-            <button
-              type="button"
-              className={vista === 'usuario' ? 'active' : ''}
-              onClick={() => cambiarVista('usuario')}
-            >
-              <FiShoppingBag aria-hidden="true" />
-              Comprador
-            </button>
-            <button
-              type="button"
-              className={vista === 'tienda' ? 'active' : ''}
-              onClick={() => cambiarVista('tienda')}
-            >
-              <FiTruck aria-hidden="true" />
-              Vendedor
-            </button>
-          </div>
-        </div>
-
         <div className="pedidos-summary" aria-label="Resumen de pedidos">
-          <KpiCard label={vista === 'usuario' ? 'Compras realizadas' : 'Pedidos activos'} value={metricas.total} tone="neutral" />
+          <KpiCard label="Pedidos activos" value={metricas.total} tone="neutral" />
           <KpiCard label="Pendientes" value={metricas.pendientes} tone="warning" />
           <KpiCard label="Entregados" value={metricas.entregados} tone="info" />
-          <KpiCard label={vista === 'usuario' ? 'Total comprado' : 'Facturado'} value={formatearPrecio(metricas.facturado)} tone="success" />
+          <KpiCard label="Facturado" value={formatearPrecio(metricas.facturado)} tone="success" />
         </div>
 
         <div className="pedidos-control-panel">
@@ -258,7 +220,7 @@ function Pedidos() {
                 setBusqueda(event.target.value);
                 setPagina(1);
               }}
-              placeholder={vista === 'usuario' ? 'Buscar direccion, tienda, producto o CP' : 'Buscar direccion, cliente, repartidor o CP'}
+              placeholder="Buscar dirección, cliente, repartidor o CP"
             />
           </label>
 
@@ -384,26 +346,11 @@ function Pedidos() {
                             <FiEdit3 aria-hidden="true" />
                             Editar pedido
                           </button>
-                          <button type="button">
-                            <FiUserCheck aria-hidden="true" />
-                            Asignar repartidor
-                          </button>
                         </>
                       )}
-                      {vista === 'tienda' ? (
-                        <button type="button" onClick={() => abrirCambioEstado(pedido)}>
-                          <FiCheckCircle aria-hidden="true" />
-                          Cambiar estado
-                        </button>
-                      ) : (
-                        <button type="button">
-                          <FiCheckCircle aria-hidden="true" />
-                          Consultar estado
-                        </button>
-                      )}
-                      <button type="button">
-                        <FiFileText aria-hidden="true" />
-                        {vista === 'usuario' ? 'Ver comprobante' : 'Imprimir etiqueta'}
+                      <button type="button" onClick={() => abrirCambioEstado(pedido)}>
+                        <FiCheckCircle aria-hidden="true" />
+                        Cambiar estado
                       </button>
                     </div>
                   )}
