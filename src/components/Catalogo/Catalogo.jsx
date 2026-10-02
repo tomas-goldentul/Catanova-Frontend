@@ -2,22 +2,13 @@ import { useState, useEffect } from 'react';
 import './Catalogo.css';
 import Footer from '../Footer/Footer';
 import Categoria from '../Categoria/Categoria';
-import { crearCategoria, getCategoriasPorTienda } from '../../api/categorias';
-import { getProductosPorCategoria } from '../../api/productos';
+import { crearCategoria, getCategoriasPorTienda, editarCategoria, eliminarCategoria } from '../../api/categorias';
+import { getProductosPorCategoria, getProductosPorTienda } from '../../api/productos';
 import { getNombre, getSlogan, abrirTienda, cerrarTienda } from '../../api/tiendas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
 import { getCantidadVentasProducto } from '../../api/ventas';
 import { getCantidadFavoritosProducto } from '../../api/favoritos';
 import { getCantidadVistasProducto } from '../../api/vistas';
-
-// ── Datos de ejemplo para el selector de productos en los paneles ──
-const PRODUCTOS_DISPONIBLES = [
-  { id: 1, nombre: 'Remera oversize', precio: 50000 },
-  { id: 2, nombre: 'Pantalón cargo',  precio: 45000 },
-  { id: 3, nombre: 'Campera bomber',  precio: 85000 },
-  { id: 4, nombre: 'Buzo hoodie',     precio: 65000 },
-  { id: 5, nombre: 'Calza deportiva', precio: 35000 },
-];
 
 // Fallback cuando el backend no está disponible
 const CATEGORIAS_MOCK = [
@@ -42,13 +33,22 @@ const CATEGORIAS_MOCK = [
 //   PANEL: CREAR CATEGORÍA
 // ════════════════════════════════════════════
 
-function SelectorProducto({ onAgregar }) {
+function SelectorProducto({ onAgregar, productosDisponibles = [] }) {
   const [productoId, setProductoId] = useState('');
   const [cantidad, setCantidad] = useState(1);
 
   const handleAgregar = () => {
-    const producto = PRODUCTOS_DISPONIBLES.find(p => p.id === Number(productoId));
-    if (!producto) return;
+    const productoBuscado = productosDisponibles.find(p => 
+      String(p.id_producto ?? p.id) === String(productoId)
+    );
+    if (!productoBuscado) return;
+    
+    const producto = {
+      id: productoBuscado.id_producto ?? productoBuscado.id,
+      nombre: productoBuscado.nombre,
+      precio: productoBuscado.precio,
+    };
+    
     onAgregar(producto, Math.max(1, Number(cantidad)));
     setProductoId('');
     setCantidad(1);
@@ -64,8 +64,10 @@ function SelectorProducto({ onAgregar }) {
           onChange={e => setProductoId(e.target.value)}
         >
           <option value="">Selecciona un producto</option>
-          {PRODUCTOS_DISPONIBLES.map(p => (
-            <option key={p.id} value={p.id}>{p.nombre}</option>
+          {productosDisponibles.map(p => (
+            <option key={p.id_producto ?? p.id} value={p.id_producto ?? p.id}>
+              {p.nombre}
+            </option>
           ))}
         </select>
       </div>
@@ -132,18 +134,43 @@ function TablaProductos({ lista, onQuitar }) {
   );
 }
 
-function PanelCrear({ onCrear, onCancelar }) {
+function PanelCrear({ onCrear, onCancelar, productosDisponibles = [] }) {
   const [nombre, setNombre] = useState('');
+  const [lista, setLista] = useState([]);
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
 
+  const agregarProducto = (producto, cantidad) => {
+    setLista(prev => {
+      const existe = prev.find(i => i.id === producto.id);
+      if (existe) {
+        return prev.map(i =>
+          i.id === producto.id ? { ...i, cantidad: i.cantidad + cantidad } : i
+        );
+      }
+      return [...prev, {
+        id: producto.id,
+        nombre: producto.nombre,
+        cantidad,
+        precioUnitario: producto.precio,
+      }];
+    });
+  };
+
   const handleSubmit = async () => {
-    if (!nombre.trim()) { setError('Ingresá un nombre para la categoría.'); return; }
+    if (!nombre.trim()) { 
+      setError('Ingresá un nombre para la categoría.'); 
+      return; 
+    }
+    
     setGuardando(true);
     setError('');
 
     try {
-      await onCrear({ nombre: nombre.trim() });
+      await onCrear({ 
+        nombre: nombre.trim(),
+        productos: lista
+      });
     } catch (err) {
       setError(err.message || 'No se pudo crear la categoría. Intentá nuevamente.');
     } finally {
@@ -172,6 +199,12 @@ function PanelCrear({ onCrear, onCancelar }) {
         </div>
       </div>
 
+      <SelectorProducto onAgregar={agregarProducto} productosDisponibles={productosDisponibles} />
+      <TablaProductos
+        lista={lista}
+        onQuitar={id => setLista(prev => prev.filter(i => i.id !== id))}
+      />
+
       {error && <p className="cat-panel__error">{error}</p>}
 
       <div className="cat-panel__acciones cat-panel__acciones--derecha">
@@ -190,7 +223,7 @@ function PanelCrear({ onCrear, onCancelar }) {
 //   PANEL: EDITAR CATEGORÍA
 // ════════════════════════════════════════════
 
-function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar }) {
+function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar, productosDisponibles = [] }) {
   const [nombre, setNombre] = useState(categoria.nombre);
   const [lista, setLista] = useState(
     categoria.productos.map(p => ({
@@ -243,7 +276,7 @@ function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar }) {
         </div>
       </div>
 
-      <SelectorProducto onAgregar={agregarProducto} />
+      <SelectorProducto onAgregar={agregarProducto} productosDisponibles={productosDisponibles} />
       <TablaProductos
         lista={lista}
         onQuitar={id => setLista(prev => prev.filter(i => i.id !== id))}
@@ -297,6 +330,7 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
 
 function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccionada }) {
   const [categorias, setCategorias]         = useState([]);
+  const [productosDisponibles, setProductosDisponibles] = useState([]);
   const [tabActivo, setTabActivo]           = useState(null);
   const [infoTienda, setInfoTienda]         = useState({ nombre: '', slogan: '' });
   const [cargando, setCargando]             = useState(true);
@@ -320,16 +354,20 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
           throw new Error('No hay tienda iniciada en la sesión');
         }
 
-        const [categoriasDB, dataNombre, dataSlogan] = await Promise.all([
+        const [categoriasDB, dataNombre, dataSlogan, productosDelBackend] = await Promise.all([
           getCategoriasPorTienda(idTienda),
           getNombre(idTienda),
           getSlogan(idTienda),
+          getProductosPorTienda(idTienda),
         ]);
 
         setInfoTienda({
           nombre: dataNombre?.nombre || 'Mi Tienda',
           slogan: dataSlogan?.slogan || '',
         });
+
+        // Guardar productos disponibles
+        setProductosDisponibles(Array.isArray(productosDelBackend) ? productosDelBackend : []);
 
         const normalizadas = await Promise.all(
           categoriasDB.map(async cat => {
@@ -378,14 +416,18 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
           })
         );
 
-        setCategorias(normalizadas);
-        if (normalizadas.length > 0) setTabActivo(normalizadas[0].id);
+        // 🔥 FILTRAR: Solo categorías con mínimo 1 producto
+        const categoriasConProductos = normalizadas.filter(cat => cat.productos.length > 0);
+
+        setCategorias(categoriasConProductos);
+        if (categoriasConProductos.length > 0) setTabActivo(categoriasConProductos[0].id);
 
       } catch (error) {
         console.error('Error al cargar el catálogo:', error);
         // Fallback con datos de ejemplo para que la UI sea funcional
         setInfoTienda({ nombre: 'M51 Jeans', slogan: 'Donde la ropa es la felicidad' });
         setCategorias(CATEGORIAS_MOCK);
+        setProductosDisponibles(CATEGORIAS_MOCK.flatMap(cat => cat.productos));
         setTabActivo(CATEGORIAS_MOCK[0].id);
       } finally {
         setCargando(false);
@@ -449,6 +491,7 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
     const categoriaCreada = await crearCategoria({
       nombre: nueva.nombre,
       id_tienda: idTienda,
+      productos: nueva.productos || [],
     });
     const id = categoriaCreada?.id_categoria;
 
@@ -459,7 +502,7 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
     const nuevaCategoria = {
       id,
       nombre: categoriaCreada.nombre ?? nueva.nombre,
-      productos: [],
+      productos: nueva.productos || [],
     };
     setCategorias(prev => {
       const actualizado = [...prev, nuevaCategoria];
@@ -469,16 +512,27 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
     cerrarPanel();
   };
 
-  const handleGuardar = (editada) => {
-    setCategorias(prev => prev.map(c => c.id === editada.id ? editada : c));
-    cerrarPanel();
-    // Al conectar el back: await actualizarCategoria(editada.id, editada)
+  const handleGuardar = async (editada) => {
+    try {
+      await editarCategoria(editada.id, {
+        nombre: editada.nombre,
+        productos: editada.productos || [],
+      });
+      setCategorias(prev => prev.map(c => c.id === editada.id ? editada : c));
+      cerrarPanel();
+    } catch (err) {
+      alert('Error al guardar categoría: ' + (err.message || 'Error desconocido'));
+    }
   };
 
-  const handleBorrar = () => {
-    setCategorias(prev => prev.filter(c => c.id !== categoriaEditando.id));
-    cerrarPanel();
-    // Al conectar el back: await eliminarCategoria(categoriaEditando.id)
+  const handleBorrar = async () => {
+    try {
+      await eliminarCategoria(categoriaEditando.id);
+      setCategorias(prev => prev.filter(c => c.id !== categoriaEditando.id));
+      cerrarPanel();
+    } catch (err) {
+      alert('Error al eliminar categoría: ' + (err.message || 'Error desconocido'));
+    }
   };
 
   return (
@@ -521,7 +575,7 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
 
           {/* ── Paneles inline ── */}
           {esTienda && vistaPanel === 'crear' && (
-            <PanelCrear onCrear={handleCrear} onCancelar={cerrarPanel} />
+            <PanelCrear onCrear={handleCrear} onCancelar={cerrarPanel} productosDisponibles={productosDisponibles} />
           )}
 
           {esTienda && vistaPanel === 'editar' && categoriaEditando && (
@@ -530,6 +584,7 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
               onGuardar={handleGuardar}
               onBorrar={() => setVistaPanel('borrar')}
               onCancelar={cerrarPanel}
+              productosDisponibles={productosDisponibles}
             />
           )}
 

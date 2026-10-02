@@ -45,11 +45,11 @@ export async function getCategoriasPorTienda(id) {
   return res.json();
 }
 
-export async function crearCategoria({ nombre, id_tienda }) {
+export async function crearCategoria({ nombre, id_tienda, productos = [] }) {
   const res = await fetch(`${BASE_URL}/insert`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nombre, id_tienda }),
+    body: JSON.stringify({ nombre, id_tienda, productos }),
   });
 
   const text = await res.text();
@@ -68,4 +68,47 @@ export async function crearCategoria({ nombre, id_tienda }) {
   return data;
 }
 
-//el futuro agregar editar (elegir que productos poner y sacar) y eliminar
+export async function editarCategoria(id, { nombre, productos = [] }) {
+  const res = await fetch(`${BASE_URL}/update/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre, productos }),
+  });
+
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { _raw: text };
+  }
+
+  if (!res.ok) {
+    const mensaje = data.error || data.message || `Error ${res.status}: ${res.statusText}`;
+    throw new Error(mensaje);
+  }
+
+  return data;
+}
+
+export async function eliminarCategoria(id) {
+  const res = await fetch(`${BASE_URL}/delete/${id}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { _raw: text };
+  }
+
+  if (!res.ok) {
+    const mensaje = data.error || data.message || `Error ${res.status}: ${res.statusText}`;
+    throw new Error(mensaje);
+  }
+
+  return data;
+}
