@@ -15,11 +15,7 @@ function TarjetaCatalogo({
   favoritos,
   stock,
   onVerProducto,
-  onComprar,
-  tipoSesion,
 }) {
-  const esTienda = tipoSesion === 'tienda';
-
   return (
     <div className="cat-card">
       <div className="cat-card__img-wrapper">
@@ -35,7 +31,7 @@ function TarjetaCatalogo({
 
         <div className="cat-card__overlay">
           <span className="cat-card__nombre">{nombre}</span>
-          {esTienda && (
+          {onVerProducto && (
             <button
               className="cat-card__btn-datos"
               onClick={() => onVerProducto(id)}
@@ -49,35 +45,26 @@ function TarjetaCatalogo({
         </div>
       </div>
 
-      {esTienda ? (
-        <div className="cat-card__stats">
-          <div className="cat-card__stat">
-            <IconoVentas />
-            <span>Ventas: {ventas}</span>
-          </div>
-
-          <div className="cat-card__stat">
-            <IconoVistas />
-            <span>Vistas: {vistas}</span>
-          </div>
-
-          <div className="cat-card__stat">
-            <IconoFavoritos />
-            <span>Favoritos: {favoritos}</span>
-          </div>
-
-          <div className="cat-card__stock">
-            Stock restante: {stock}
-          </div>
+      <div className="cat-card__stats">
+        <div className="cat-card__stat">
+          <IconoVentas />
+          <span>Ventas: {ventas}</span>
         </div>
-      ) : (
-        <div className="cat-card__footer">
-          <div className="cat-card__stock">Stock restante: {stock}</div>
-          <button className="cat-card__btn-comprar" onClick={() => onComprar ? onComprar(id) : onVerProducto(id)}>
-            Comprar
-          </button>
+
+        <div className="cat-card__stat">
+          <IconoVistas />
+          <span>Vistas: {vistas}</span>
         </div>
-      )}
+
+        <div className="cat-card__stat">
+          <IconoFavoritos />
+          <span>Favoritos: {favoritos}</span>
+        </div>
+
+        <div className="cat-card__stock">
+          Stock restante: {stock}
+        </div>
+      </div>
     </div>
   );
 }

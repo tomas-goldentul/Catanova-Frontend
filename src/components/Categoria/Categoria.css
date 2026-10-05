@@ -36,6 +36,29 @@
   color: #00b894;
 }
 
+/* ── Estado vacío ── */
+
+.cat-seccion__vacio {
+  width: 100%;
+  text-align: center;
+  padding: 32px 16px;
+  border: 1.5px dashed #d5dcea;
+  border-radius: 14px;
+  background: #f8fafd;
+}
+
+.cat-seccion__vacio-titulo {
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: #0d1b38;
+}
+
+.cat-seccion__vacio-texto {
+  margin: 0;
+  color: #8899bb;
+  font-size: 14px;
+}
+
 /* ── Scroll horizontal ── */
 
 .cat-seccion__scroll {

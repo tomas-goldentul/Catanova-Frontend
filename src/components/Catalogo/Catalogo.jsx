@@ -4,7 +4,7 @@ import Footer from '../Footer/Footer';
 import Categoria from '../Categoria/Categoria';
 import { crearCategoria, getCategoriasPorTienda, editarCategoria, eliminarCategoria } from '../../api/categorias';
 import { getProductosPorCategoria, getProductosPorTienda } from '../../api/productos';
-import { getNombre, getSlogan, abrirTienda, cerrarTienda } from '../../api/tiendas';
+import { getNombre, getSlogan } from '../../api/tiendas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
 import { getCantidadVentasProducto } from '../../api/ventas';
 import { getCantidadFavoritosProducto } from '../../api/favoritos';
@@ -16,15 +16,15 @@ const CATEGORIAS_MOCK = [
     id: 1,
     nombre: 'Remeras',
     productos: [
-      { id: 1, nombre: 'Remera oversize', precio: 50000, cantidad: 2, precioUnitario: 50000, stock: 12, ventas: 8, vistas: 40, favoritos: 3 },
-      { id: 3, nombre: 'Campera bomber',  precio: 85000, cantidad: 1, precioUnitario: 85000, stock: 5,  ventas: 2, vistas: 15, favoritos: 1 },
+      { id: 1, nombre: 'Remera oversize', precio: 50000, precioUnitario: 50000, stock: 12, ventas: 8, vistas: 40, favoritos: 3 },
+      { id: 3, nombre: 'Campera bomber',  precio: 85000, precioUnitario: 85000, stock: 5,  ventas: 2, vistas: 15, favoritos: 1 },
     ],
   },
   {
     id: 2,
     nombre: 'Pantalones',
     productos: [
-      { id: 2, nombre: 'Pantalón cargo', precio: 45000, cantidad: 1, precioUnitario: 45000, stock: 20, ventas: 5, vistas: 30, favoritos: 2 },
+      { id: 2, nombre: 'Pantalón cargo', precio: 45000, precioUnitario: 45000, stock: 20, ventas: 5, vistas: 30, favoritos: 2 },
     ],
   },
 ];
@@ -35,7 +35,6 @@ const CATEGORIAS_MOCK = [
 
 function SelectorProducto({ onAgregar, productosDisponibles = [] }) {
   const [productoId, setProductoId] = useState('');
-  const [cantidad, setCantidad] = useState(1);
 
   const handleAgregar = () => {
     const productoBuscado = productosDisponibles.find(p => 
@@ -47,11 +46,16 @@ function SelectorProducto({ onAgregar, productosDisponibles = [] }) {
       id: productoBuscado.id_producto ?? productoBuscado.id,
       nombre: productoBuscado.nombre,
       precio: productoBuscado.precio,
+      precioUnitario: productoBuscado.precioUnitario ?? productoBuscado.precio,
+      stock: productoBuscado.stock ?? 0,
+      imagen: productoBuscado.imagen,
+      ventas: productoBuscado.ventas ?? 0,
+      vistas: productoBuscado.vistas ?? 0,
+      favoritos: productoBuscado.favoritos ?? 0,
     };
     
-    onAgregar(producto, Math.max(1, Number(cantidad)));
+    onAgregar(producto);
     setProductoId('');
-    setCantidad(1);
   };
 
   return (
@@ -72,17 +76,6 @@ function SelectorProducto({ onAgregar, productosDisponibles = [] }) {
         </select>
       </div>
 
-      <div className="cat-panel__campo cat-panel__campo--cantidad">
-        <label className="cat-panel__label">Cantidad</label>
-        <input
-          className="cat-panel__input cat-panel__input--cantidad"
-          type="number"
-          min="1"
-          value={cantidad}
-          onChange={e => setCantidad(e.target.value)}
-        />
-      </div>
-
       <button className="cat-panel__btn-agregar-item" onClick={handleAgregar}>
         + Agregar
       </button>
@@ -100,9 +93,8 @@ function TablaProductos({ lista, onQuitar }) {
         <thead>
           <tr>
             <th className="cat-panel__th"></th>
-            <th className="cat-panel__th cat-panel__th--centro">Cantidad</th>
             <th className="cat-panel__th cat-panel__th--centro">Precio unitario</th>
-            <th className="cat-panel__th cat-panel__th--centro">Total</th>
+            <th className="cat-panel__th cat-panel__th--centro">Stock</th>
             <th className="cat-panel__th"></th>
           </tr>
         </thead>
@@ -110,12 +102,11 @@ function TablaProductos({ lista, onQuitar }) {
           {lista.map(item => (
             <tr key={item.id} className="cat-panel__fila">
               <td className="cat-panel__td">{item.nombre}</td>
-              <td className="cat-panel__td cat-panel__td--centro">{item.cantidad}</td>
               <td className="cat-panel__td cat-panel__td--centro">
                 ${item.precioUnitario.toLocaleString('es-AR')}
               </td>
               <td className="cat-panel__td cat-panel__td--centro">
-                ${(item.precioUnitario * item.cantidad).toLocaleString('es-AR')}
+                {item.stock ?? '-'}
               </td>
               <td className="cat-panel__td cat-panel__td--accion">
                 <button
@@ -134,42 +125,53 @@ function TablaProductos({ lista, onQuitar }) {
   );
 }
 
-function PanelCrear({ onCrear, onCancelar, productosDisponibles = [] }) {
+function PanelCrear({ onCrear, onCancelar, productosDisponibles = [], categoriasExistentes = [] }) {
   const [nombre, setNombre] = useState('');
   const [lista, setLista] = useState([]);
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
 
-  const agregarProducto = (producto, cantidad) => {
+  const agregarProducto = (producto) => {
     setLista(prev => {
       const existe = prev.find(i => i.id === producto.id);
-      if (existe) {
-        return prev.map(i =>
-          i.id === producto.id ? { ...i, cantidad: i.cantidad + cantidad } : i
-        );
-      }
+      if (existe) return prev;
       return [...prev, {
         id: producto.id,
         nombre: producto.nombre,
-        cantidad,
-        precioUnitario: producto.precio,
+        precioUnitario: producto.precioUnitario ?? producto.precio,
+        stock: producto.stock,
+        imagen: producto.imagen,
+        ventas: producto.ventas,
+        vistas: producto.vistas,
+        favoritos: producto.favoritos,
       }];
     });
   };
 
   const handleSubmit = async () => {
-    if (!nombre.trim()) { 
-      setError('Ingresá un nombre para la categoría.'); 
-      return; 
+    const nombreTrimmed = nombre.trim();
+
+    if (!nombreTrimmed) {
+      setError('Ingresá un nombre para la categoría.');
+      return;
     }
-    
+
+    const nombreExisteEnTienda = categoriasExistentes.some(cat =>
+      String(cat.nombre ?? '').trim().toLowerCase() === nombreTrimmed.toLowerCase()
+    );
+
+    if (nombreExisteEnTienda) {
+      setError(`Ya existe una categoría llamada "${nombreTrimmed}" en tu tienda.`);
+      return;
+    }
+
     setGuardando(true);
     setError('');
 
     try {
-      await onCrear({ 
-        nombre: nombre.trim(),
-        productos: lista
+      await onCrear({
+        nombre: nombreTrimmed,
+        productos: lista,
       });
     } catch (err) {
       setError(err.message || 'No se pudo crear la categoría. Intentá nuevamente.');
@@ -211,7 +213,11 @@ function PanelCrear({ onCrear, onCancelar, productosDisponibles = [] }) {
         <button className="cat-panel__btn cat-panel__btn--secundario" onClick={onCancelar} disabled={guardando}>
           Cancelar
         </button>
-        <button className="cat-panel__btn cat-panel__btn--principal" onClick={handleSubmit} disabled={guardando}>
+        <button 
+          className="cat-panel__btn cat-panel__btn--principal" 
+          onClick={handleSubmit} 
+          disabled={guardando || !nombre.trim()}
+        >
           {guardando ? 'Guardando...' : 'Agregar'}
         </button>
       </div>
@@ -227,32 +233,40 @@ function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar, productosDisp
   const [nombre, setNombre] = useState(categoria.nombre);
   const [lista, setLista] = useState(
     categoria.productos.map(p => ({
-      id:             p.id,
-      nombre:         p.nombre,
-      cantidad:       p.cantidad ?? 1,
+      id: p.id ?? p.id_producto,
+      nombre: p.nombre,
       precioUnitario: p.precioUnitario ?? p.precio ?? 0,
+      stock: p.stock ?? 0,
+      imagen: p.imagen,
+      ventas: p.ventas ?? 0,
+      vistas: p.vistas ?? 0,
+      favoritos: p.favoritos ?? 0,
     }))
   );
 
-  const agregarProducto = (producto, cantidad) => {
+  const agregarProducto = (producto) => {
     setLista(prev => {
       const existe = prev.find(i => i.id === producto.id);
-      if (existe) {
-        return prev.map(i =>
-          i.id === producto.id ? { ...i, cantidad: i.cantidad + cantidad } : i
-        );
-      }
+      if (existe) return prev;
       return [...prev, {
-        id:             producto.id,
-        nombre:         producto.nombre,
-        cantidad,
-        precioUnitario: producto.precio,
+        id: producto.id,
+        nombre: producto.nombre,
+        precioUnitario: producto.precioUnitario ?? producto.precio,
+        stock: producto.stock,
+        imagen: producto.imagen,
+        ventas: producto.ventas,
+        vistas: producto.vistas,
+        favoritos: producto.favoritos,
       }];
     });
   };
 
   const handleGuardar = () => {
-    onGuardar({ ...categoria, nombre: nombre.trim() || categoria.nombre, productos: lista });
+    onGuardar({
+      ...categoria,
+      nombre: nombre.trim() || categoria.nombre,
+      productos: lista,
+    });
   };
 
   return (
@@ -328,7 +342,7 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
 //   COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════
 
-function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccionada }) {
+function Catalogo({ onVerProducto }) {
   const [categorias, setCategorias]         = useState([]);
   const [productosDisponibles, setProductosDisponibles] = useState([]);
   const [tabActivo, setTabActivo]           = useState(null);
@@ -337,16 +351,9 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
   const [vistaPanel, setVistaPanel]         = useState(null); // null | 'crear' | 'editar' | 'borrar'
   const [categoriaEditando, setCategoriaEditando] = useState(null);
 
-  const tipoSesion = typeof localStorage !== 'undefined' ? localStorage.getItem('tipo') : null;
-  const esTienda = tipoSesion === 'tienda';
-
   useEffect(() => {
     const tiendaIdRaw = localStorage.getItem('id_tienda');
-    const idTiendaSesion = tiendaIdRaw ? Number(tiendaIdRaw) : null;
-    
-    const idTienda = esTienda
-      ? idTiendaSesion
-      : tiendaSeleccionada;
+    const idTienda = tiendaIdRaw ? Number(tiendaIdRaw) : null;
 
     async function cargarDatos() {
       try {
@@ -371,42 +378,24 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
 
         const normalizadas = await Promise.all(
           categoriasDB.map(async cat => {
-            console.log(categoriasDB);
             const productos = await getProductosPorCategoria(
               cat.id_categoria ?? cat.id,
               idTienda
             );
 
-            console.log("Categoría:", cat.nombre, cat.id_categoria ?? cat.id);
-            console.log("Productos:", productos);
-
-            let productosConAnaliticas;
-            if (esTienda) {
-              productosConAnaliticas = await Promise.all(
-                productos.map(async p => ({
-                  id: p.id_producto ?? p.id,
-                  nombre: p.nombre ?? "Producto",
-                  precio: Number(p.precio) || 0,
-                  precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
-                  cantidad: Number(p.cantidad) || 1,
-                  stock: p.stock,
-                  imagen: p.imagen,
-                  ventas: await getCantidadVentasProducto(p.id_producto ?? p.id),
-                  vistas: await getCantidadVistasProducto(p.id_producto ?? p.id),
-                  favoritos: await getCantidadFavoritosProducto(p.id_producto ?? p.id),
-                }))
-              );
-            } else {
-              productosConAnaliticas = productos.map(p => ({
+            const productosConAnaliticas = await Promise.all(
+              productos.map(async p => ({
                 id: p.id_producto ?? p.id,
                 nombre: p.nombre ?? "Producto",
                 precio: Number(p.precio) || 0,
                 precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
-                cantidad: 1,
                 stock: p.stock,
                 imagen: p.imagen,
-              }));
-            }
+                ventas: await getCantidadVentasProducto(p.id_producto ?? p.id),
+                vistas: await getCantidadVistasProducto(p.id_producto ?? p.id),
+                favoritos: await getCantidadFavoritosProducto(p.id_producto ?? p.id),
+              }))
+            );
 
             return {
               id: cat.id_categoria ?? cat.id,
@@ -416,11 +405,9 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
           })
         );
 
-        // 🔥 FILTRAR: Solo categorías con mínimo 1 producto
-        const categoriasConProductos = normalizadas.filter(cat => cat.productos.length > 0);
-
-        setCategorias(categoriasConProductos);
-        if (categoriasConProductos.length > 0) setTabActivo(categoriasConProductos[0].id);
+        // ✅ Mostrar todas las categorías, incluso las vacías
+        setCategorias(normalizadas);
+        if (normalizadas.length > 0) setTabActivo(normalizadas[0].id);
 
       } catch (error) {
         console.error('Error al cargar el catálogo:', error);
@@ -435,22 +422,7 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
     }
 
     cargarDatos();
-  }, [tiendaSeleccionada, esTienda]);
-
-  // ── Abrir / cerrar tienda según navegación ──
-  useEffect(() => {
-    if (!tiendaSeleccionada) return;
-
-    abrirTienda(tiendaSeleccionada).catch((err) => {
-      console.error("No se pudo marcar la tienda como abierta:", err);
-    });
-
-    return () => {
-      cerrarTienda(tiendaSeleccionada).catch((err) => {
-        console.error("No se pudo marcar la tienda como cerrada:", err);
-      });
-    };
-  }, [tiendaSeleccionada]);
+  }, []);
 
   // ── Navegación ──
 
@@ -478,6 +450,14 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
     setCategoriaEditando(null);
   };
 
+  // ── Acciones del vendedor ──
+
+  const handleVerProducto = (productoId) => {
+    if (onVerProducto) {
+      onVerProducto(productoId);
+    }
+  };
+
   // ── CRUD sobre el estado local ──
 
   const handleCrear = async (nueva) => {
@@ -502,8 +482,18 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
     const nuevaCategoria = {
       id,
       nombre: categoriaCreada.nombre ?? nueva.nombre,
-      productos: nueva.productos || [],
+      productos: (nueva.productos || []).map(p => ({
+        id: p.id ?? p.id_producto,
+        nombre: p.nombre,
+        precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
+        stock: p.stock ?? 0,
+        imagen: p.imagen,
+        ventas: p.ventas ?? 0,
+        vistas: p.vistas ?? 0,
+        favoritos: p.favoritos ?? 0,
+      })),
     };
+
     setCategorias(prev => {
       const actualizado = [...prev, nuevaCategoria];
       setTabActivo(nuevaCategoria.id);
@@ -513,11 +503,15 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
   };
 
   const handleGuardar = async (editada) => {
+    const tiendaIdRaw = localStorage.getItem('id_tienda');
+    const idTienda = Number(tiendaIdRaw);
+
     try {
       await editarCategoria(editada.id, {
         nombre: editada.nombre,
         productos: editada.productos || [],
-      });
+      }, idTienda);
+
       setCategorias(prev => prev.map(c => c.id === editada.id ? editada : c));
       cerrarPanel();
     } catch (err) {
@@ -526,8 +520,16 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
   };
 
   const handleBorrar = async () => {
+    const tiendaIdRaw = localStorage.getItem('id_tienda');
+    const idTienda = Number(tiendaIdRaw);
+
+    if (!tiendaIdRaw || !Number.isFinite(idTienda)) {
+      alert('No se encontró una tienda válida en la sesión.');
+      return;
+    }
+
     try {
-      await eliminarCategoria(categoriaEditando.id);
+      await eliminarCategoria(categoriaEditando.id, idTienda);
       setCategorias(prev => prev.filter(c => c.id !== categoriaEditando.id));
       cerrarPanel();
     } catch (err) {
@@ -549,11 +551,9 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
               <span className="cat-header__stars">★★★★★</span>
               <span className="cat-header__rating">5/5</span>
             </div>
-            {esTienda && (
-              <button className="cat-header__btn-editar">
-                Editar Tienda <IconoLapiz />
-              </button>
-            )}
+            <button className="cat-header__btn-editar">
+              Editar Tienda <IconoLapiz />
+            </button>
           </div>
 
           <div className="cat-header__divider" />
@@ -561,11 +561,9 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
           <div className="cat-header__right">
             <h2 className="cat-header__titulo">Catálogo</h2>
             <p className="cat-header__subtitulo">Hechá un vistazo a tus productos</p>
-            {esTienda && (
-              <button className="cat-header__btn-stats">
-                <IconoOjo /> Ver Estadísticas
-              </button>
-            )}
+            <button className="cat-header__btn-stats">
+              <IconoOjo /> Ver Estadísticas
+            </button>
           </div>
         </div>
 
@@ -574,11 +572,11 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
           <h2 className="cat-productos__titulo">Productos:</h2>
 
           {/* ── Paneles inline ── */}
-          {esTienda && vistaPanel === 'crear' && (
-            <PanelCrear onCrear={handleCrear} onCancelar={cerrarPanel} productosDisponibles={productosDisponibles} />
+          {vistaPanel === 'crear' && (
+            <PanelCrear onCrear={handleCrear} onCancelar={cerrarPanel} productosDisponibles={productosDisponibles} categoriasExistentes={categorias} />
           )}
 
-          {esTienda && vistaPanel === 'editar' && categoriaEditando && (
+          {vistaPanel === 'editar' && categoriaEditando && (
             <PanelEditar
               categoria={categoriaEditando}
               onGuardar={handleGuardar}
@@ -588,7 +586,7 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
             />
           )}
 
-          {esTienda && vistaPanel === 'borrar' && categoriaEditando && (
+          {vistaPanel === 'borrar' && categoriaEditando && (
             <PanelBorrar
               nombreCategoria={categoriaEditando.nombre}
               onConfirmar={handleBorrar}
@@ -621,16 +619,13 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
                   <Categoria
                     key={cat.id}
                     {...cat}
-                    tipoSesion={tipoSesion}
-                    onEditar={esTienda ? () => abrirEditar(cat) : undefined}
-                    onVerProducto={onVerProducto}
-                    onComprar={onComprar}
+                    onEditar={() => abrirEditar(cat)}
+                    onVerProducto={handleVerProducto}
                   />
                 ))
               )}
 
               {/* ── Card crear categoría ── */}
-              {esTienda && (
               <div className="cat-crear">
                 <div className="cat-crear__card">
                   <div className="cat-crear__icon-wrap">
@@ -645,7 +640,6 @@ function Catalogo({ onVerProducto, onComprar, onIrAMenuPrincipal, tiendaSeleccio
                   </button>
                 </div>
               </div>
-              )}
             </>
           )}
         </div>

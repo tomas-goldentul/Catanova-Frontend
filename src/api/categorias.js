@@ -33,7 +33,6 @@ export async function getProductosDeCategoria(id) {
 
   return data;
 }
-//trae los productos de una categoría
 
 export async function getCategoriasPorTienda(id) {
   const res = await fetch(`${BASE_URL}/tienda/${id}`);
@@ -46,10 +45,18 @@ export async function getCategoriasPorTienda(id) {
 }
 
 export async function crearCategoria({ nombre, id_tienda, productos = [] }) {
+  const normalizedProductos = (productos || []).map((p) => ({
+    id_producto: Number(p.id_producto ?? p.id),
+  }));
+
   const res = await fetch(`${BASE_URL}/insert`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nombre, id_tienda, productos }),
+    body: JSON.stringify({
+      nombre,
+      id_tienda,
+      productos: normalizedProductos,
+    }),
   });
 
   const text = await res.text();
@@ -68,11 +75,21 @@ export async function crearCategoria({ nombre, id_tienda, productos = [] }) {
   return data;
 }
 
-export async function editarCategoria(id, { nombre, productos = [] }) {
-  const res = await fetch(`${BASE_URL}/update/${id}`, {
+export async function editarCategoria(id, { nombre, productos = [] }, id_tienda = null) {
+  const normalizedProductos = (productos || []).map((p) => ({
+    id_producto: Number(p.id_producto ?? p.id),
+  }));
+
+  const query = id_tienda != null ? `?id_tienda=${encodeURIComponent(id_tienda)}` : "";
+
+  const res = await fetch(`${BASE_URL}/update/${id}${query}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nombre, productos }),
+    body: JSON.stringify({
+      nombre,
+      productos: normalizedProductos,
+      id_tienda,
+    }),
   });
 
   const text = await res.text();
@@ -91,8 +108,10 @@ export async function editarCategoria(id, { nombre, productos = [] }) {
   return data;
 }
 
-export async function eliminarCategoria(id) {
-  const res = await fetch(`${BASE_URL}/delete/${id}`, {
+export async function eliminarCategoria(id, id_tienda = null) {
+  const query = id_tienda != null ? `?id_tienda=${encodeURIComponent(id_tienda)}` : "";
+
+  const res = await fetch(`${BASE_URL}/delete/${id}${query}`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
   });
