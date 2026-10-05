@@ -35,3 +35,5 @@ Estamos construyendo el futuro de la gestión textil. Puedes contactarnos a trav
 1. **NPM:** "npm i"
 2. **React-Icons:** "npm install react-icons"
 
+   CALVIÑO ESTUVO AQUI
+
