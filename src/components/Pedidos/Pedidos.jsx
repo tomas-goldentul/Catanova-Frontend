@@ -34,7 +34,7 @@ import './Pedidos.css';
 
 // El backend solo maneja el booleano "entregado", no hay estados intermedios
 // (Preparando/Enviado no existen en el modelo real).
-const ESTADOS = ['Todos', 'Pendiente', 'Entregado'];
+const ESTADOS = ['Todos', 'Pendiente', 'Entregado', 'Cancelado'];
 const ORDENES = [
   { value: 'fecha', label: 'Fecha reciente' },
   { value: 'total', label: 'Mayor total' },
@@ -141,9 +141,10 @@ function Pedidos() {
     const normalizados = pedidosDisponibles.map(normalizarPedido);
     const pendientes = normalizados.filter((pedido) => pedido.estado === 'Pendiente').length;
     const entregados = normalizados.filter((pedido) => pedido.estado === 'Entregado').length;
+    const cancelados = normalizados.filter((pedido) => pedido.estado === 'Cancelado').length;
     const facturado = normalizados.reduce((acc, pedido) => acc + pedido.total, 0);
 
-    return { total: normalizados.length, pendientes, entregados, facturado };
+    return { total: normalizados.length, pendientes, entregados, cancelados, facturado };
   }, [pedidosDisponibles]);
 
   useEffect(() => {
@@ -208,6 +209,7 @@ function Pedidos() {
           <KpiCard label="Pedidos activos" value={metricas.total} tone="neutral" />
           <KpiCard label="Pendientes" value={metricas.pendientes} tone="warning" />
           <KpiCard label="Entregados" value={metricas.entregados} tone="info" />
+          <KpiCard label="Cancelados" value={metricas.cancelados} tone="danger" />
           <KpiCard label="Facturado" value={formatearPrecio(metricas.facturado)} tone="success" />
         </div>
 
@@ -335,9 +337,9 @@ function Pedidos() {
 
                   {menuAbierto === menuId && (
                     <div className="pedido-menu">
-                      {vista === 'tienda' && (
+                      {vista === 'tienda' && detalle.estado !== 'Cancelado' && detalle.estado !== 'Entregado' && (
                         <>
-                          {detalle.estado !== 'Entregado' && (
+                          {detalle.estado === 'Pendiente' && (
                             <button 
                               type="button"
                               onClick={() => {
@@ -677,7 +679,7 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }
 
 function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
   const detalleOriginal = normalizarPedido(pedido);
-  const puedeEditar = detalleOriginal.estado !== 'Entregado';
+  const puedeEditar = detalleOriginal.estado === 'Pendiente';
 
   const [productos, setProductos] = useState(
     (detalleOriginal.detalles || detalleOriginal.productos || []).map((p, index) => ({
@@ -815,6 +817,10 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
   const validarFormulario = () => {
     const nuevosErrores = {};
 
+    if (!productos.length) {
+      nuevosErrores.productos = 'El pedido no puede quedar sin productos. Si no quedan items, se cancela automáticamente.';
+    }
+
     if (!formData.direccion.trim()) {
       nuevosErrores.direccion = 'La dirección es requerida';
     }
@@ -831,6 +837,11 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
   const handleGuardar = async () => {
     if (!validarFormulario()) return;
+
+    if (!productos.length) {
+      setMensajeError('El pedido no puede quedar sin productos. Agregá al menos un producto o el pedido se cancelará automáticamente.');
+      return;
+    }
 
     setGuardando(true);
     setMensajeError('');
@@ -1553,6 +1564,23 @@ function normalizarPedido(pedido) {
 }
 
 function normalizarEstado(pedido) {
+  const detallesBase = pedido?.detalles || pedido?.productos || pedido?.items || pedido?.detalle || [];
+  const detalles = Array.isArray(detallesBase) ? detallesBase : [];
+
+  if (pedido?.estado === 'Cancelado') return 'Cancelado';
+
+  if (detalles.length === 0) {
+    return 'Cancelado';
+  }
+  
+  if (Array.isArray(detalles) && detalles.every((item) => {
+    const idProducto = Number(item?.id_producto ?? item?.idProducto ?? item?.producto_id ?? item?.productoId ?? item?.id ?? 0);
+    const cantidad = Number(item?.cantidad ?? item?.qty ?? 0);
+    return !Number.isFinite(idProducto) || idProducto <= 0 || !Number.isFinite(cantidad) || cantidad <= 0;
+  })) {
+    return 'Cancelado';
+  }
+
   if (typeof pedido.entregado === 'boolean') {
     return pedido.entregado ? 'Entregado' : 'Pendiente';
   }
@@ -1625,7 +1653,11 @@ function ordenarPedidos(a, b, tipo) {
 }
 
 function estadoRank(estado) {
-  return ['Pendiente', 'Entregado'].indexOf(estado);
+  return ['Pendiente', 'Entregado', 'Cancelado'].indexOf(estado);
+}
+
+function estadoLabel(estado) {
+  return estado === 'Cancelado' ? 'Cancelado' : estado;
 }
 
 function resumenProductos(productos) {
@@ -1657,10 +1689,6 @@ function formatearFecha(valor) {
     day: '2-digit',
     month: 'short',
   }).format(new Date(valor));
-}
-
-function estadoLabel(estado) {
-  return estado;
 }
 
 function iniciales(nombre) {
