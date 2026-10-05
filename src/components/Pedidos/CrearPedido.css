@@ -391,8 +391,18 @@
   gap: 10px;
 }
 
-.crear-pedido-selector-usuario input {
+.crear-pedido-selector-usuario input,
+.crear-pedido-selector-usuario select {
   flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: var(--panel-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .crear-pedido-nuevo-usuario-btn {

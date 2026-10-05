@@ -65,7 +65,10 @@ function Pedidos() {
     setRefreshKey((actual) => actual + 1);
   };
   const crearPedidoManual = (nuevoPedido) => {
-    setPedidos((actuales) => [nuevoPedido, ...actuales]);
+    // Si no se pudo traer el detalle del pedido recién creado, se recarga la lista completa.
+    if (nuevoPedido) setPedidos((actuales) => [nuevoPedido, ...actuales]);
+    else actualizarPedidos();
+    setError('');
     setMostrarCrearPedido(false);
     setPagina(1);
   };

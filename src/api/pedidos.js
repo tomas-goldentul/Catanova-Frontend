@@ -7,6 +7,8 @@ function headersPedido() {
 
 async function leerListaPedidos(response, mensaje) {
   const data = await response.json().catch(() => ({}));
+  // Sin pedidos el back responde 400/404 con "No hay pedidos cargados...": no es un error real.
+  if (!response.ok && [400, 404].includes(response.status) && /no hay pedidos/i.test(data.message || '')) return [];
   if (!response.ok) {
     const error = new Error(data.message || data.error || `${mensaje} (Error ${response.status}).`);
     error.status = response.status;
@@ -70,29 +72,27 @@ function normalizarPedidoCompatible(pedido) {
 function normalizarProductosPedido(productos) {
   if (!Array.isArray(productos)) return [];
 
-  return productos
-    .map((item) => {
-      const idProducto = Number(
-        item?.id_producto ??
-        item?.idProducto ??
-        item?.producto_id ??
-        item?.productoId ??
-        item?.id ??
-        0,
-      );
+  const porProducto = new Map();
 
-      const cantidad = Number(item?.cantidad ?? item?.qty ?? item?.cantidadProducto ?? 1);
+  for (const item of productos) {
+    const idProducto = Number(
+      item?.id_producto ??
+      item?.idProducto ??
+      item?.producto_id ??
+      item?.productoId ??
+      item?.id ??
+      0,
+    );
+    const cantidad = Number(item?.cantidad ?? item?.qty ?? item?.cantidadProducto ?? 1);
 
-      if (!Number.isFinite(idProducto) || idProducto <= 0 || !Number.isFinite(cantidad) || cantidad <= 0) {
-        return null;
-      }
+    if (!Number.isInteger(idProducto) || idProducto <= 0 || !Number.isInteger(cantidad) || cantidad <= 0) {
+      throw new Error('Cada producto debe tener un id válido y una cantidad entera mayor a 0.');
+    }
 
-      return {
-        id_producto: idProducto,
-        cantidad,
-      };
-    })
-    .filter(Boolean);
+    porProducto.set(idProducto, (porProducto.get(idProducto) ?? 0) + cantidad);
+  }
+
+  return [...porProducto].map(([id_producto, cantidad]) => ({ id_producto, cantidad }));
 }
 
 export async function actualizarEstadoPedido(id, entregado) {
@@ -199,7 +199,7 @@ export async function crearPedido(datosPedido) {
 
   const idUsuario = Number(payload.id_usuario ?? payload.idUsuario ?? payload.usuarioId ?? payload.userId ?? 0);
   const direccion = payload.direccion ?? payload.direccionEntrega ?? payload.direccion_envio ?? '';
-  const metodoPago = payload.metodo_pago ?? payload.metodoPago ?? 'efectivo';
+  const metodoPago = payload.metodo_pago ?? payload.metodoPago ?? 'Efectivo';
   const productos = normalizarProductosPedido(payload.productos ?? payload.items ?? payload.carrito ?? []);
 
   if (!Number.isFinite(idUsuario) || idUsuario <= 0) {
@@ -210,6 +210,10 @@ export async function crearPedido(datosPedido) {
     throw new Error('La dirección es obligatoria para crear el pedido.');
   }
 
+  if (String(direccion).trim().length > 100) {
+    throw new Error('La dirección no puede superar los 100 caracteres.');
+  }
+
   if (!productos.length) {
     throw new Error('Debes incluir al menos un producto en el pedido.');
   }
@@ -217,7 +221,7 @@ export async function crearPedido(datosPedido) {
   const body = {
     id_usuario: idUsuario,
     direccion: String(direccion).trim(),
-    metodo_pago: String(metodoPago).trim().toLowerCase(),
+    metodo_pago: String(metodoPago).trim(),
     productos,
   };
 
