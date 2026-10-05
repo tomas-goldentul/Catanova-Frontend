@@ -1578,6 +1578,55 @@
   transform: scale(0.98);
 }
 
+/* Estilos adicionales para selector de productos en EditarPedidoModal */
+.editar-producto-selector select,
+.editar-producto-selector input[type="number"] {
+  height: 40px;
+  border: 1px solid #e6e9ee;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font: inherit;
+  background: #fff;
+}
+
+.editar-agregar-producto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: var(--brand);
+  color: #fff;
+  border: 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editar-agregar-producto:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editar-input-nombre {
+  width: 240px;
+  border: 1px solid #e6e9ee;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.editar-input-precio {
+  width: 120px;
+  border: 1px solid #e6e9ee;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.cantidad-input {
+  width: 64px;
+  text-align: center;
+}
+
 /* Responsivo para móvil */
 @media (max-width: 640px) {
   .editar-modal {

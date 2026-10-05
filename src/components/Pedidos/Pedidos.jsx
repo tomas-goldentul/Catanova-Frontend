@@ -28,6 +28,7 @@ import {
   obtenerPedidos,
   obtenerPedidosPorUsuario,
 } from '../../api/pedidos';
+import { getTodosLosProductos, getTodosProductosPorTienda } from '../../api/productos';
 import { obtenerUsuarioPorCuenta } from '../../api/usuarios';
 import './Pedidos.css';
 
@@ -336,16 +337,18 @@ function Pedidos() {
                     <div className="pedido-menu">
                       {vista === 'tienda' && (
                         <>
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              setPedidoEnEdicion(pedido);
-                              setMenuAbierto('');
-                            }}
-                          >
-                            <FiEdit3 aria-hidden="true" />
-                            Editar pedido
-                          </button>
+                          {detalle.estado !== 'Entregado' && (
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setPedidoEnEdicion(pedido);
+                                setMenuAbierto('');
+                              }}
+                            >
+                              <FiEdit3 aria-hidden="true" />
+                              Editar pedido
+                            </button>
+                          )}
                         </>
                       )}
                       <button type="button" onClick={() => abrirCambioEstado(pedido)}>
@@ -649,14 +652,16 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }
               Cambiar estado
             </button>
           )}
-          <button
-            type="button"
-            className="detalles-modal-editar"
-            onClick={onEdit}
-          >
-            <FiEdit3 aria-hidden="true" />
-            Editar pedido
-          </button>
+          {pedido.estado !== 'Entregado' && (
+            <button
+              type="button"
+              className="detalles-modal-editar"
+              onClick={onEdit}
+            >
+              <FiEdit3 aria-hidden="true" />
+              Editar pedido
+            </button>
+          )}
           <button
             type="button"
             className="detalles-modal-cerrar"
@@ -695,6 +700,65 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
   const [mensajeError, setMensajeError] = useState('');
+
+  const [catalogoProductos, setCatalogoProductos] = useState([]);
+  const [productoSeleccionadoId, setProductoSeleccionadoId] = useState('');
+  const [cantidadNueva, setCantidadNueva] = useState(1);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const tiendaIdRaw = localStorage.getItem('id_tienda');
+        const tiendaId = tiendaIdRaw ? Number(tiendaIdRaw) : null;
+        const res = tiendaId && Number.isFinite(tiendaId)
+          ? await getTodosProductosPorTienda(tiendaId)
+          : await getTodosLosProductos();
+
+        const lista = Array.isArray(res) ? res : (res?.productos ?? []);
+        if (mounted) setCatalogoProductos(lista);
+      } catch (e) {
+        // silencioso
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const agregarProducto = () => {
+    const idProd = productoSeleccionadoId;
+    const unidades = Number(cantidadNueva) || 1;
+    if (!idProd) {
+      setMensajeError('Seleccioná un producto para agregar.');
+      return;
+    }
+
+    const producto = catalogoProductos.find((p) => String(p.id_producto || p.id) === String(idProd) || String(p.id) === String(idProd));
+    if (!producto) {
+      setMensajeError('No se encontró el producto seleccionado en el catálogo.');
+      return;
+    }
+
+    const nuevo = {
+      _tmpId: producto.id_producto || producto.id || `tmp-${Date.now()}`,
+      id_producto: producto.id_producto || producto.id,
+      nombre: producto.nombre || producto.descripcion || producto.name,
+      nombre_producto: producto.nombre || producto.descripcion || producto.name,
+      precio_unitario: Number(producto.precio ?? producto.precio_unitario ?? 0),
+      cantidad: unidades,
+    };
+
+    setProductos((actuales) => {
+      const existe = actuales.find((it) => String(it.id_producto || it.producto?.id || it._tmpId) === String(nuevo.id_producto));
+      if (existe) {
+        return actuales.map((it) => String(it.id_producto || it.producto?.id || it._tmpId) === String(nuevo.id_producto) ? { ...it, cantidad: (Number(it.cantidad) || 1) + unidades } : it);
+      }
+      return [...actuales, nuevo];
+    });
+
+    setProductoSeleccionadoId('');
+    setCantidadNueva(1);
+    if (mensajeError) setMensajeError('');
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -773,11 +837,19 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
     try {
       // Preparar los datos sin el campo _tmpId para la API
-      const productosParaEnviar = productos.map((p) => {
-        const producto = { ...p };
-        delete producto._tmpId;
-        return producto;
-      });
+      // Normalizar productos a { id_producto, cantidad } para la API
+      const productosParaEnviar = productos
+        .map((p) => {
+          const idProducto = Number(p.id_producto ?? p.producto?.id ?? p.id ?? p.producto?.id_producto ?? null);
+          const cantidad = Number(p.cantidad ?? p.qty ?? 1);
+          if (!Number.isFinite(idProducto) || idProducto <= 0 || !Number.isFinite(cantidad) || cantidad <= 0) return null;
+          return { id_producto: idProducto, cantidad };
+        })
+        .filter(Boolean);
+
+      if (!productosParaEnviar.length) {
+        throw new Error('El pedido debe contener al menos un producto válido. Agregá productos desde el catálogo.');
+      }
 
       const datosActualizados = {
         ...formData,
@@ -796,8 +868,9 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
       onGuardar(pedidoActualizado);
     } catch (err) {
+      const detalle = err?.details || err?.response || null;
       setMensajeError(
-        err.message || 'No se pudo guardar los cambios del pedido.'
+        err.message || (detalle && (detalle.message || JSON.stringify(detalle))) || 'No se pudo guardar los cambios del pedido.'
       );
     } finally {
       setGuardando(false);
@@ -967,7 +1040,34 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
           {/* Productos */}
           <section className="editar-section">
-            <h3>Productos ({productos.length})</h3>
+            <div className="editar-producto-selector" style={{display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'space-between'}}>
+              <h3 style={{margin: 0}}>Productos ({productos.length})</h3>
+              <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+                <select
+                  value={productoSeleccionadoId}
+                  onChange={(e) => setProductoSeleccionadoId(e.target.value)}
+                  disabled={guardando || !catalogoProductos.length}
+                >
+                  <option value="">Seleccioná un producto</option>
+                  {catalogoProductos.map((p) => (
+                    <option key={p.id_producto ?? p.id} value={p.id_producto ?? p.id}>
+                      {`${p.nombre || p.descripcion || p.name} · ${formatearPrecio(Number(p.precio ?? p.precio_unitario ?? 0))}`}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min="1"
+                  value={cantidadNueva}
+                  onChange={(e) => setCantidadNueva(Math.max(1, Number(e.target.value) || 1))}
+                  disabled={guardando}
+                  style={{width: '80px'}}
+                />
+                <button type="button" className="editar-agregar-producto" onClick={agregarProducto} disabled={guardando}>
+                  <FiPlus aria-hidden="true" /> Agregar
+                </button>
+              </div>
+            </div>
             <div className="editar-productos-lista">
               {productos && Array.isArray(productos) && productos.length > 0 ? (
                 <table className="editar-tabla-productos">
@@ -989,10 +1089,26 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
                       return (
                         <tr key={producto._tmpId}>
-                          <td>{nombre}</td>
-                          <td className="editar-precio">
-                            ${precioUnitario.toFixed(2)}
-                          </td>
+                            <td>
+                              <input
+                                type="text"
+                                value={producto.nombre || producto.nombre_producto || ''}
+                                onChange={(e) => actualizarProducto(producto._tmpId, 'nombre', e.target.value)}
+                                disabled={guardando}
+                                className="editar-input-nombre"
+                              />
+                            </td>
+                            <td className="editar-precio">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={Number(producto.precio_unitario || producto.precio || 0)}
+                                onChange={(e) => actualizarProducto(producto._tmpId, 'precio_unitario', parseFloat(e.target.value || 0))}
+                                disabled={guardando}
+                                className="editar-input-precio"
+                              />
+                            </td>
                           <td className="editar-cantidad">
                             <div className="cantidad-controls">
                               <button
