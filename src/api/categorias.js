@@ -131,3 +131,27 @@ export async function eliminarCategoria(id, id_tienda = null) {
 
   return data;
 }
+
+// Asociar un producto a una categoría existente
+export async function asociarProductoACategoria(id_categoria, id_producto) {
+  const res = await fetch(`${BASE_URL}/${id_categoria}/productos`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id_producto: Number(id_producto),
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(
+      data.message || `Error ${res.status}: ${res.statusText}`
+    );
+  }
+
+  return data;
+}
+
