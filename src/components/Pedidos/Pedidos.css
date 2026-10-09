@@ -222,7 +222,7 @@
 
 .pedidos-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 22px;
 }
@@ -522,7 +522,8 @@
   border-color: #fed7aa;
 }
 
-.pedido-status.preparando {
+.pedido-status.preparando,
+.pedido-status.en-preparacion {
   background: #eff6ff;
   color: #1d4ed8;
   border-color: #bfdbfe;
@@ -611,11 +612,7 @@
 .pedido-progress span {
   height: 7px;
   border-radius: 999px;
-  background: #eaecf0;
-}
-
-.pedido-progress span.active {
-  background: var(--brand);
+  background: linear-gradient(to right, var(--brand) var(--relleno, 0%), #eaecf0 var(--relleno, 0%));
 }
 
 .pedido-meta {
@@ -888,6 +885,7 @@
 
 .pedido-modal-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 24px;
@@ -1207,6 +1205,11 @@
 .estado-badge.entregado {
   background: #d1fae5;
   color: #065f46;
+}
+
+.estado-badge.en-preparacion {
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .detalles-productos {

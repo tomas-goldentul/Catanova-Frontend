@@ -95,12 +95,14 @@ function normalizarProductosPedido(productos) {
   return [...porProducto].map(([id_producto, cantidad]) => ({ id_producto, cantidad }));
 }
 
-export async function actualizarEstadoPedido(id, entregado) {
+export const ESTADOS_PEDIDO = ['Pendiente', 'En preparación', 'Entregado'];
+
+export async function actualizarEstadoPedido(id, estado) {
   if (!id || id === 'Sin ID') {
     throw new Error('No se pudo identificar el pedido. El ID está ausente o inválido.');
   }
-  if (typeof entregado !== 'boolean') {
-    throw new Error("El campo 'entregado' es obligatorio y debe ser un booleano (true/false).");
+  if (!ESTADOS_PEDIDO.includes(estado)) {
+    throw new Error(`Estado inválido. Valores permitidos: ${ESTADOS_PEDIDO.join(', ')}.`);
   }
 
   const token = localStorage.getItem('token');
@@ -110,7 +112,7 @@ export async function actualizarEstadoPedido(id, entregado) {
   const response = await fetch(`${API_URL}/pedidos/${encodeURIComponent(id)}/estado`, {
     method: 'PATCH',
     headers,
-    body: JSON.stringify({ entregado }),
+    body: JSON.stringify({ estado }),
   });
 
   const payload = await response.json().catch(() => ({}));
