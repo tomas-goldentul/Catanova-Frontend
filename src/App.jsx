@@ -9,6 +9,7 @@ import Productos from './components/Productos/productos';
 import Producto from './components/Producto/Producto';
 import Login from './components/Login/Login';
 import Pedidos from './components/Pedidos/Pedidos';
+import Envios from './components/Envios/Envios';
 import CatalogoTiendas from './components/CatalogoTiendas/CatalogoTiendas';
 
 function App() {
@@ -87,7 +88,14 @@ function App() {
       {tab === 'tienda' && (
         <MiTienda
           onIrAGaleria={() => setTab('galeria')}
+          onIrAEnvios={() => setTab('envios')}
           onVerTiendaPublica={() => setTab('catalogo')}
+        />
+      )}
+      {tab === 'envios' && (
+        <Envios
+          onVolver={() => setTab('tienda')}
+          onIrALogin={() => setTab('login')}
         />
       )}
       {tab === 'galeria' && (

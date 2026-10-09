@@ -51,7 +51,7 @@ const IconFotos = () => (
   </svg>
 );
 
-function crearCards(onIrAGaleria) {
+function crearCards(onIrAGaleria, onIrAEnvios) {
   return [
   {
     icon: <IconProductos />,
@@ -80,7 +80,8 @@ function crearCards(onIrAGaleria) {
     title: "Envíos",
     description: "Controlá el estado y la logística de todos tus pedidos.",
     accentBg: "#f0fdf4",
-    accentColor: "#16a34a"
+    accentColor: "#16a34a",
+    onClick: onIrAEnvios
   },
   {
     icon: <IconPromociones />,
@@ -99,8 +100,8 @@ function crearCards(onIrAGaleria) {
   ];
 }
 
-function MiTienda({ onIrAGaleria, onVerTiendaPublica }) {
-  const cards = crearCards(onIrAGaleria);
+function MiTienda({ onIrAGaleria, onIrAEnvios, onVerTiendaPublica }) {
+  const cards = crearCards(onIrAGaleria, onIrAEnvios);
 
   return (
     <>

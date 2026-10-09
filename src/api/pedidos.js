@@ -95,7 +95,7 @@ function normalizarProductosPedido(productos) {
   return [...porProducto].map(([id_producto, cantidad]) => ({ id_producto, cantidad }));
 }
 
-export const ESTADOS_PEDIDO = ['Pendiente', 'En preparación', 'Entregado'];
+export const ESTADOS_PEDIDO = ['Pendiente', 'En preparación', 'Enviado', 'Entregado'];
 
 export async function actualizarEstadoPedido(id, estado) {
   if (!id || id === 'Sin ID') {

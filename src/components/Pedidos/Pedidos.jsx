@@ -35,7 +35,7 @@ import './Pedidos.css';
 
 // El estado se guarda en la columna "estado" de pedidos; "Cancelado" se deduce
 // en el front (pedido sin productos).
-const ESTADOS = ['Todos', 'En preparación', 'Pendiente', 'Entregado', 'Cancelado'];
+const ESTADOS = ['Todos', 'En preparación', 'Pendiente', 'Enviado', 'Entregado', 'Cancelado'];
 // Orden de la barra de progreso: En preparación (mínimo) → Pendiente → Entregado (máximo).
 const PASOS_PROGRESO = ['En preparación', 'Pendiente', 'Entregado'];
 const ORDENES = [
@@ -485,8 +485,7 @@ function Pedidos() {
                 <button type="button" className="pedido-modal-cancel" onClick={cerrarCambioEstado} disabled={guardandoEstado}>
                   Cerrar
                 </button>
-                {pedidoParaActualizar.estadoActual !== 'Entregado' && PASOS_PROGRESO
-                  .filter((opcion) => opcion !== pedidoParaActualizar.estadoActual)
+                {pedidoParaActualizar.estadoActual !== 'Entregado' && opcionesDeEstado(pedidoParaActualizar.estadoActual)
                   .map((opcion) => (
                     <button
                       type="button"
@@ -1318,7 +1317,13 @@ function MetaItem({ icon, label, value, accent = false }) {
 }
 
 // Progreso total sobre 2 barras: En preparación al mínimo, Pendiente a la mitad, Entregado al máximo.
-const PROGRESO_POR_ESTADO = { 'En preparación': 0.25, Pendiente: 0.5, Entregado: 1 };
+const PROGRESO_POR_ESTADO = { 'En preparación': 0.25, Pendiente: 0.5, Enviado: 0.75, Entregado: 1 };
+
+// "Enviado" solo se pone creando el envío (sección Envíos); desde "Enviado" solo se puede entregar.
+function opcionesDeEstado(estadoActual) {
+  if (estadoActual === 'Enviado') return ['Entregado'];
+  return PASOS_PROGRESO.filter((opcion) => opcion !== estadoActual);
+}
 
 function ProgressBar({ estado }) {
   const progreso = PROGRESO_POR_ESTADO[estado] ?? 0;
@@ -1668,7 +1673,7 @@ function ordenarPedidos(a, b, tipo) {
 }
 
 function estadoRank(estado) {
-  return [...PASOS_PROGRESO, 'Cancelado'].indexOf(estado);
+  return ['En preparación', 'Pendiente', 'Enviado', 'Entregado', 'Cancelado'].indexOf(estado);
 }
 
 function estadoLabel(estado) {

@@ -1212,6 +1212,11 @@
   color: #1e40af;
 }
 
+.estado-badge.enviado {
+  background: #ecfdf5;
+  color: #047857;
+}
+
 .detalles-productos {
   background: var(--panel-soft);
   border-radius: 8px;
