@@ -23,6 +23,7 @@ import {
 import CrearPedido from './CrearPedido';
 import {
   actualizarEstadoPedido,
+  ESTADOS_PEDIDO,
   editarPedido,
   obtenerPedido,
   obtenerPedidos,
@@ -32,9 +33,11 @@ import { getTodosLosProductos, getTodosProductosPorTienda } from '../../api/prod
 import { obtenerUsuarioPorCuenta } from '../../api/usuarios';
 import './Pedidos.css';
 
-// El backend solo maneja el booleano "entregado", no hay estados intermedios
-// (Preparando/Enviado no existen en el modelo real).
-const ESTADOS = ['Todos', 'Pendiente', 'Entregado', 'Cancelado'];
+// El estado se guarda en la columna "estado" de pedidos; "Cancelado" se deduce
+// en el front (pedido sin productos).
+const ESTADOS = ['Todos', 'En preparación', 'Pendiente', 'Entregado', 'Cancelado'];
+// Orden de la barra de progreso: En preparación (mínimo) → Pendiente → Entregado (máximo).
+const PASOS_PROGRESO = ['En preparación', 'Pendiente', 'Entregado'];
 const ORDENES = [
   { value: 'fecha', label: 'Fecha reciente' },
   { value: 'total', label: 'Mayor total' },
@@ -90,17 +93,17 @@ function Pedidos() {
       setErrorEstado('');
     }
   };
-  const marcarComoEntregado = async () => {
+  const cambiarEstadoPedido = async (nuevoEstado) => {
     if (!pedidoParaActualizar) return;
 
     setGuardandoEstado(true);
     setErrorEstado('');
 
     try {
-      await actualizarEstadoPedido(pedidoParaActualizar.id, true);
+      await actualizarEstadoPedido(pedidoParaActualizar.id, nuevoEstado);
       setPedidos((actuales) => actuales.map((pedido) => {
         if (String(normalizarPedido(pedido).id) !== String(pedidoParaActualizar.id)) return pedido;
-        return { ...pedido, entregado: true, estado: 'Entregado' };
+        return { ...pedido, entregado: nuevoEstado === 'Entregado', estado: nuevoEstado };
       }));
       setPedidoParaActualizar(null);
       setPedidoSeleccionado(null);
@@ -143,11 +146,12 @@ function Pedidos() {
   const metricas = useMemo(() => {
     const normalizados = pedidosDisponibles.map(normalizarPedido);
     const pendientes = normalizados.filter((pedido) => pedido.estado === 'Pendiente').length;
+    const enPreparacion = normalizados.filter((pedido) => pedido.estado === 'En preparación').length;
     const entregados = normalizados.filter((pedido) => pedido.estado === 'Entregado').length;
     const cancelados = normalizados.filter((pedido) => pedido.estado === 'Cancelado').length;
     const facturado = normalizados.reduce((acc, pedido) => acc + pedido.total, 0);
 
-    return { total: normalizados.length, pendientes, entregados, cancelados, facturado };
+    return { total: normalizados.length, pendientes, enPreparacion, entregados, cancelados, facturado };
   }, [pedidosDisponibles]);
 
   useEffect(() => {
@@ -210,6 +214,7 @@ function Pedidos() {
 
         <div className="pedidos-summary" aria-label="Resumen de pedidos">
           <KpiCard label="Pedidos activos" value={metricas.total} tone="neutral" />
+          <KpiCard label="En preparación" value={metricas.enPreparacion} tone="neutral" />
           <KpiCard label="Pendientes" value={metricas.pendientes} tone="warning" />
           <KpiCard label="Entregados" value={metricas.entregados} tone="info" />
           <KpiCard label="Cancelados" value={metricas.cancelados} tone="danger" />
@@ -305,11 +310,9 @@ function Pedidos() {
                 </div>
 
                 <div className="pedido-meta">
-                  <MetaItem
-                    icon={<FiMapPin aria-hidden="true" />}
-                    label={vista === 'usuario' ? 'Destino' : 'Zona'}
-                    value={vista === 'usuario' ? detalle.direccion : `${detalle.localidad} · ${detalle.codigoPostal}`}
-                  />
+                  {vista === 'usuario' && (
+                    <MetaItem icon={<FiMapPin aria-hidden="true" />} label="Destino" value={detalle.direccion} />
+                  )}
                   <MetaItem icon={<FiClock aria-hidden="true" />} label={vista === 'usuario' ? 'Llega' : 'Entrega estimada'} value={detalle.eta} />
                   <MetaItem icon={<FiCreditCard aria-hidden="true" />} label="Pago" value={detalle.pago} accent={detalle.pago === 'Pagado'} />
                 </div>
@@ -472,7 +475,7 @@ function Pedidos() {
                 </p>
               ) : (
                 <p className="pedido-modal-info">
-                  Estado actual: <strong>Pendiente</strong>. Podés marcarlo como entregado.
+                  Estado actual: <strong>{pedidoParaActualizar.estadoActual}</strong>. Elegí el nuevo estado.
                 </p>
               )}
 
@@ -482,11 +485,19 @@ function Pedidos() {
                 <button type="button" className="pedido-modal-cancel" onClick={cerrarCambioEstado} disabled={guardandoEstado}>
                   Cerrar
                 </button>
-                {pedidoParaActualizar.estadoActual !== 'Entregado' && (
-                  <button type="button" className="pedido-modal-save" onClick={marcarComoEntregado} disabled={guardandoEstado}>
-                    {guardandoEstado ? 'Guardando...' : 'Marcar como entregado'}
-                  </button>
-                )}
+                {pedidoParaActualizar.estadoActual !== 'Entregado' && PASOS_PROGRESO
+                  .filter((opcion) => opcion !== pedidoParaActualizar.estadoActual)
+                  .map((opcion) => (
+                    <button
+                      type="button"
+                      key={opcion}
+                      className="pedido-modal-save"
+                      onClick={() => cambiarEstadoPedido(opcion)}
+                      disabled={guardandoEstado}
+                    >
+                      {guardandoEstado ? 'Guardando...' : `Marcar como ${opcion.toLowerCase()}`}
+                    </button>
+                  ))}
               </div>
             </section>
           </div>
@@ -1214,8 +1225,9 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   onChange={handleChange}
                   disabled={guardando}
                 >
-                  <option value="Pendiente">Pendiente</option>
-                  <option value="Entregado">Entregado</option>
+                  {PASOS_PROGRESO.map((opcion) => (
+                    <option key={opcion} value={opcion}>{opcion}</option>
+                  ))}
                 </select>
               </div>
 
@@ -1305,18 +1317,17 @@ function MetaItem({ icon, label, value, accent = false }) {
   );
 }
 
+// Progreso total sobre 2 barras: En preparación al mínimo, Pendiente a la mitad, Entregado al máximo.
+const PROGRESO_POR_ESTADO = { 'En preparación': 0.25, Pendiente: 0.5, Entregado: 1 };
+
 function ProgressBar({ estado }) {
-  const steps = ['Pendiente', 'Entregado'];
-  const activeIndex = Math.max(0, steps.indexOf(estado));
+  const progreso = PROGRESO_POR_ESTADO[estado] ?? 0;
+  const barras = [Math.min(1, progreso * 2), Math.max(0, progreso * 2 - 1)];
 
   return (
-    <div className="pedido-progress" aria-label={`Progreso ${estadoLabel(estado)}`}>
-      {steps.map((step, index) => (
-        <span
-          key={step}
-          className={index <= activeIndex ? 'active' : ''}
-          title={estadoLabel(step)}
-        />
+    <div className="pedido-progress" aria-label={`Progreso ${estadoLabel(estado)}`} title={estadoLabel(estado)}>
+      {barras.map((relleno, index) => (
+        <span key={index} style={{ '--relleno': `${relleno * 100}%` }} />
       ))}
     </div>
   );
@@ -1584,6 +1595,9 @@ function normalizarEstado(pedido) {
     return 'Cancelado';
   }
 
+  // El backend guarda el estado en la columna "estado".
+  if (ESTADOS_PEDIDO.includes(pedido.estado)) return pedido.estado;
+
   if (typeof pedido.entregado === 'boolean') {
     return pedido.entregado ? 'Entregado' : 'Pendiente';
   }
@@ -1596,9 +1610,7 @@ function normalizarEstado(pedido) {
     return 'Pendiente';
   }
 
-  // El backend solo conoce "Pendiente"/"Entregado" (via el booleano entregado);
-  // cualquier otro valor de "estado" que haya quedado guardado localmente se ignora.
-  return pedido.estado === 'Entregado' ? 'Entregado' : 'Pendiente';
+  return 'Pendiente';
 }
 
 function normalizarPrecio(valor) {
@@ -1656,7 +1668,7 @@ function ordenarPedidos(a, b, tipo) {
 }
 
 function estadoRank(estado) {
-  return ['Pendiente', 'Entregado', 'Cancelado'].indexOf(estado);
+  return [...PASOS_PROGRESO, 'Cancelado'].indexOf(estado);
 }
 
 function estadoLabel(estado) {
@@ -1705,7 +1717,7 @@ function iniciales(nombre) {
 }
 
 function estadoClass(estado) {
-  return estado.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return estado.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
 }
 
 function priorityClass(prioridad) {
