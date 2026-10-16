@@ -88,3 +88,32 @@ export async function getCantidadVentasProducto(id) {
   const data = await res.json();
   return Number(data.cantidad);
 }
+
+export async function getVentasPorTienda(idTienda) {
+  const res = await fetch(`${BASE_URL}/tienda/${idTienda}`);
+  if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+  return res.json();
+}
+
+export async function registrarVentaManual(datosVenta) {
+  const res = await fetch(`${BASE_URL}/manual`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datosVenta),
+  });
+
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    data = { _raw: text };
+  }
+
+  if (!res.ok) {
+    const mensaje = data?.message || data?._raw || `Error ${res.status}: ${res.statusText}`;
+    throw new Error(mensaje);
+  }
+
+  return data;
+}

@@ -1,0 +1,391 @@
+/* ===== Página ===== */
+.ventas-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.ventas-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ===== Header ===== */
+.ventas-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ventas-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ventas-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  transition: color 0.15s;
+}
+
+.ventas-back:hover {
+  color: #0f172a;
+}
+
+.ventas-kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #059669;
+}
+
+.ventas-heading h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.ventas-heading p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.ventas-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ===== Botones ===== */
+.ventas-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.62rem 1.2rem;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.ventas-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ventas-btn--secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.ventas-btn--secondary:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.ventas-btn--primary {
+  background: #059669;
+  color: #ffffff;
+}
+
+.ventas-btn--primary:hover:not(:disabled) {
+  background: #047857;
+}
+
+/* ===== KPIs ===== */
+.ventas-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.ventas-kpi {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.ventas-kpi::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--accent, #059669);
+  border-radius: 14px 0 0 14px;
+}
+
+.ventas-kpi__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ventas-kpi__value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+/* ===== Mensajes ===== */
+.ventas-msg {
+  font-size: 0.9rem;
+  color: #64748b;
+  text-align: center;
+  padding: 1rem;
+}
+
+.ventas-msg--error {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+}
+
+/* ===== Estado vacío ===== */
+.ventas-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+  background: #ffffff;
+  border: 1.5px dashed #e2e8f0;
+  border-radius: 16px;
+}
+
+.ventas-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+/* ===== Tabla ===== */
+.ventas-table-wrap {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.ventas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.ventas-table thead th {
+  background: #f8fafc;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  border-bottom: 1.5px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.ventas-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.12s;
+}
+
+.ventas-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.ventas-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.ventas-table td {
+  padding: 0.85rem 1rem;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.ventas-td--id {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.ventas-td--nombre {
+  font-weight: 600;
+  color: #0f172a;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ventas-td--num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ventas-td--total {
+  text-align: right;
+  font-weight: 700;
+  color: #065f46;
+  font-variant-numeric: tabular-nums;
+}
+
+.ventas-td--fecha,
+.ventas-td--hora {
+  white-space: nowrap;
+  color: #475569;
+  font-size: 0.84rem;
+}
+
+/* ===== Badge método de pago ===== */
+.ventas-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ventas-badge--metodo {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.ventas-badge--cliente {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.ventas-td--cliente {
+  white-space: nowrap;
+}
+
+.ventas-td--sin-cliente {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ===== Toast ===== */
+.ventas-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 300;
+  background: #065f46;
+  color: #ffffff;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  animation: toast-in 0.25s ease;
+  max-width: 360px;
+}
+
+.ventas-toast__icon {
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ventas-toast__close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  margin-left: auto;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ventas-toast__close:hover {
+  color: #ffffff;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .ventas-page {
+    padding: 1rem 1rem 3rem;
+  }
+
+  .ventas-heading h1 {
+    font-size: 1.5rem;
+  }
+
+  .ventas-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ventas-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .ventas-toast {
+    right: 1rem;
+    left: 1rem;
+    max-width: none;
+  }
+}

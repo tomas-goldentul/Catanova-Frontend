@@ -1,0 +1,296 @@
+/* ===== Backdrop ===== */
+.rvm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* ===== Modal ===== */
+.rvm-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  max-width: 460px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ===== Header ===== */
+.rvm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rvm-kicker {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #059669;
+  margin-bottom: 0.25rem;
+}
+
+.rvm-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.rvm-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #94a3b8;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.rvm-close:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+/* ===== Form ===== */
+.rvm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.rvm-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.rvm-stock-hint {
+  font-weight: 400;
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.rvm-select,
+.rvm-input {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+  appearance: none;
+}
+
+.rvm-select:focus,
+.rvm-input:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+  background: #ffffff;
+}
+
+.rvm-select:disabled,
+.rvm-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== Divider ===== */
+.rvm-divider {
+  border: none;
+  border-top: 1.5px solid #f1f5f9;
+  margin: 0.25rem 0;
+}
+
+/* ===== Sección usuario ===== */
+.rvm-usuario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rvm-opcional {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 0.76rem;
+}
+
+.rvm-nuevo-usuario-btn {
+  background: none;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #059669;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.rvm-nuevo-usuario-btn:hover:not(:disabled) {
+  background: #f0fdf4;
+  border-color: #059669;
+}
+
+.rvm-nuevo-usuario-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Alta rápida de usuario ===== */
+.rvm-alta-usuario {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rvm-alta-usuario__desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.rvm-alta-usuario__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.rvm-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rvm-campo--full {
+  grid-column: 1 / -1;
+}
+
+.rvm-label--sm {
+  font-size: 0.78rem;
+}
+
+.rvm-alta-usuario__acciones {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+/* ===== Resumen ===== */
+.rvm-resumen {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.rvm-resumen-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  color: #374151;
+}
+
+.rvm-resumen-total {
+  padding-top: 0.45rem;
+  border-top: 1px solid #bbf7d0;
+  font-size: 1rem;
+  color: #065f46;
+}
+
+.rvm-resumen-total strong {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* ===== Mensajes ===== */
+.rvm-msg {
+  font-size: 0.88rem;
+  color: #64748b;
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.rvm-msg--error {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+}
+
+/* ===== Acciones ===== */
+.rvm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.rvm-btn {
+  padding: 0.62rem 1.3rem;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.rvm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.rvm-btn--cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.rvm-btn--cancel:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.rvm-btn--confirm {
+  background: #059669;
+  color: #ffffff;
+}
+
+.rvm-btn--confirm:hover:not(:disabled) {
+  background: #047857;
+}

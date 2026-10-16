@@ -51,7 +51,7 @@ const IconFotos = () => (
   </svg>
 );
 
-function crearCards(onIrAGaleria, onIrAEnvios) {
+function crearCards(onIrAGaleria, onIrAEnvios, onIrAVentas) {
   return [
   {
     icon: <IconProductos />,
@@ -64,9 +64,10 @@ function crearCards(onIrAGaleria, onIrAEnvios) {
   {
     icon: <IconVentas />,
     title: "Ventas",
-    description: "Visualizá y administrá todos tus pedidos y transacciones.",
+    description: "Visualizá tu historial y registrá nuevas ventas manuales.",
     accentBg: "#ecfdf5",
-    accentColor: "#059669"
+    accentColor: "#059669",
+    onClick: onIrAVentas
   },
   {
     icon: <IconEstadisticas />,
@@ -100,8 +101,8 @@ function crearCards(onIrAGaleria, onIrAEnvios) {
   ];
 }
 
-function MiTienda({ onIrAGaleria, onIrAEnvios, onVerTiendaPublica }) {
-  const cards = crearCards(onIrAGaleria, onIrAEnvios);
+function MiTienda({ onIrAGaleria, onIrAEnvios, onVerTiendaPublica, onIrAVentas }) {
+  const cards = crearCards(onIrAGaleria, onIrAEnvios, onIrAVentas);
 
   return (
     <>

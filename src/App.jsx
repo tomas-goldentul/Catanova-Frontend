@@ -11,6 +11,7 @@ import Login from './components/Login/Login';
 import Pedidos from './components/Pedidos/Pedidos';
 import Envios from './components/Envios/Envios';
 import CatalogoTiendas from './components/CatalogoTiendas/CatalogoTiendas';
+import Ventas from './components/RegistrarVenta/Ventas';
 
 function App() {
   const [tab, setTab] = useState('tienda');
@@ -90,6 +91,7 @@ function App() {
           onIrAGaleria={() => setTab('galeria')}
           onIrAEnvios={() => setTab('envios')}
           onVerTiendaPublica={() => setTab('catalogo')}
+          onIrAVentas={() => setTab('ventas')}
         />
       )}
       {tab === 'envios' && (
@@ -139,6 +141,10 @@ function App() {
             setTab('catalogo');
           }}
         />
+      )}
+
+      {tab === 'ventas' && (
+        <Ventas onVolver={() => setTab('tienda')} />
       )}
 
     </div>
