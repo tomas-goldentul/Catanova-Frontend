@@ -5,6 +5,19 @@ import './Ventas.css';
 
 // ——— Helpers ———
 
+function obtenerClienteVenta(venta) {
+  const nombreCliente = venta?.nombre_cliente || venta?.cliente || venta?.nombre || '';
+  const idUsuario = venta?.id_usuario ?? venta?.usuario_id ?? venta?.idUsuario ?? null;
+
+  if (idUsuario !== null && idUsuario !== undefined && idUsuario !== '' && idUsuario !== 'null') {
+    return nombreCliente || 'Cliente asociado';
+  }
+
+  if (nombreCliente) return nombreCliente;
+
+  return null;
+}
+
 function formatFecha(fechaStr) {
   if (!fechaStr) return '—';
   const d = new Date(fechaStr);
@@ -127,11 +140,12 @@ function Ventas({ onVolver }) {
   const facturadoTotal = ventas.reduce((acc, v) => acc + Number(v.total ?? 0), 0);
   const unidadesVendidas = ventas.reduce((acc, v) => acc + Number(v.cantidad ?? 0), 0);
 
-  const handleVentaRegistrada = (nuevaVenta, nombreProducto) => {
+  const handleVentaRegistrada = (nuevaVenta, nombreProducto, nombreCliente = null) => {
     // Construir la fila optimista mientras llega el re-fetch
     const filaOptimista = {
       ...nuevaVenta,
       nombre_producto: nombreProducto,
+      ...(nombreCliente && { nombre_cliente: nombreCliente }),
     };
     setVentas((prev) => [filaOptimista, ...prev]);
     setMostrarModal(false);
@@ -225,31 +239,35 @@ function Ventas({ onVolver }) {
                 </tr>
               </thead>
               <tbody>
-                {ventas.map((v, idx) => (
-                  <tr key={v.id_venta ?? idx}>
-                    <td className="ventas-td--id">
-                      {v.id_venta ? `#${v.id_venta}` : '—'}
-                    </td>
-                    <td className="ventas-td--nombre">{v.nombre_producto || '—'}</td>
-                    <td className="ventas-td--cliente">
-                      {v.nombre_cliente ? (
-                        <span className="ventas-badge ventas-badge--cliente">{v.nombre_cliente}</span>
-                      ) : (
-                        <span className="ventas-td--sin-cliente">Presencial</span>
-                      )}
-                    </td>
-                    <td className="ventas-td--num">{v.cantidad}</td>
-                    <td className="ventas-td--num">{formatPrecio(v.precio_unitario)}</td>
-                    <td className="ventas-td--total">{formatPrecio(v.total)}</td>
-                    <td>
-                      <span className="ventas-badge ventas-badge--metodo">
-                        {v.metodo_pago || 'Sin especificar'}
-                      </span>
-                    </td>
-                    <td className="ventas-td--fecha">{formatFecha(v.fecha)}</td>
-                    <td className="ventas-td--hora">{formatHora(v.fecha)}</td>
-                  </tr>
-                ))}
+                {ventas.map((v, idx) => {
+                  const clienteVenta = obtenerClienteVenta(v);
+
+                  return (
+                    <tr key={v.id_venta ?? idx}>
+                      <td className="ventas-td--id">
+                        {v.id_venta ? `#${v.id_venta}` : '—'}
+                      </td>
+                      <td className="ventas-td--nombre">{v.nombre_producto || '—'}</td>
+                      <td className="ventas-td--cliente">
+                        {clienteVenta ? (
+                          <span className="ventas-badge ventas-badge--cliente">{clienteVenta}</span>
+                        ) : (
+                          <span className="ventas-td--sin-cliente">Presencial</span>
+                        )}
+                      </td>
+                      <td className="ventas-td--num">{v.cantidad}</td>
+                      <td className="ventas-td--num">{formatPrecio(v.precio_unitario)}</td>
+                      <td className="ventas-td--total">{formatPrecio(v.total)}</td>
+                      <td>
+                        <span className="ventas-badge ventas-badge--metodo">
+                          {v.metodo_pago || 'Sin especificar'}
+                        </span>
+                      </td>
+                      <td className="ventas-td--fecha">{formatFecha(v.fecha)}</td>
+                      <td className="ventas-td--hora">{formatHora(v.fecha)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

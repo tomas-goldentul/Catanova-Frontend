@@ -7,6 +7,18 @@ import './RegistrarVentaModal.css';
 const METODOS_PAGO = ['Efectivo', 'Tarjeta de débito', 'Tarjeta de crédito', 'Transferencia'];
 const NUEVO_USUARIO_VACIO = { nombre: '', apellido: '', telefono: '' };
 
+const normalizarIdUsuario = (valor) => {
+  if (valor === null || valor === undefined || valor === '') return null;
+
+  const texto = String(valor).trim();
+  if (!texto || texto === 'Seleccionar cliente' || texto === 'Sin cliente asignado') {
+    return null;
+  }
+
+  const numero = Number(texto);
+  return Number.isFinite(numero) && numero > 0 ? numero : null;
+};
+
 const nombreUsuario = (u) =>
   [u?.nombre, u?.apellido].filter(Boolean).join(' ').trim() || 'Usuario sin nombre';
 const etiquetaUsuario = (u) =>
@@ -143,18 +155,36 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
       return;
     }
 
+    const idUsuarioNormalizado = normalizarIdUsuario(idUsuarioSeleccionado);
+
     setGuardando(true);
     try {
+      const usuarioSeleccionado = usuarios.find(
+        (u) => String(u.id_usuario) === String(idUsuarioSeleccionado)
+      ) || null;
+
       const venta = await registrarVentaManual({
         id_producto: productoActual.id_producto,
         id_tienda: idTienda,
         cantidad: cantidadNum,
         precio_unitario: Number(productoActual.precio),
         metodo_pago: metodoPago,
-        // id_usuario es opcional: null si no se seleccionó ninguno
-        id_usuario: idUsuarioSeleccionado ? Number(idUsuarioSeleccionado) : null,
+        id_usuario: idUsuarioNormalizado,
       });
-      onVentaRegistrada(venta, productoActual.nombre);
+
+      onVentaRegistrada(
+        {
+          ...venta,
+          ...(idUsuarioNormalizado !== null && {
+            id_usuario: idUsuarioNormalizado,
+          }),
+          ...(usuarioSeleccionado && {
+            nombre_cliente: nombreUsuario(usuarioSeleccionado),
+          }),
+        },
+        productoActual.nombre,
+        usuarioSeleccionado ? nombreUsuario(usuarioSeleccionado) : null
+      );
     } catch (err) {
       setErrorGuardado(err.message || 'No se pudo registrar la venta.');
     } finally {
