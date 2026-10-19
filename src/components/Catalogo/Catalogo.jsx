@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './Catalogo.css';
 import Footer from '../Footer/Footer';
 import Categoria from '../Categoria/Categoria';
-import { crearCategoria, getCategoriasPorTienda, editarCategoria, eliminarCategoria } from '../../api/categorias';
+import { crearCategoria, getCategoriasPorTienda, editarCategoria, eliminarCategoria, asociarProductoACategoria } from '../../api/categorias';
 import { getProductosPorCategoria, getProductosPorTienda } from '../../api/productos';
 import { getNombre, getSlogan } from '../../api/tiendas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
@@ -29,14 +29,12 @@ const CATEGORIAS_MOCK = [
   },
 ];
 
-// ════════════════════════════════════════════
-//   PANEL: CREAR CATEGORÍA
-// ════════════════════════════════════════════
+//Crear Categoría
 
-function SelectorProducto({ onAgregar, productosDisponibles = [] }) {
+function SelectorProducto({ onAgregar, productosDisponibles = [], idCategoria, modo }) {
   const [productoId, setProductoId] = useState('');
 
-  const handleAgregar = () => {
+  const handleAgregar = async () => {
     const productoBuscado = productosDisponibles.find(p => 
       String(p.id_producto ?? p.id) === String(productoId)
     );
@@ -53,7 +51,17 @@ function SelectorProducto({ onAgregar, productosDisponibles = [] }) {
       vistas: productoBuscado.vistas ?? 0,
       favoritos: productoBuscado.favoritos ?? 0,
     };
-    
+      
+    if (modo === 'editar') {
+      try {
+        await asociarProductoACategoria(idCategoria, producto.id);
+      } catch (error) {
+        console.error('Error al asociar el producto:', error);
+        return;
+      }
+    }
+
+    // En ambos modos agregamos el producto a la lista local.
     onAgregar(producto);
     setProductoId('');
   };
@@ -201,7 +209,7 @@ function PanelCrear({ onCrear, onCancelar, productosDisponibles = [], categorias
         </div>
       </div>
 
-      <SelectorProducto onAgregar={agregarProducto} productosDisponibles={productosDisponibles} />
+      <SelectorProducto onAgregar={agregarProducto} productosDisponibles={productosDisponibles} modo="crear" />
       <TablaProductos
         lista={lista}
         onQuitar={id => setLista(prev => prev.filter(i => i.id !== id))}
@@ -225,9 +233,7 @@ function PanelCrear({ onCrear, onCancelar, productosDisponibles = [], categorias
   );
 }
 
-// ════════════════════════════════════════════
-//   PANEL: EDITAR CATEGORÍA
-// ════════════════════════════════════════════
+//Parte de edición de categoría
 
 function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar, productosDisponibles = [] }) {
   const [nombre, setNombre] = useState(categoria.nombre);
@@ -243,6 +249,10 @@ function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar, productosDisp
       favoritos: p.favoritos ?? 0,
     }))
   );
+
+  console.log('Productos de la categoría:', categoria.productos);
+  console.log('Productos en la lista:', lista);
+  console.log('Categoría completa recibida:', categoria);
 
   const agregarProducto = (producto) => {
     setLista(prev => {
@@ -290,7 +300,12 @@ function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar, productosDisp
         </div>
       </div>
 
-      <SelectorProducto onAgregar={agregarProducto} productosDisponibles={productosDisponibles} />
+      <SelectorProducto 
+        onAgregar={agregarProducto} 
+        productosDisponibles={productosDisponibles} 
+        idCategoria={categoria.id}
+        modo="editar"
+      />
       <TablaProductos
         lista={lista}
         onQuitar={id => setLista(prev => prev.filter(i => i.id !== id))}
@@ -313,9 +328,7 @@ function PanelEditar({ categoria, onGuardar, onBorrar, onCancelar, productosDisp
   );
 }
 
-// ════════════════════════════════════════════
-//   PANEL: CONFIRMAR BORRADO
-// ════════════════════════════════════════════
+//Borrado
 
 function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
   return (
