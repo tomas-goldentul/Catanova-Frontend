@@ -71,16 +71,15 @@
   width: auto;
   object-fit: contain;
   filter: drop-shadow(0 2px 10px rgba(0, 201, 167, 0.4));
-  border-radius: 12px;
-  padding: 2px 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  display: block;
 }
 
-.logo-img:hover {
-  transform: scale(1.06);
-  background: rgba(255, 255, 255, 0.14);
+.logo-img:focus {
+  outline: none;
 }
 
 /* ── RIGHT: Avatar + dropdown ── */

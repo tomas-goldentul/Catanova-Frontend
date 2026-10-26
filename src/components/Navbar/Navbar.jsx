@@ -137,7 +137,6 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
           alt="Catanova"
           className="logo-img"
           onClick={onLogoClick}
-          style={onLogoClick ? { cursor: 'pointer' } : undefined}
         />
       </div>
 
