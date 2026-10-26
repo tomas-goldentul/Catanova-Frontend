@@ -15,7 +15,6 @@ const ENLACES = [
   { clave: 'tienda', etiqueta: 'Mi Tienda' },
   { clave: 'galeria', etiqueta: 'Galería de Productos' },
   { clave: 'catalogo', etiqueta: 'Catálogo' },
-  { clave: 'productos', etiqueta: 'Productos API' },
   { clave: 'pedidos', etiqueta: 'Ver pedidos' },
 ];
 
@@ -23,7 +22,6 @@ const DESTINOS = {
   tienda: 'tienda',
   galeria: 'galeria',
   catalogo: 'catalogo',
-  productos: 'productos',
   pedidos: 'pedidos',
 };
 

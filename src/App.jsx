@@ -31,61 +31,6 @@ function App() {
         onLogoClick={() => setTab('tienda')}
       />
 
-      <div className="app-tabs">
-        <button
-          type="button"
-          className={tab === 'tienda' ? 'tab active' : 'tab'}
-          onClick={() => setTab('tienda')}
-        >
-          Mi Tienda
-        </button>
-        <button
-          type="button"
-          className={tab === 'galeria' ? 'tab active' : 'tab'}
-          onClick={() => setTab('galeria')}
-        >
-          Galería de Productos
-        </button>
-        <button
-          type="button"
-          className={tab === 'catalogo' ? 'tab active' : 'tab'}
-          onClick={() => setTab('catalogo')}
-        >
-          Catálogo
-        </button>
-        <button
-          type="button"
-          className={tab === 'catalogoTiendas' ? 'tab active' : 'tab'}
-          onClick={() => setTab('catalogoTiendas')}
-        >
-          Catálogo de Tiendas
-        </button>
-        <button
-          type="button"
-          className={tab === 'productos' ? 'tab active' : 'tab'}
-          onClick={() => setTab('productos')}
-        >
-          Productos API
-        </button>
-        <button type="button" className={tab === 'login' ? 'tab active' : 'tab'} onClick={() => setTab('login')}>
-          Login
-        </button>
-        <button
-          type="button"
-          className={tab === 'pedidos' ? 'tab active' : 'tab'}
-          onClick={() => setTab('pedidos')}
-        >
-          Ver pedidos
-        </button>
-        <button
-          type="button"
-          className={tab === 'comprar' ? 'tab active' : 'tab'}
-          onClick={() => setTab('comprar')}
-        >
-          Comprar
-        </button>
-      </div>
-
       {tab === 'tienda' && (
         <MiTienda
           onIrAGaleria={() => setTab('galeria')}
