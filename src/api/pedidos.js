@@ -31,6 +31,15 @@ export async function obtenerPedidosPorUsuario(idUsuario, signal) {
   return leerListaPedidos(response, 'No se pudieron obtener los pedidos del usuario');
 }
 
+export async function obtenerPedidosPorTienda(idTienda, signal) {
+  if (!idTienda) throw new Error('El id_tienda es obligatorio para consultar los pedidos de la tienda.');
+  const response = await fetch(`${API_URL}/pedidos/getAll/tienda/${encodeURIComponent(idTienda)}`, {
+    headers: headersPedido(),
+    signal,
+  });
+  return leerListaPedidos(response, 'No se pudieron obtener los pedidos de la tienda');
+}
+
 function normalizarPedidoCompatible(pedido) {
   if (!pedido || typeof pedido !== 'object') return pedido;
 
