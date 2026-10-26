@@ -26,7 +26,7 @@ import {
   ESTADOS_PEDIDO,
   editarPedido,
   obtenerPedido,
-  obtenerPedidos,
+  obtenerPedidosPorTienda,
   obtenerPedidosPorUsuario,
 } from '../../api/pedidos';
 import { getTodosLosProductos, getTodosProductosPorTienda } from '../../api/productos';
@@ -83,6 +83,8 @@ function Pedidos() {
   };
   const abrirCambioEstado = (pedido) => {
     const detalle = normalizarPedido(pedido);
+    // No se puede cambiar el estado de pedidos cancelados o entregados.
+    if (detalle.estado === 'Cancelado' || detalle.estado === 'Entregado') return;
     setPedidoParaActualizar({ id: detalle.id, estadoActual: detalle.estado });
     setErrorEstado('');
     setMenuAbierto('');
@@ -330,6 +332,7 @@ function Pedidos() {
                   </button>
                 </div>
 
+                {detalle.estado !== 'Cancelado' && detalle.estado !== 'Entregado' && (
                 <div className="pedido-menu-wrap">
                   <button
                     type="button"
@@ -343,21 +346,17 @@ function Pedidos() {
 
                   {menuAbierto === menuId && (
                     <div className="pedido-menu">
-                      {vista === 'tienda' && detalle.estado !== 'Cancelado' && detalle.estado !== 'Entregado' && (
-                        <>
-                          {detalle.estado === 'Pendiente' && (
-                            <button 
-                              type="button"
-                              onClick={() => {
-                                setPedidoEnEdicion(pedido);
-                                setMenuAbierto('');
-                              }}
-                            >
-                              <FiEdit3 aria-hidden="true" />
-                              Editar pedido
-                            </button>
-                          )}
-                        </>
+                      {vista === 'tienda' && detalle.estado === 'Pendiente' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPedidoEnEdicion(pedido);
+                            setMenuAbierto('');
+                          }}
+                        >
+                          <FiEdit3 aria-hidden="true" />
+                          Editar pedido
+                        </button>
                       )}
                       <button type="button" onClick={() => abrirCambioEstado(pedido)}>
                         <FiCheckCircle aria-hidden="true" />
@@ -366,6 +365,7 @@ function Pedidos() {
                     </div>
                   )}
                 </div>
+                )}
               </article>
             );
           })}
@@ -469,9 +469,11 @@ function Pedidos() {
                 <p>Pedido #{pedidoParaActualizar.id}</p>
               </div>
 
-              {pedidoParaActualizar.estadoActual === 'Entregado' ? (
+              {pedidoParaActualizar.estadoActual === 'Entregado' || pedidoParaActualizar.estadoActual === 'Cancelado' ? (
                 <p className="pedido-modal-info">
-                  Este pedido ya fue marcado como <strong>Entregado</strong>. No se puede revertir a Pendiente.
+                  {pedidoParaActualizar.estadoActual === 'Cancelado'
+                    ? <>Este pedido está <strong>Cancelado</strong> y su estado no se puede modificar.</>
+                    : <>Este pedido ya fue marcado como <strong>Entregado</strong>. No se puede revertir.</>}
                 </p>
               ) : (
                 <p className="pedido-modal-info">
@@ -485,7 +487,7 @@ function Pedidos() {
                 <button type="button" className="pedido-modal-cancel" onClick={cerrarCambioEstado} disabled={guardandoEstado}>
                   Cerrar
                 </button>
-                {pedidoParaActualizar.estadoActual !== 'Entregado' && opcionesDeEstado(pedidoParaActualizar.estadoActual)
+                {pedidoParaActualizar.estadoActual !== 'Entregado' && pedidoParaActualizar.estadoActual !== 'Cancelado' && opcionesDeEstado(pedidoParaActualizar.estadoActual)
                   .map((opcion) => (
                     <button
                       type="button"
@@ -657,7 +659,7 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }
         </div>
 
         <div className="detalles-modal-footer">
-          {vista === 'tienda' && (
+          {vista === 'tienda' && pedido.estado !== 'Cancelado' && pedido.estado !== 'Entregado' && (
             <button
               type="button"
               className="detalles-modal-estado"
@@ -667,7 +669,7 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }
               Cambiar estado
             </button>
           )}
-          {pedido.estado !== 'Entregado' && (
+          {pedido.estado !== 'Entregado' && pedido.estado !== 'Cancelado' && (
             <button
               type="button"
               className="detalles-modal-editar"
@@ -1321,6 +1323,7 @@ const PROGRESO_POR_ESTADO = { 'En preparación': 0.25, Pendiente: 0.5, Enviado: 
 
 // "Enviado" solo se pone creando el envío (sección Envíos); desde "Enviado" solo se puede entregar.
 function opcionesDeEstado(estadoActual) {
+  if (estadoActual === 'Entregado' || estadoActual === 'Cancelado') return [];
   if (estadoActual === 'Enviado') return ['Entregado'];
   return PASOS_PROGRESO.filter((opcion) => opcion !== estadoActual);
 }
@@ -1344,7 +1347,11 @@ async function fetchPedidos(vista, signal) {
 }
 
 async function fetchPedidosTienda(signal) {
-  return obtenerPedidos(signal);
+  const idTienda = obtenerTiendaIdDesdeFuente(obtenerSesionActual()) || localStorage.getItem('id_tienda');
+  if (!idTienda) {
+    throw new Error('No se encontró la tienda de tu sesión. Volvé a iniciar sesión.');
+  }
+  return obtenerPedidosPorTienda(idTienda, signal);
 }
 
 async function fetchPedidosUsuario(signal) {
@@ -1567,7 +1574,7 @@ function normalizarPedido(pedido) {
     tienda: tiendaLabel,
     repartidor: repartidor.nombre || repartidor.name || pedido.repartidorNombre || pedido.vendedor?.nombre || 'Sin asignar',
     codigoPostal: pedido.codigoPostal || pedido.cp || direccion.codigoPostal || direccion.cp || comprador.codigoPostal || 'Sin CP',
-    localidad: pedido.localidad || pedido.ciudad || direccion.localidad || direccion.ciudad || comprador.localidad || 'Sin localidad',
+    localidad: pedido.localidad || pedido.ciudad || extraerLocalidadDeDireccion(pedido.direccion) || extraerLocalidadDeDireccion(pedido.direccionEnvio) || extraerLocalidadDeDireccion(pedido.shippingAddress) || direccion.localidad || direccion.ciudad || comprador.localidad || 'Sin localidad',
     estado: normalizarEstado(pedido),
     total: normalizarPrecio(
       pedido.precio_total ?? pedido.total ?? pedido.totalPedido ?? pedido.montoTotal ?? pedido.amount ??
@@ -1661,6 +1668,16 @@ function normalizarDireccion(direccion) {
   const texto = [calle, numero].filter(Boolean).join(' ');
 
   return texto || 'Direccion sin cargar';
+}
+
+// El back guarda la dirección como un único string "Calle N, Localidad"
+// (no hay columna localidad), así que la localidad se deduce de la parte que
+// sigue a la primera coma.
+function extraerLocalidadDeDireccion(direccion) {
+  if (typeof direccion !== 'string') return '';
+  const partes = direccion.split(',');
+  if (partes.length < 2) return '';
+  return partes[1].trim();
 }
 
 function ordenarPedidos(a, b, tipo) {
