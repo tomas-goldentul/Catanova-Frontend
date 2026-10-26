@@ -16,6 +16,7 @@ const ENLACES = [
   { clave: 'galeria', etiqueta: 'Galería de Productos' },
   { clave: 'catalogo', etiqueta: 'Catálogo' },
   { clave: 'pedidos', etiqueta: 'Ver pedidos' },
+  { clave: 'envios', etiqueta: 'Envíos' },
 ];
 
 const DESTINOS = {
@@ -23,6 +24,7 @@ const DESTINOS = {
   galeria: 'galeria',
   catalogo: 'catalogo',
   pedidos: 'pedidos',
+  envios: 'envios',
 };
 
 const leerSesion = () => {

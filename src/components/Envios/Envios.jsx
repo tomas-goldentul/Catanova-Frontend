@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  FiAlertTriangle,
   FiArrowLeft,
   FiArrowRight,
+  FiCalendar,
   FiCheck,
   FiCheckCircle,
   FiChevronLeft,
@@ -10,6 +12,7 @@ import {
   FiCopy,
   FiEdit3,
   FiEye,
+  FiFileText,
   FiMapPin,
   FiPlus,
   FiRadio,
@@ -20,16 +23,23 @@ import {
   FiUser,
 } from 'react-icons/fi';
 import {
+  actualizarFechaEstimada,
   crearEnvio,
+  crearNota,
   editarEnvio,
   eliminarEnvio,
+  eliminarNota,
   marcarEntregado,
   MAX_TEXTO_ENVIO,
+  MAX_TEXTO_NOTA,
   obtenerEnvios,
   obtenerSeguimiento,
+  TIPOS_NOTA,
 } from '../../api/envios';
 import { getImagenUrl } from '../../api/helper';
 import CampoDireccion from '../Pedidos/CampoDireccion';
+import { DetallesPedidoPorId } from '../Pedidos/Pedidos';
+import { diaEnArgentina, formatearFechaEstimada, situacionEntrega } from './fechaEstimada';
 import '../Pedidos/Pedidos.css';
 import './Envios.css';
 
@@ -40,7 +50,7 @@ const ITEMS_POR_PAGINA = 6;
 const INTERVALO_TIEMPO_REAL_MS = 25000;
 const ZONA_HORARIA = 'America/Argentina/Buenos_Aires';
 
-function Envios({ onVolver, onIrALogin }) {
+function Envios({ pedidoInicial = null, onVolver, onIrALogin }) {
   const [envios, setEnvios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -48,7 +58,7 @@ function Envios({ onVolver, onIrALogin }) {
   const [busqueda, setBusqueda] = useState('');
   const [estado, setEstado] = useState('Todos');
   const [pagina, setPagina] = useState(1);
-  const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(null);
+  const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(pedidoInicial);
   const [envioEnFormulario, setEnvioEnFormulario] = useState(null);
   const [envioAEliminar, setEnvioAEliminar] = useState(null);
   const [aviso, setAviso] = useState('');
@@ -146,6 +156,7 @@ function Envios({ onVolver, onIrALogin }) {
             onEditarEnvio={setEnvioEnFormulario}
             onEliminarEnvio={setEnvioAEliminar}
             onEntregado={() => alGuardarEnvio(`El pedido #${pedidoEnSeguimiento} se marcó como entregado.`)}
+            onActualizado={alGuardarEnvio}
           />
         </div>
         {modales}
@@ -297,12 +308,21 @@ function MensajeError({ error, onIrALogin }) {
 function EnvioCard({ fila, onVerSeguimiento, onCrearEnvio, onEditarEnvio, onEliminarEnvio }) {
   const tieneEnvio = Boolean(fila.id_envio);
   const editable = tieneEnvio && fila.estado !== 'Entregado';
+  // En la lista no viene fecha_entrega: para entregados no hay comparación que mostrar.
+  const situacion = fila.estado === 'Entregado' ? null : situacionEntrega(fila);
+  const incidencias = Number(fila.cantidad_incidencias) || 0;
 
   return (
     <article className="envio-card">
       <div className="envio-card-top">
         <span className="pedido-id">Pedido #{fila.id_pedido}</span>
         <span className={`pedido-status ${estadoClass(fila.estado)}`}>{fila.estado}</span>
+        {incidencias > 0 && (
+          <span className="envio-incidencias">
+            <FiAlertTriangle aria-hidden="true" />
+            {incidencias === 1 ? '1 incidencia' : `${incidencias} incidencias`}
+          </span>
+        )}
         <time dateTime={fila.fecha_pedido}>{formatearFecha(fila.fecha_pedido, true)}</time>
       </div>
 
@@ -320,6 +340,13 @@ function EnvioCard({ fila, onVerSeguimiento, onCrearEnvio, onEditarEnvio, onElim
           <div>
             <dt>Repartidor</dt>
             <dd className={fila.repartidor ? '' : 'envio-vacio'}>{fila.repartidor || 'Sin asignar'}</dd>
+          </div>
+          <div>
+            <dt>Entrega estimada</dt>
+            <dd className={fila.fecha_entrega_estimada ? '' : 'envio-vacio'}>
+              {formatearFechaEstimada(fila.fecha_entrega_estimada)}
+              {situacion && <span className={`entrega-chip ${situacion.tono}`}>{situacion.texto}</span>}
+            </dd>
           </div>
           <div>
             <dt>{fila.cantidad_productos === 1 ? '1 producto' : `${fila.cantidad_productos} productos`}</dt>
@@ -365,6 +392,7 @@ function SeguimientoPedido({
   onEditarEnvio,
   onEliminarEnvio,
   onEntregado,
+  onActualizado,
 }) {
   const [seguimiento, setSeguimiento] = useState(null);
   const [error, setError] = useState(null);
@@ -373,6 +401,7 @@ function SeguimientoPedido({
   const [copiado, setCopiado] = useState(false);
   const [marcando, setMarcando] = useState(false);
   const [errorAccion, setErrorAccion] = useState('');
+  const [detallesAbiertos, setDetallesAbiertos] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -444,17 +473,25 @@ function SeguimientoPedido({
     );
   }
 
-  const { comprador, envio, pasos = [], productos = [] } = seguimiento;
+  const { comprador, envio, pasos = [], productos = [], notas = [] } = seguimiento;
   const nombreComprador = envio?.nombre_comprador
     || [comprador?.nombre, comprador?.apellido].filter(Boolean).join(' ')
     || 'Comprador sin datos';
   const objetivo = objetivoDesdeSeguimiento(seguimiento);
   const puedeCrearEnvio = !envio && ESTADOS_CON_ENVIO_CREABLE.includes(seguimiento.estado);
   const editable = envio && seguimiento.estado !== 'Entregado';
+  const verDetalles = (
+    <button type="button" className="seguimiento-link" onClick={() => setDetallesAbiertos(true)}>
+      Ver detalles completos
+    </button>
+  );
 
   return (
     <>
       {volver}
+      {detallesAbiertos && (
+        <DetallesPedidoPorId idPedido={seguimiento.id_pedido} onClose={() => setDetallesAbiertos(false)} />
+      )}
 
       <article className="seguimiento-card">
         <header className="seguimiento-header">
@@ -545,6 +582,7 @@ function SeguimientoPedido({
                   </button>
                 </div>
                 {copiado && <span className="seguimiento-copiado" role="status">Copiado</span>}
+                {verDetalles}
 
                 <dl>
                   <div><dt><FiTruck aria-hidden="true" />Repartidor</dt><dd>{envio.repartidor}</dd></div>
@@ -560,11 +598,14 @@ function SeguimientoPedido({
                     ? 'Este pedido se entregó sin envío (retiro en el local).'
                     : 'Este pedido todavía no tiene envío.'}
                 </p>
+                {verDetalles}
                 <dl>
                   <div><dt>Pago</dt><dd>{seguimiento.metodo_pago || 'Sin informar'}</dd></div>
                 </dl>
               </>
             )}
+
+            <FechaEstimada seguimiento={seguimiento} onGuardada={onActualizado} />
 
             <div className="seguimiento-envio-acciones">
               {puedeCrearEnvio && (
@@ -595,8 +636,213 @@ function SeguimientoPedido({
             {errorAccion && <p className="pedido-modal-error">{errorAccion}</p>}
           </aside>
         </div>
+
+        <NotasPedido idPedido={seguimiento.id_pedido} notas={notas} onCambio={onActualizado} />
       </article>
     </>
+  );
+}
+
+function FechaEstimada({ seguimiento, onGuardada }) {
+  const actual = seguimiento.fecha_entrega_estimada || '';
+  const [editando, setEditando] = useState(false);
+  const [valor, setValor] = useState(actual);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState('');
+
+  const situacion = situacionEntrega(seguimiento);
+  const editable = seguimiento.estado !== 'Entregado';
+
+  const abrir = () => {
+    setValor(actual);
+    setError('');
+    setEditando(true);
+  };
+
+  const guardar = async (fecha) => {
+    setGuardando(true);
+    setError('');
+    try {
+      await actualizarFechaEstimada(seguimiento.id_pedido, fecha);
+      setEditando(false);
+      onGuardada(fecha
+        ? `Entrega estimada para el ${formatearFechaEstimada(fecha)}.`
+        : 'Se quitó la fecha estimada de entrega.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <div className="seguimiento-estimada">
+      <span className="seguimiento-label"><FiCalendar aria-hidden="true" />Entrega estimada</span>
+
+      {editando ? (
+        <form
+          className="seguimiento-estimada-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!valor) return setError('Elegí una fecha o usá "Quitar".');
+            guardar(valor);
+          }}
+        >
+          <input
+            type="date"
+            value={valor}
+            min={diaEnArgentina(seguimiento.fecha) || undefined}
+            onChange={(event) => setValor(event.target.value)}
+            aria-label="Fecha estimada de entrega"
+            disabled={guardando}
+            autoFocus
+          />
+          <div className="seguimiento-estimada-acciones">
+            <button type="submit" className="envio-btn primary" disabled={guardando}>
+              {guardando ? 'Guardando...' : 'Guardar'}
+            </button>
+            {actual && (
+              <button type="button" className="envio-btn" onClick={() => guardar(null)} disabled={guardando}>
+                Quitar
+              </button>
+            )}
+            <button type="button" className="envio-btn" onClick={() => setEditando(false)} disabled={guardando}>
+              Cancelar
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="seguimiento-estimada-valor">
+          <strong className={actual ? '' : 'envio-vacio'}>{formatearFechaEstimada(actual)}</strong>
+          {editable && (
+            <button type="button" className="seguimiento-link" onClick={abrir}>
+              {actual ? 'Cambiar' : 'Definir fecha'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {situacion && !editando && <span className={`entrega-chip ${situacion.tono}`}>{situacion.texto}</span>}
+      {error && <p className="pedido-modal-error" role="alert">{error}</p>}
+    </div>
+  );
+}
+
+function NotasPedido({ idPedido, notas, onCambio }) {
+  const [tipo, setTipo] = useState('nota');
+  const [texto, setTexto] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [eliminando, setEliminando] = useState(null);
+  const [error, setError] = useState('');
+
+  const agregar = async (event) => {
+    event.preventDefault();
+    const limpio = texto.trim();
+    if (!limpio) return setError('Escribí la nota antes de agregarla.');
+
+    setGuardando(true);
+    setError('');
+    try {
+      await crearNota(idPedido, { tipo, texto: limpio });
+      setTexto('');
+      onCambio(tipo === 'incidencia' ? 'Incidencia registrada.' : 'Nota agregada.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const eliminar = async (nota) => {
+    setEliminando(nota.id_nota);
+    setError('');
+    try {
+      await eliminarNota(idPedido, nota.id_nota);
+      onCambio(nota.tipo === 'incidencia' ? 'Incidencia eliminada.' : 'Nota eliminada.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEliminando(null);
+    }
+  };
+
+  return (
+    <section className="seguimiento-notas" aria-labelledby="seguimientoNotas">
+      <div className="seguimiento-notas-header">
+        <h2 id="seguimientoNotas">Notas e incidencias</h2>
+        <span>Solo las ve tu tienda</span>
+      </div>
+
+      <form className="seguimiento-notas-form" onSubmit={agregar}>
+        <div className="seguimiento-notas-tipo" role="radiogroup" aria-label="Tipo">
+          {TIPOS_NOTA.map((opcion) => (
+            <button
+              type="button"
+              key={opcion}
+              role="radio"
+              aria-checked={tipo === opcion}
+              className={tipo === opcion ? `active ${opcion}` : ''}
+              onClick={() => setTipo(opcion)}
+              disabled={guardando}
+            >
+              {opcion === 'incidencia' ? <FiAlertTriangle aria-hidden="true" /> : <FiFileText aria-hidden="true" />}
+              {opcion === 'incidencia' ? 'Incidencia' : 'Nota'}
+            </button>
+          ))}
+        </div>
+        <textarea
+          value={texto}
+          onChange={(event) => {
+            setTexto(event.target.value);
+            if (error) setError('');
+          }}
+          maxLength={MAX_TEXTO_NOTA}
+          rows={2}
+          placeholder={tipo === 'incidencia'
+            ? 'Ej: No estaba el comprador, se reintenta mañana'
+            : 'Ej: Tocar timbre 2B'}
+          aria-label="Texto de la nota"
+          disabled={guardando}
+        />
+        <div className="seguimiento-notas-pie">
+          <span>{texto.length}/{MAX_TEXTO_NOTA}</span>
+          <button type="submit" className="envio-btn primary" disabled={guardando || !texto.trim()}>
+            <FiPlus aria-hidden="true" />
+            {guardando ? 'Guardando...' : 'Agregar'}
+          </button>
+        </div>
+      </form>
+
+      {error && <p className="pedido-modal-error" role="alert">{error}</p>}
+
+      {notas.length === 0 ? (
+        <p className="seguimiento-notas-vacio">Todavía no hay notas para este pedido.</p>
+      ) : (
+        <ul className="seguimiento-notas-lista">
+          {notas.map((nota) => (
+            <li key={nota.id_nota} className={nota.tipo}>
+              <span className="seguimiento-nota-icono" aria-hidden="true">
+                {nota.tipo === 'incidencia' ? <FiAlertTriangle /> : <FiFileText />}
+              </span>
+              <div>
+                <p>{nota.texto}</p>
+                <time dateTime={nota.fecha_creacion}>
+                  {nota.tipo === 'incidencia' ? 'Incidencia' : 'Nota'} · {formatearFecha(nota.fecha_creacion)}
+                </time>
+              </div>
+              <button
+                type="button"
+                onClick={() => eliminar(nota)}
+                disabled={eliminando === nota.id_nota}
+                aria-label={`Eliminar ${nota.tipo}`}
+              >
+                <FiTrash2 aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -607,6 +853,7 @@ function EnvioFormModal({ objetivo, onCerrar, onGuardado }) {
   const [direccionValida, setDireccionValida] = useState(true);
   const [nombreComprador, setNombreComprador] = useState(objetivo.nombre_comprador || '');
   const [repartidor, setRepartidor] = useState(objetivo.repartidor || '');
+  const [fechaEstimada, setFechaEstimada] = useState(objetivo.fecha_entrega_estimada || '');
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
 
@@ -616,6 +863,7 @@ function EnvioFormModal({ objetivo, onCerrar, onGuardado }) {
       direccion: direccion.trim(),
       nombre_comprador: nombreComprador.trim(),
       repartidor: repartidor.trim(),
+      fecha_entrega_estimada: fechaEstimada || null,
     };
 
     if (!datos.repartidor) return setError('Ingresá el nombre del repartidor.');
@@ -696,6 +944,17 @@ function EnvioFormModal({ objetivo, onCerrar, onGuardado }) {
               autoFocus
             />
           </label>
+
+          <label className="envio-campo">
+            <span>Entrega estimada <small>(opcional)</small></span>
+            <input
+              type="date"
+              value={fechaEstimada}
+              min={diaEnArgentina(objetivo.fecha_pedido) || undefined}
+              onChange={(event) => setFechaEstimada(event.target.value)}
+              disabled={guardando}
+            />
+          </label>
         </div>
 
         {error && <p className="pedido-modal-error" role="alert">{error}</p>}
@@ -769,6 +1028,8 @@ function objetivoDesdeFila(fila) {
     direccion: fila.direccion,
     nombre_comprador: fila.nombre_comprador,
     repartidor: fila.repartidor,
+    fecha_entrega_estimada: fila.fecha_entrega_estimada,
+    fecha_pedido: fila.fecha_pedido,
   };
 }
 
@@ -781,6 +1042,8 @@ function objetivoDesdeSeguimiento(seguimiento) {
     direccion: envio?.direccion || comprador?.direccion || '',
     nombre_comprador: envio?.nombre_comprador || [comprador?.nombre, comprador?.apellido].filter(Boolean).join(' '),
     repartidor: envio?.repartidor || '',
+    fecha_entrega_estimada: seguimiento.fecha_entrega_estimada,
+    fecha_pedido: seguimiento.fecha,
   };
 }
 

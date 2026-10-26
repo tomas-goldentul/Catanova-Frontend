@@ -38,7 +38,7 @@ export async function obtenerSeguimiento(idPedido, signal) {
   return payload.data;
 }
 
-// Body: { id_pedido, repartidor, direccion?, nombre_comprador? }. Responde { estado, data }.
+// Body: { id_pedido, repartidor, direccion?, nombre_comprador?, fecha_entrega_estimada? }. Responde { estado, data }.
 export async function crearEnvio(datos) {
   const response = await fetch(`${API_URL}/envios`, {
     method: 'POST',
@@ -48,7 +48,7 @@ export async function crearEnvio(datos) {
   return leerRespuesta(response, 'No se pudo crear el envío');
 }
 
-// Body: { repartidor?, direccion?, nombre_comprador? } (solo cambia lo que se manda).
+// Body: { repartidor?, direccion?, nombre_comprador?, fecha_entrega_estimada? } (solo cambia lo que se manda).
 export async function editarEnvio(idEnvio, datos) {
   const response = await fetch(`${API_URL}/envios/${encodeURIComponent(idEnvio)}`, {
     method: 'PUT',
@@ -66,6 +66,40 @@ export async function eliminarEnvio(idEnvio) {
     headers: headersEnvio(),
   });
   return leerRespuesta(response, 'No se pudo eliminar el envío');
+}
+
+// La fecha estimada vive en el pedido: "YYYY-MM-DD" o null para borrarla. No se puede cambiar si ya se entregó.
+export async function actualizarFechaEstimada(idPedido, fecha) {
+  const response = await fetch(`${API_URL}/pedidos/${encodeURIComponent(idPedido)}/fecha-estimada`, {
+    method: 'PATCH',
+    headers: headersEnvio(true),
+    body: JSON.stringify({ fecha_entrega_estimada: fecha || null }),
+  });
+  const payload = await leerRespuesta(response, 'No se pudo guardar la fecha estimada');
+  return payload.data;
+}
+
+export const MAX_TEXTO_NOTA = 500;
+export const TIPOS_NOTA = ['nota', 'incidencia'];
+
+// Las notas son internas de cada tienda: el back solo devuelve las de la tienda logueada.
+export async function crearNota(idPedido, { tipo, texto }) {
+  const response = await fetch(`${API_URL}/pedidos/${encodeURIComponent(idPedido)}/notas`, {
+    method: 'POST',
+    headers: headersEnvio(true),
+    body: JSON.stringify({ tipo, texto }),
+  });
+  const payload = await leerRespuesta(response, 'No se pudo guardar la nota');
+  return payload.data;
+}
+
+export async function eliminarNota(idPedido, idNota) {
+  const response = await fetch(
+    `${API_URL}/pedidos/${encodeURIComponent(idPedido)}/notas/${encodeURIComponent(idNota)}`,
+    { method: 'DELETE', headers: headersEnvio() },
+  );
+  const payload = await leerRespuesta(response, 'No se pudo eliminar la nota');
+  return payload.data;
 }
 
 // "Entregado" se marca por PATCH; "Enviado" solo se pone creando el envío.

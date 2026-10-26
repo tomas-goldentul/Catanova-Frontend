@@ -17,30 +17,38 @@ function App() {
   const [tab, setTab] = useState('tienda');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [tiendaSeleccionada, setTiendaSeleccionada] = useState(null);
+  // Pedido cuyo seguimiento se abre directo al entrar a Envíos (desde "Ver seguimiento" en Pedidos).
+  const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(null);
 
   const irAComprar = (id) => {
     setProductoSeleccionado(id);
     setTab('comprar');
   };
 
+  const irAEnvios = (idPedido = null) => {
+    setPedidoEnSeguimiento(idPedido);
+    setTab('envios');
+  };
+
   return (
     <div className="app-container">
       <Navbar
         tabActiva={tab}
-        onNavegar={(destino) => setTab(destino)}
+        onNavegar={(destino) => (destino === 'envios' ? irAEnvios() : setTab(destino))}
         onLogoClick={() => setTab('tienda')}
       />
 
       {tab === 'tienda' && (
         <MiTienda
           onIrAGaleria={() => setTab('galeria')}
-          onIrAEnvios={() => setTab('envios')}
+          onIrAEnvios={() => irAEnvios()}
           onVerTiendaPublica={() => setTab('catalogo')}
           onIrAVentas={() => setTab('ventas')}
         />
       )}
       {tab === 'envios' && (
         <Envios
+          pedidoInicial={pedidoEnSeguimiento}
           onVolver={() => setTab('tienda')}
           onIrALogin={() => setTab('login')}
         />
@@ -68,7 +76,7 @@ function App() {
         />
       )}
       {tab === 'login' && <Login />}
-      {tab === 'pedidos' && <Pedidos />}
+      {tab === 'pedidos' && <Pedidos onVerSeguimiento={irAEnvios} />}
       {tab === 'comprar' && (
         <Producto
           productoId={productoSeleccionado}
