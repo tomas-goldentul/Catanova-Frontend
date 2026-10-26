@@ -351,9 +351,7 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
   );
 }
 
-// ════════════════════════════════════════════
-//   COMPONENTE PRINCIPAL
-// ════════════════════════════════════════════
+//componente principal 
 
 function Catalogo({ onVerProducto }) {
   const [categorias, setCategorias]         = useState([]);

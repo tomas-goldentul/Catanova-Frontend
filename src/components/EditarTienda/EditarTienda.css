@@ -1,0 +1,168 @@
+.editar-tienda {
+  min-height: 100%;
+  padding: 48px 24px;
+  background: #fff;
+  color: #080808;
+  font-family: Arial, sans-serif;
+  border-left: 2px solid #1685ff;
+}
+
+.editar-tienda__form {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.editar-tienda__form h1 {
+  margin: 8px 0 16px;
+  font-size: 38px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.editar-tienda__campo {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 210px minmax(0, 415px);
+  align-items: center;
+  gap: 18px;
+}
+
+.editar-tienda__campo label {
+  font-size: 21px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.editar-tienda__campo input {
+  width: 100%;
+  min-width: 0;
+  height: 43px;
+  padding: 0 18px;
+  border: 1px solid #999;
+  border-radius: 11px;
+  background: #eee;
+  color: #111;
+  font-size: 18px;
+  box-sizing: border-box;
+}
+
+.editar-tienda__campo input:focus {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
+}
+
+.editar-tienda__campo input[readonly] {
+  width: 108px;
+}
+
+.editar-tienda__colores {
+  width: min(100%, 490px);
+  padding: 8px 18px 10px;
+  border: 1px solid #c5c5c5;
+  border-radius: 11px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  box-sizing: border-box;
+}
+
+.editar-tienda__colores legend {
+  margin: 0 auto;
+  padding: 0 8px;
+  font-size: 21px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.editar-tienda__color {
+  height: 36px;
+  padding: 0 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #999;
+  border-radius: 10px;
+  background: #eee;
+  font-size: 16px;
+}
+
+.editar-tienda__color input[type="color"] {
+  width: 20px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.editar-tienda__color span {
+  min-width: 66px;
+  text-align: center;
+}
+
+.editar-tienda__form button {
+  min-width: 235px;
+  margin-top: 7px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 5px;
+  background: #0d9e91;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.editar-tienda__form button:hover {
+  background: #087f75;
+}
+
+.editar-tienda__form button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.editar-tienda__error,
+.editar-tienda__mensaje {
+  margin: 0;
+  text-align: center;
+}
+
+.editar-tienda__error {
+  color: #b42318;
+}
+
+.editar-tienda__mensaje {
+  color: #087f75;
+}
+
+@media (max-width: 600px) {
+  .editar-tienda {
+    padding: 28px 16px;
+  }
+
+  .editar-tienda__form h1 {
+    font-size: 30px;
+  }
+
+  .editar-tienda__campo {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .editar-tienda__campo label {
+    text-align: left;
+    font-size: 17px;
+  }
+
+  .editar-tienda__campo input,
+  .editar-tienda__campo input[readonly] {
+    width: 100%;
+  }
+}
