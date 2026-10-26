@@ -5,7 +5,9 @@ import TarjetaProducto from '../TarjetaProducto/TarjetaProducto';
 import Paginacion from '../Paginacion/Paginacion';
 import AgregarProducto from '../AgregarProducto/AgregarProducto';
 import FiltroProductos from './FiltroProductos';
-import { getTodosLosProductos, getTodosProductosPorTienda, updateEstadoProducto, borrarProducto } from '../../api/productos';
+import EditarProducto from './EditarProducto';
+import { getTodosLosProductos, getTodosProductosPorTienda, updateEstadoProducto, borrarProducto, actualizarProducto } from '../../api/productos';
+import { asociarProductoACategoria } from '../../api/categorias'; 
 import { IconoBuscar, IconoFiltrar, IconoMas, IconoPaquete, IconoTienda, IconoOjoTachado, IconoInventario } from '../Icons/Icons';
 import './GaleriaProductos.css';
 
@@ -52,6 +54,7 @@ function GaleriaProductos({ onVerEnTienda }) {
     const [busqueda, setBusqueda] = useState('');
     const [soloActivos, setSoloActivos] = useState(false);
     const [orden, setOrden] = useState('todos');
+    const [productoEditando, setProductoEditando] = useState(null);
 
     useEffect(() => {
         let activo = true;
@@ -158,8 +161,8 @@ function GaleriaProductos({ onVerEnTienda }) {
         }
     };
 
-    const handleEditar = () => {
-        setMensaje('La edición de productos estará disponible próximamente.');
+    const handleEditar = (producto) => {
+        setProductoEditando(producto);
     };
 
     const handleCrearProducto = (nuevoProducto) => {
@@ -183,6 +186,32 @@ function GaleriaProductos({ onVerEnTienda }) {
     return (
         <>
             <div className="galeria">
+
+                {productoEditando && (
+                    <EditarProducto
+                        producto={productoEditando}
+                        onCancelar={() => setProductoEditando(null)}
+                        onGuardar={(productoActualizado) => {
+                            setProductos((anteriores) =>
+                                anteriores.map((item) =>
+                                    String(item.id) === String(productoActualizado.id)
+                                        ? {
+                                            ...item,
+                                            ...productoActualizado,
+                                            precio:
+                                                typeof productoActualizado.precio === 'number'
+                                                    ? `$${productoActualizado.precio.toLocaleString('es-AR')}`
+                                                    : productoActualizado.precio
+                                        }
+                                        : item
+                                )
+                            );
+
+                            setProductoEditando(null);
+                            setMensaje('Producto actualizado correctamente.');
+                        }}
+                    />
+                )}
 
                 <div className="galeriaHero">
                     <div className="galeriaHeroTitulo">
@@ -295,7 +324,7 @@ function GaleriaProductos({ onVerEnTienda }) {
                                 {...producto}
                                 onAgregar={() => handleAgregar(producto.id)}
                                 onEliminar={() => handleEliminar(producto.id)}
-                                onEditar={handleEditar}
+                                onEditar={() => handleEditar(producto)}
                                 onVerEnTienda={() => irVerEnTienda(producto.id)}
                             />
                         ))}
