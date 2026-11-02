@@ -241,3 +241,20 @@
     display: none;
   }
 }
+
+/* ── Estado bloqueado (sin sesión) ── */
+.navbar--bloqueado .nav-links a {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.navbar--bloqueado .nav-usuario {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.navbar--bloqueado .logo-img {
+  cursor: default;
+  pointer-events: none;
+}

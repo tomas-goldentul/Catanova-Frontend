@@ -45,7 +45,7 @@ const nombreParaMostrar = (usuario) => {
   return texto || usuario?.email?.trim() || 'Mi cuenta';
 };
 
-function Navbar({ onLogoClick, tabActiva, onNavegar }) {
+function Navbar({ onLogoClick, tabActiva, onNavegar, bloqueado = false }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [perfilAbierto, setPerfilAbierto] = useState(false);
   const [sesion, setSesion] = useState(leerSesion);
@@ -113,7 +113,7 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
 
   return (
     <>
-    <nav className="navbar">
+    <nav className={`navbar${bloqueado ? ' navbar--bloqueado' : ''}`}>
       <div className="nav-left">
         <ul className="nav-links">
           {ENLACES.map((enlace) => (
@@ -123,8 +123,10 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
                 className={esActivo(enlace.clave) ? 'activo' : ''}
                 onClick={(evento) => {
                   evento.preventDefault();
-                  irA(enlace.clave);
+                  if (!bloqueado) irA(enlace.clave);
                 }}
+                aria-disabled={bloqueado}
+                tabIndex={bloqueado ? -1 : 0}
               >
                 {enlace.etiqueta}
               </a>
@@ -138,7 +140,8 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
           src={logo}
           alt="Catanova"
           className="logo-img"
-          onClick={onLogoClick}
+          onClick={bloqueado ? undefined : onLogoClick}
+          style={bloqueado ? { cursor: 'default', pointerEvents: 'none' } : undefined}
         />
       </div>
 
@@ -149,6 +152,8 @@ function Navbar({ onLogoClick, tabActiva, onNavegar }) {
           aria-expanded={menuAbierto}
           aria-haspopup="true"
           onClick={abrirCuenta}
+          disabled={bloqueado}
+          aria-disabled={bloqueado}
         >
           <span className="nav-avatar">
             {fotoPerfil ? (
