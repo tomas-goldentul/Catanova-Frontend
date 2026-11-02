@@ -918,64 +918,6 @@
   color: #ffffff;
 }
 
-/* Botón de acción destructiva (cancelar pedido) */
-.pedido-modal-danger {
-  border: 1px solid #dc2626;
-  background: #dc2626;
-  color: #ffffff;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
-}
-
-.pedido-modal-danger:hover:not(:disabled) {
-  background: #b91c1c;
-  border-color: #b91c1c;
-}
-
-.pedido-modal-danger:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Opción "Cancelar pedido" en el menú de cada card */
-.pedido-menu-cancelar {
-  color: #dc2626 !important;
-}
-
-.pedido-menu-cancelar svg {
-  color: #dc2626 !important;
-}
-
-.pedido-menu-cancelar:hover {
-  background: #fef2f2 !important;
-}
-
-/* Botón cancelar pedido en el modal de detalles */
-.detalles-modal-cancelar {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: 1px solid #dc2626;
-  background: #ffffff;
-  color: #dc2626;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.detalles-modal-cancelar:hover {
-  background: #fef2f2;
-}
-
 @media (max-width: 1080px) {
   .pedidos-control-panel {
     grid-template-columns: 1fr;

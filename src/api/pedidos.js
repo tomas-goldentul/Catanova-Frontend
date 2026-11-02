@@ -104,7 +104,7 @@ function normalizarProductosPedido(productos) {
   return [...porProducto].map(([id_producto, cantidad]) => ({ id_producto, cantidad }));
 }
 
-export const ESTADOS_PEDIDO = ['Pendiente', 'En preparación', 'Enviado', 'Entregado', 'Cancelado'];
+export const ESTADOS_PEDIDO = ['Pendiente', 'En preparación', 'Enviado', 'Entregado'];
 
 export async function actualizarEstadoPedido(id, estado) {
   if (!id || id === 'Sin ID') {
@@ -127,30 +127,6 @@ export async function actualizarEstadoPedido(id, estado) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || payload.success === false) {
     const error = new Error(payload.message || `No se pudo actualizar el estado (Error ${response.status}).`);
-    error.status = response.status;
-    throw error;
-  }
-
-  return payload;
-}
-
-export async function cancelarPedido(id) {
-  if (!id || id === 'Sin ID') {
-    throw new Error('No se pudo identificar el pedido. El ID está ausente o inválido.');
-  }
-
-  const token = localStorage.getItem('token');
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const response = await fetch(`${API_URL}/pedidos/${encodeURIComponent(id)}/cancelar`, {
-    method: 'PATCH',
-    headers,
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || payload.success === false) {
-    const error = new Error(payload.message || `No se pudo cancelar el pedido (Error ${response.status}).`);
     error.status = response.status;
     throw error;
   }

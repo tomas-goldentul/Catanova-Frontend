@@ -23,7 +23,6 @@ import {
 import CrearPedido from './CrearPedido';
 import {
   actualizarEstadoPedido,
-  cancelarPedido,
   ESTADOS_PEDIDO,
   editarPedido,
   obtenerPedido,
@@ -66,9 +65,6 @@ function Pedidos({ onVerSeguimiento }) {
   const [pedidoParaActualizar, setPedidoParaActualizar] = useState(null);
   const [guardandoEstado, setGuardandoEstado] = useState(false);
   const [errorEstado, setErrorEstado] = useState('');
-  const [pedidoParaCancelar, setPedidoParaCancelar] = useState(null);
-  const [cancelando, setCancelando] = useState(false);
-  const [errorCancelacion, setErrorCancelacion] = useState('');
 
   const pedidosDisponibles = pedidos;
   const actualizarPedidos = () => {
@@ -100,40 +96,6 @@ function Pedidos({ onVerSeguimiento }) {
     if (!guardandoEstado) {
       setPedidoParaActualizar(null);
       setErrorEstado('');
-    }
-  };
-
-  const abrirConfirmacionCancelacion = (pedido) => {
-    const detalle = normalizarPedido(pedido);
-    if (detalle.estado === 'Cancelado' || detalle.estado === 'Entregado') return;
-    setPedidoParaCancelar({ id: detalle.id, comprador: detalle.comprador, estado: detalle.estado });
-    setErrorCancelacion('');
-    setMenuAbierto('');
-  };
-
-  const cerrarConfirmacionCancelacion = () => {
-    if (!cancelando) {
-      setPedidoParaCancelar(null);
-      setErrorCancelacion('');
-    }
-  };
-
-  const confirmarCancelacion = async () => {
-    if (!pedidoParaCancelar) return;
-    setCancelando(true);
-    setErrorCancelacion('');
-    try {
-      await cancelarPedido(pedidoParaCancelar.id);
-      setPedidos((actuales) => actuales.map((p) => {
-        if (String(normalizarPedido(p).id) !== String(pedidoParaCancelar.id)) return p;
-        return { ...p, estado: 'Cancelado', entregado: false };
-      }));
-      setPedidoParaCancelar(null);
-      setPedidoSeleccionado(null);
-    } catch (err) {
-      setErrorCancelacion(err.message || 'No se pudo cancelar el pedido.');
-    } finally {
-      setCancelando(false);
     }
   };
   const cambiarEstadoPedido = async (nuevoEstado) => {
@@ -420,16 +382,6 @@ function Pedidos({ onVerSeguimiento }) {
                           Cambiar estado
                         </button>
                       )}
-                      {detalle.estado !== 'Cancelado' && detalle.estado !== 'Entregado' && (
-                        <button
-                          type="button"
-                          className="pedido-menu-cancelar"
-                          onClick={() => abrirConfirmacionCancelacion(pedido)}
-                        >
-                          <FiX aria-hidden="true" />
-                          Cancelar pedido
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
@@ -479,7 +431,6 @@ function Pedidos({ onVerSeguimiento }) {
             onClose={() => setPedidoSeleccionado(null)}
             onEdit={() => setPedidoEnEdicion(pedidoSeleccionado)}
             onCambiarEstado={() => abrirCambioEstado(pedidoSeleccionado)}
-            onCancelar={() => abrirConfirmacionCancelacion(pedidoSeleccionado)}
           />
         )}
 
@@ -573,41 +524,6 @@ function Pedidos({ onVerSeguimiento }) {
           </div>
         )}
 
-        {/* Modal de confirmación de cancelación */}
-        {pedidoParaCancelar && (
-          <div className="pedido-modal-backdrop" role="presentation" onMouseDown={cerrarConfirmacionCancelacion}>
-            <section
-              className="pedido-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="cancelarPedidoTitulo"
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              <div>
-                <span className="pedido-modal-kicker">Administrar pedido</span>
-                <h2 id="cancelarPedidoTitulo">Cancelar pedido</h2>
-                <p>Pedido #{pedidoParaCancelar.id}</p>
-              </div>
-              <p className="pedido-modal-info">
-                ¿Estás seguro que querés cancelar este pedido? Esta acción no se puede deshacer y el stock de los productos será restituido automáticamente.
-              </p>
-              {errorCancelacion && <p className="pedido-modal-error">{errorCancelacion}</p>}
-              <div className="pedido-modal-actions">
-                <button type="button" className="pedido-modal-cancel" onClick={cerrarConfirmacionCancelacion} disabled={cancelando}>
-                  Volver
-                </button>
-                <button
-                  type="button"
-                  className="pedido-modal-danger"
-                  onClick={confirmarCancelacion}
-                  disabled={cancelando}
-                >
-                  {cancelando ? 'Cancelando...' : 'Sí, cancelar pedido'}
-                </button>
-              </div>
-            </section>
-          </div>
-        )}
       </div>
     </section>
   );
@@ -622,7 +538,7 @@ function KpiCard({ label, value, tone }) {
   );
 }
 
-function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado, onCancelar }) {
+function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado }) {
   return (
     <>
       <div className="detalles-modal-overlay" onClick={onClose} />
@@ -788,16 +704,6 @@ function DetallesPedidoModal({ pedido, vista, onClose, onEdit, onCambiarEstado, 
             >
               <FiEdit3 aria-hidden="true" />
               Editar pedido
-            </button>
-          )}
-          {vista === 'tienda' && onCancelar && pedido.estado !== 'Cancelado' && pedido.estado !== 'Entregado' && (
-            <button
-              type="button"
-              className="detalles-modal-cancelar"
-              onClick={onCancelar}
-            >
-              <FiX aria-hidden="true" />
-              Cancelar pedido
             </button>
           )}
           <button
