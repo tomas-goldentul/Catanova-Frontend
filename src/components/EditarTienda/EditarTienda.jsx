@@ -45,10 +45,8 @@ function EditarTienda({ idTienda, onGuardar, onCancelar }) {
           slogan: sloganData?.slogan ?? '',
           telefono: tienda?.telefono ?? '',
           direccion: tienda?.direccion ?? '',
-          fechaCreacion: tienda?.fecha_creacion
-            ? String(tienda.fecha_creacion).slice(0, 4)
-            : '',
-          rating: tienda?.rating ?? 0,
+          fechaCreacion: tienda?.establecimiento ?? '',
+          rating: tienda?.rating ?? null,
           colorPrincipal: tienda?.color_primario ?? '#082567',
           colorSecundario: tienda?.color_secundario ?? '#14B8A6',
           colorFondo: tienda?.color_terciario ?? '#FFFFFF',
@@ -92,6 +90,17 @@ function EditarTienda({ idTienda, onGuardar, onCancelar }) {
       return;
     }
 
+    const anio = Number(formulario.fechaCreacion);
+
+    if (
+      !Number.isInteger(anio) ||
+      anio < 1800 ||
+      anio > new Date().getFullYear()
+    ) {
+      setError('Ingresá un año de establecimiento válido.');
+      return;
+    }
+
     try {
       setGuardando(true);
 
@@ -108,6 +117,7 @@ function EditarTienda({ idTienda, onGuardar, onCancelar }) {
         slogan: formulario.slogan.trim(),
         telefono: formulario.telefono.trim(),
         direccion: formulario.direccion.trim(),
+        establecimiento: anio,
         color_primario: formulario.colorPrincipal,
         color_secundario: formulario.colorSecundario,
         color_terciario: formulario.colorFondo,
@@ -149,11 +159,27 @@ function EditarTienda({ idTienda, onGuardar, onCancelar }) {
         </div>
 
         <div className="editar-tienda__campo">
-          <label htmlFor="fechaTienda">Fecha de creación:</label>
+          <label htmlFor="fechaTienda">Año de establecimiento:</label>
           <input
             id="fechaTienda"
-            type="date"
+            type="number"
+            min="1800"
+            max={new Date().getFullYear()}
             value={formulario.fechaCreacion}
+            onChange={(e) => cambiarCampo('fechaCreacion', e.target.value)}
+          />
+        </div>
+
+        <div className="editar-tienda__campo">
+          <label htmlFor="ratingTienda">Rating:</label>
+          <input
+            id="ratingTienda"
+            type="text"
+            value={
+              formulario.rating != null
+                ? `${Number(formulario.rating).toFixed(1)} / 5`
+                : 'Sin valoraciones'
+            }
             readOnly
           />
         </div>

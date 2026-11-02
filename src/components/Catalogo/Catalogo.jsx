@@ -5,7 +5,7 @@ import Categoria from '../Categoria/Categoria';
 import EditarTienda from '../EditarTienda/EditarTienda';
 import { crearCategoria, getCategoriasPorTienda, editarCategoria, eliminarCategoria, asociarProductoACategoria } from '../../api/categorias';
 import { getProductosPorCategoria, getProductosPorTienda } from '../../api/productos';
-import { getNombre, getSlogan, actualizarTienda } from '../../api/tiendas';
+import { actualizarTienda, getTiendaPorId } from '../../api/tiendas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
 import { getCantidadVentasProducto } from '../../api/ventas';
 import { getCantidadFavoritosProducto } from '../../api/favoritos';
@@ -355,12 +355,12 @@ function PanelBorrar({ nombreCategoria, onConfirmar, onVolver }) {
 //componente principal 
 
 function Catalogo({ onVerProducto }) {
-  const [categorias, setCategorias]         = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [productosDisponibles, setProductosDisponibles] = useState([]);
-  const [tabActivo, setTabActivo]           = useState(null);
-  const [infoTienda, setInfoTienda]         = useState({ nombre: '', slogan: '' });
-  const [cargando, setCargando]             = useState(true);
-  const [vistaPanel, setVistaPanel]         = useState(null); // null | 'crear' | 'editar' | 'borrar'
+  const [tabActivo, setTabActivo] = useState(null);
+  const [infoTienda, setInfoTienda] = useState({ nombre: '', slogan: '', rating: null, establecimiento: null });
+  const [cargando, setCargando] = useState(true);
+  const [vistaPanel, setVistaPanel] = useState(null); // null | 'crear' | 'editar' | 'borrar'
   const [categoriaEditando, setCategoriaEditando] = useState(null);
   const [editandoTienda, setEditandoTienda] = useState(false);
 
@@ -374,16 +374,19 @@ function Catalogo({ onVerProducto }) {
           throw new Error('No hay tienda iniciada en la sesión');
         }
 
-        const [categoriasDB, dataNombre, dataSlogan, productosDelBackend] = await Promise.all([
+        const [categoriasDB, tienda, productosDelBackend] = await Promise.all([
           getCategoriasPorTienda(idTienda),
-          getNombre(idTienda),
-          getSlogan(idTienda),
-          getProductosPorTienda(idTienda),
+          getTiendaPorId(idTienda),
+          getProductosPorTienda(idTienda)
         ]);
 
+        console.log('Tienda recibida:', tienda);
+
         setInfoTienda({
-          nombre: dataNombre?.nombre || 'Mi Tienda',
-          slogan: dataSlogan?.slogan || '',
+          nombre: tienda.nombre || 'Mi Tienda',
+          slogan: tienda.slogan || '',
+          rating: tienda.rating,
+          establecimiento: tienda.establecimiento
         });
 
         // Guardar productos disponibles
@@ -560,9 +563,13 @@ function Catalogo({ onVerProducto }) {
             <h1 className="cat-header__nombre">{infoTienda.nombre || 'Mi Tienda'}</h1>
             <p className="cat-header__tagline">{infoTienda.slogan}</p>
             <div className="cat-header__meta">
-              <span className="cat-header__est">Est. 2022</span>
-              <span className="cat-header__stars">★★★★★</span>
-              <span className="cat-header__rating">5/5</span>
+              <span className="cat-header__est">{infoTienda.establecimiento ? `Est. ${infoTienda.establecimiento}` : 'Año no disponible'}</span>
+              <span className="cat-header__stars">{'★'.repeat(Math.round(Number(infoTienda.rating) || 0))}</span>
+              <span className="cat-header__rating">
+                {infoTienda.rating != null
+                  ? `${Number(infoTienda.rating).toFixed(1)}/5`
+                  : 'Sin valoraciones'}
+              </span>
             </div>
             <button
               className="cat-header__btn-editar"
@@ -590,10 +597,12 @@ function Catalogo({ onVerProducto }) {
             onGuardar={async (datos) => {
               await actualizarTienda(datos.id_tienda, datos);
 
-              setInfoTienda({
+              setInfoTienda(prev => ({
+                ...prev,
                 nombre: datos.nombre,
-                slogan: datos.slogan
-              });
+                slogan: datos.slogan,
+                establecimiento: datos.establecimiento
+              }));
 
               setEditandoTienda(false);
             }}

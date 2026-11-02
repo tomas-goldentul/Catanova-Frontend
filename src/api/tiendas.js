@@ -83,3 +83,15 @@ export async function actualizarTienda(id, datos) {
 
   return json.data;
 }
+
+export async function getTiendaPorId(id) {
+  const res = await fetch(`${BASE_URL}/get/${id}`);
+
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+
+  const json = await res.json();
+
+  return json.data;
+}
