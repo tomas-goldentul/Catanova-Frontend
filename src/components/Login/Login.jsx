@@ -248,7 +248,7 @@ export default function Login({ onLogin }) {
       setMessageType('success');
       setMessage(successMessage);
       setRegisterForm(emptyRegisterForm);
-      setRegisterRole(null);
+      setRegisterRole('tienda');
       setEmail(registerForm.email.trim());
       setTimeout(() => {
         setMode('login');
@@ -276,7 +276,7 @@ export default function Login({ onLogin }) {
     setMessage(null);
     setMessageType(null);
     if (nextMode === 'register') {
-      setRegisterRole(null);
+      setRegisterRole('tienda');
       setRegisterForm(emptyRegisterForm);
     }
   };
@@ -284,11 +284,7 @@ export default function Login({ onLogin }) {
   const title =
     mode === 'login'
       ? 'Preparado para gestionar tu negocio'
-      : registerRole
-        ? registerRole === 'tienda'
-          ? 'Crear tu cuenta de tienda'
-          : 'Crear tu cuenta de usuario'
-        : 'Crear tu cuenta';
+      : 'Crear tu cuenta de tienda';
   const submitLabel = mode === 'login' ? (loading ? 'Ingresando...' : 'Ingresar') : (loading ? 'Registrando...' : 'Registrarme');
 
   const inputClass = (showState, setShowState, value, setValue) => (
@@ -375,33 +371,9 @@ export default function Login({ onLogin }) {
               </button>
             </form>
           ) : registerRole === null ? (
-            <div className="register-role-step" key="role-step">
-              <p className="register-role-intro">Elegí cómo querés usar Catanova</p>
-              <div className="register-role-grid">
-                <button
-                  type="button"
-                  className="register-role-card"
-                  onClick={() => setRegisterRole('usuario')}
-                >
-                  <span className="register-role-icon" aria-hidden="true">
-                    👤
-                  </span>
-                  <span className="register-role-name">Usuario</span>
-                  <span className="register-role-desc">Comprá y seguí tus pedidos como cliente.</span>
-                </button>
-                <button
-                  type="button"
-                  className="register-role-card"
-                  onClick={() => setRegisterRole('tienda')}
-                >
-                  <span className="register-role-icon" aria-hidden="true">
-                    🏪
-                  </span>
-                  <span className="register-role-name">Tienda</span>
-                  <span className="register-role-desc">Vendé y gestioná tu catálogo de productos.</span>
-                </button>
-              </div>
-            </div>
+            <>{/* Auto-seleccionar tienda al entrar en modo registro */}
+              {(() => { setRegisterRole('tienda'); return null; })()}
+            </>
           ) : (
             <form
               onSubmit={handleRegisterSubmit}
@@ -522,17 +494,7 @@ export default function Login({ onLogin }) {
                 />
               </div>
 
-              <button
-                type="button"
-                className="register-back"
-                onClick={() => {
-                  setRegisterRole(null);
-                  setMessage(null);
-                  setMessageType(null);
-                }}
-              >
-                ← Cambiar tipo de cuenta
-              </button>
+              {/* Botón de cambio de tipo de cuenta eliminado: solo se registran tiendas */}
 
               <button className="primary" type="submit" disabled={loading}>
                 {loading
