@@ -1,4 +1,3 @@
-```
 import { useEffect, useState } from 'react';
 import {
   getNombre,
@@ -7,11 +6,14 @@ import {
 } from '../../api/tiendas';
 import './EditarTienda.css';
 
-function EditarTienda({ idTienda, onGuardar }) {
+function EditarTienda({ idTienda, onGuardar, onCancelar }) {
   const [formulario, setFormulario] = useState({
     nombre: '',
     slogan: '',
+    telefono: '',
+    direccion: '',
     fechaCreacion: '',
+    rating: '',
     colorPrincipal: '#082567',
     colorSecundario: '#14B8A6',
     colorFondo: '#FFFFFF',
@@ -41,12 +43,15 @@ function EditarTienda({ idTienda, onGuardar }) {
         setFormulario({
           nombre: nombreData?.nombre ?? '',
           slogan: sloganData?.slogan ?? '',
+          telefono: tienda?.telefono ?? '',
+          direccion: tienda?.direccion ?? '',
           fechaCreacion: tienda?.fecha_creacion
-            ? String(tienda.fecha_creacion).slice(0, 10)
+            ? String(tienda.fecha_creacion).slice(0, 4)
             : '',
-          colorPrincipal: tienda?.color_principal ?? '#082567',
+          rating: tienda?.rating ?? 0,
+          colorPrincipal: tienda?.color_primario ?? '#082567',
           colorSecundario: tienda?.color_secundario ?? '#14B8A6',
-          colorFondo: tienda?.color_fondo ?? '#FFFFFF',
+          colorFondo: tienda?.color_terciario ?? '#FFFFFF',
         });
       } catch (e) {
         setError('No se pudieron cargar los datos de la tienda.');
@@ -56,7 +61,13 @@ function EditarTienda({ idTienda, onGuardar }) {
       }
     }
 
-    if (idTienda) cargarTienda();
+    if (!idTienda) {
+      setError('No se encontró una tienda válida.');
+      setCargando(false);
+      return;
+    }
+
+    cargarTienda();
   }, [idTienda]);
 
   const cambiarCampo = (campo, valor) => {
@@ -95,9 +106,11 @@ function EditarTienda({ idTienda, onGuardar }) {
         id_tienda: Number(idTienda),
         nombre: formulario.nombre.trim(),
         slogan: formulario.slogan.trim(),
-        color_principal: formulario.colorPrincipal,
+        telefono: formulario.telefono.trim(),
+        direccion: formulario.direccion.trim(),
+        color_primario: formulario.colorPrincipal,
         color_secundario: formulario.colorSecundario,
-        color_fondo: formulario.colorFondo,
+        color_terciario: formulario.colorFondo,
       });
 
       setMensaje('Cambios guardados correctamente.');
@@ -171,10 +184,17 @@ function EditarTienda({ idTienda, onGuardar }) {
         <button type="submit" disabled={guardando}>
           {guardando ? 'Guardando...' : 'Aceptar Cambios'}
         </button>
+
+        <button
+          type="button"
+          onClick={onCancelar}
+          disabled={guardando}
+        >
+          Volver
+        </button>
       </form>
     </main>
   );
 }
 
 export default EditarTienda;
-```

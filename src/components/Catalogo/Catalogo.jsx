@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import './Catalogo.css';
 import Footer from '../Footer/Footer';
 import Categoria from '../Categoria/Categoria';
+import EditarTienda from '../EditarTienda/EditarTienda';
 import { crearCategoria, getCategoriasPorTienda, editarCategoria, eliminarCategoria, asociarProductoACategoria } from '../../api/categorias';
 import { getProductosPorCategoria, getProductosPorTienda } from '../../api/productos';
-import { getNombre, getSlogan } from '../../api/tiendas';
+import { getNombre, getSlogan, actualizarTienda } from '../../api/tiendas';
 import { IconoLapiz, IconoOjo, IconoChispas } from '../Icons/Icons';
 import { getCantidadVentasProducto } from '../../api/ventas';
 import { getCantidadFavoritosProducto } from '../../api/favoritos';
@@ -361,6 +362,7 @@ function Catalogo({ onVerProducto }) {
   const [cargando, setCargando]             = useState(true);
   const [vistaPanel, setVistaPanel]         = useState(null); // null | 'crear' | 'editar' | 'borrar'
   const [categoriaEditando, setCategoriaEditando] = useState(null);
+  const [editandoTienda, setEditandoTienda] = useState(false);
 
   useEffect(() => {
     const tiendaIdRaw = localStorage.getItem('id_tienda');
@@ -562,11 +564,14 @@ function Catalogo({ onVerProducto }) {
               <span className="cat-header__stars">★★★★★</span>
               <span className="cat-header__rating">5/5</span>
             </div>
-            <button className="cat-header__btn-editar">
+            <button
+              className="cat-header__btn-editar"
+              onClick={() => setEditandoTienda(true)}
+            >
               Editar Tienda <IconoLapiz />
             </button>
           </div>
-
+    
           <div className="cat-header__divider" />
 
           <div className="cat-header__right">
@@ -577,6 +582,23 @@ function Catalogo({ onVerProducto }) {
             </button>
           </div>
         </div>
+
+        {editandoTienda && (
+          <EditarTienda
+            idTienda={Number(localStorage.getItem('id_tienda'))}
+            onCancelar={() => setEditandoTienda(false)}
+            onGuardar={async (datos) => {
+              await actualizarTienda(datos.id_tienda, datos);
+
+              setInfoTienda({
+                nombre: datos.nombre,
+                slogan: datos.slogan
+              });
+
+              setEditandoTienda(false);
+            }}
+          />
+        )}
 
         {/* ── Sección productos ── */}
         <div className="cat-productos">

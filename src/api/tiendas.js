@@ -65,3 +65,21 @@ export async function cerrarTienda(id) {
 
   return json.data;
 }
+
+export async function actualizarTienda(id, datos) {
+  const res = await fetch(`${BASE_URL}/update/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(datos),
+  });
+
+  const json = await res.json();
+
+  if (!res.ok) {
+    throw new Error(json.message || `Error ${res.status}`);
+  }
+
+  return json.data;
+}
