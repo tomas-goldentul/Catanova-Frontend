@@ -1,5 +1,5 @@
 .footer {
-  background: #0d1b38;
+  background: var(--color-primario);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
@@ -17,7 +17,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #00b894 35%, #00d2a8 65%, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-secundario) 35%, var(--color-secundario-claro) 65%, transparent);
   opacity: 1;
 }
 
@@ -66,7 +66,7 @@
 
 .footer-copy {
   font-size: 0.72rem;
-  color: #94A3B8;
+  color: var(--color-texto-suave);
   font-weight: 500;
   line-height: 1.5;
 }
@@ -101,7 +101,7 @@
 
 .social-icon:hover,
 .social-icon:focus-visible {
-  color: #00b894;
+  color: var(--color-secundario);
   transform: scale(1.05);
   opacity: 1;
 }

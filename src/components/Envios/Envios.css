@@ -39,7 +39,7 @@
 }
 
 .envio-card:hover {
-  border-color: #ccd3dc;
+  border-color: var(--color-borde);
   box-shadow: var(--shadow);
 }
 
@@ -91,7 +91,7 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin: 0;
-  border-left: 1px solid #eef2f6;
+  border-left: 1px solid var(--color-borde);
   padding-left: 22px;
 }
 
@@ -131,7 +131,7 @@
 
 .envio-card-actions {
   justify-content: flex-end;
-  border-top: 1px solid #eef2f6;
+  border-top: 1px solid var(--color-borde);
   padding-top: 14px;
 }
 
@@ -145,8 +145,8 @@
   border: 1px solid var(--border-strong);
   border-radius: 11px;
   padding: 0 14px;
-  background: #ffffff;
-  color: #344054;
+  background: var(--color-superficie);
+  color: var(--color-texto);
   font: inherit;
   font-size: 14px;
   font-weight: 750;
@@ -155,8 +155,8 @@
 }
 
 .envio-btn:hover:not(:disabled) {
-  border-color: #98a2b3;
-  background: #f9fafb;
+  border-color: var(--color-texto-suave);
+  background: var(--color-fondo-suave);
 }
 
 .envio-btn.primary {
@@ -182,7 +182,7 @@
 
 .envio-btn.activo {
   border-color: var(--brand);
-  background: #f0fdfa;
+  background: var(--color-secundario-suave);
   color: var(--brand);
 }
 
@@ -326,7 +326,7 @@
 .seguimiento-paso.pendiente .seguimiento-paso-titulo { color: var(--subtle); }
 .seguimiento-paso.pendiente .seguimiento-paso-icono {
   border: 2px solid var(--border-strong);
-  background: #f2f4f7;
+  background: var(--color-fondo-suave);
   color: var(--subtle);
 }
 
@@ -461,8 +461,8 @@
   height: 34px;
   border: 1px solid var(--border-strong);
   border-radius: 9px;
-  background: #ffffff;
-  color: #344054;
+  background: var(--color-superficie);
+  color: var(--color-texto);
   cursor: pointer;
 }
 
@@ -539,8 +539,8 @@
   margin-top: 6px;
   border-radius: 999px;
   padding: 2px 9px;
-  background: #f2f4f7;
-  color: #344054;
+  background: var(--color-fondo-suave);
+  color: var(--color-texto);
   font-size: 12px;
   font-weight: 750;
 }
@@ -594,7 +594,7 @@
 .seguimiento-notas-form textarea {
   border: 1px solid var(--border-strong);
   border-radius: 11px;
-  background: #ffffff;
+  background: var(--color-superficie);
   color: var(--text);
   font: inherit;
   font-weight: 600;
@@ -664,8 +664,8 @@
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   padding: 0 13px;
-  background: #ffffff;
-  color: #344054;
+  background: var(--color-superficie);
+  color: var(--color-texto);
   font: inherit;
   font-size: 13px;
   font-weight: 750;
@@ -742,7 +742,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #f0fdfa;
+  background: var(--color-secundario-suave);
   color: var(--brand);
 }
 
@@ -812,7 +812,7 @@
 }
 
 .envio-campo span {
-  color: #344054;
+  color: var(--color-texto);
   font-size: 14px;
   font-weight: 750;
 }
@@ -822,7 +822,7 @@
   border: 1px solid var(--border-strong);
   border-radius: 11px;
   padding: 0 12px;
-  background: #ffffff;
+  background: var(--color-superficie);
   color: var(--text);
   font: inherit;
   font-weight: 600;
@@ -890,8 +890,8 @@
   border: 1px solid #99f6e4;
   border-radius: 14px;
   padding: 12px 16px;
-  background: #f0fdfa;
-  color: #134e4a;
+  background: var(--color-secundario-suave);
+  color: var(--color-secundario-mas-oscuro);
   font-size: 14px;
   font-weight: 700;
   box-shadow: var(--shadow);

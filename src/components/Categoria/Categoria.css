@@ -15,7 +15,7 @@
 .cat-seccion__nombre {
   font-size: 22px;
   font-weight: 700;
-  color: #0d1b38;
+  color: var(--color-primario);
   margin: 0;
   letter-spacing: -0.3px;
 }
@@ -33,7 +33,7 @@
 }
 
 .cat-seccion__btn-editar:hover {
-  color: #00b894;
+  color: var(--color-secundario);
 }
 
 /* ── Estado vacío ── */
@@ -50,7 +50,7 @@
 .cat-seccion__vacio-titulo {
   margin: 0 0 6px;
   font-weight: 600;
-  color: #0d1b38;
+  color: var(--color-primario);
 }
 
 .cat-seccion__vacio-texto {

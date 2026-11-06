@@ -1,5 +1,39 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/*
+  Paleta de la tienda.
+  El contexto pisa estos valores en <html> cuando hay una tienda cargada
+  o cuando se previsualiza un color en Editar tienda.
+  Los tonos claros y oscuros salen del color base con color-mix.
+*/
+:root {
+  --color-primario: #082567;
+  --color-secundario: #14b8a6;
+  --color-fondo: #ffffff;
+
+  --color-primario-claro: color-mix(in srgb, var(--color-primario) 78%, white);
+  --color-primario-mas-claro: color-mix(in srgb, var(--color-primario) 55%, white);
+  --color-primario-suave: color-mix(in srgb, var(--color-primario) 10%, white);
+  --color-primario-oscuro: color-mix(in srgb, var(--color-primario) 80%, black);
+  --color-primario-mas-oscuro: color-mix(in srgb, var(--color-primario) 62%, black);
+
+  --color-secundario-claro: color-mix(in srgb, var(--color-secundario) 78%, white);
+  --color-secundario-mas-claro: color-mix(in srgb, var(--color-secundario) 55%, white);
+  --color-secundario-suave: color-mix(in srgb, var(--color-secundario) 12%, white);
+  --color-secundario-oscuro: color-mix(in srgb, var(--color-secundario) 82%, black);
+  --color-secundario-mas-oscuro: color-mix(in srgb, var(--color-secundario) 64%, black);
+
+  --color-fondo-pagina: #f3f5fb;
+  --color-superficie: #ffffff;
+  --color-fondo-suave: #f7f8fc;
+  --color-texto: #0f172a;
+  --color-texto-suave: #64748b;
+  --color-borde: #e6eaf1;
+  --color-borde-fuerte: #cfd6e2;
+  --color-sobre-primario: #ffffff;
+  --color-sobre-secundario: #ffffff;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -8,10 +42,17 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #f5f7fa;
-  color: #0f172a;
+  background-color: var(--color-fondo-pagina);
+  color: var(--color-texto);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 .app-container {

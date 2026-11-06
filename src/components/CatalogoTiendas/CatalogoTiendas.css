@@ -3,15 +3,15 @@
    ========================================================= */
 
 :root {
-  --ct-teal-1: #00c9a7;
-  --ct-teal-2: #00b894;
-  --ct-dark: #0d1b38;
-  --ct-gray-1: #7b849d;
+  --ct-teal-1: var(--color-secundario-claro);
+  --ct-teal-2: var(--color-secundario);
+  --ct-dark: var(--color-primario);
+  --ct-gray-1: var(--color-texto-suave);
   --ct-gray-2: #8a94a8;
   --ct-gray-3: #b0b8c9;
   --ct-border-1: #e2e6ee;
   --ct-border-2: #edf0f5;
-  --ct-white: #ffffff;
+  --ct-white: var(--color-superficie);
   --ct-bg: #f4f6fa;
 }
 
@@ -33,7 +33,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  background: linear-gradient(135deg, #0d1b38 0%, #162549 50%, #1a2f5a 100%);
+  background: linear-gradient(135deg, var(--color-primario) 0%, #162549 50%, var(--color-primario-oscuro) 100%);
   border-radius: 20px;
   padding: 44px 48px;
   overflow: hidden;
@@ -47,7 +47,7 @@
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 184, 148, 0.18), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-secundario) 18%, transparent), transparent 70%);
   pointer-events: none;
 }
 
@@ -59,7 +59,7 @@
   width: 200px;
   height: 200px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 184, 148, 0.08), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-secundario) 8%, transparent), transparent 70%);
 }
 
 .ct-header__izquierda {
@@ -110,12 +110,12 @@
 }
 
 .ct-header__numero {
-  color: var(--ct-white);
+  color: var(--color-sobre-secundario);
   font-size: 52px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;
-  background: linear-gradient(135deg, #00c9a7, #00d2a8);
+  background: linear-gradient(135deg, var(--color-secundario-claro), var(--color-secundario-claro));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -144,7 +144,7 @@
   flex: 1 1 340px;
   display: flex;
   align-items: center;
-  background: var(--ct-white);
+  background: var(--color-superficie);
   border: 1.5px solid var(--ct-border-2);
   border-radius: 14px;
   padding: 13px 18px;
@@ -153,7 +153,7 @@
 
 .tiendas-buscador:focus-within {
   border-color: var(--ct-teal-1);
-  box-shadow: 0 0 0 4px rgba(0, 201, 167, 0.1);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-secundario) 10%, transparent);
 }
 
 .tiendas-buscador__icono {
@@ -222,7 +222,7 @@
 
 .ct-select {
   appearance: none;
-  background: var(--ct-white);
+  background: var(--color-superficie);
   border: 1.5px solid var(--ct-border-2);
   border-radius: 14px;
   color: var(--ct-dark);
@@ -240,7 +240,7 @@
 .ct-select:focus {
   outline: none;
   border-color: var(--ct-teal-1);
-  box-shadow: 0 0 0 4px rgba(0, 201, 167, 0.1);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-secundario) 10%, transparent);
 }
 
 /* ---------------------------------------------------------
@@ -297,8 +297,9 @@
 }
 
 .ct-estado {
-  background: var(--ct-white);
+  background: var(--color-superficie);
   border: 1px dashed var(--ct-border-1);
+  color: var(--ct-dark);
   border-radius: 20px;
   padding: 56px 24px;
   text-align: center;
@@ -327,10 +328,10 @@
    Tarjeta de tienda
    --------------------------------------------------------- */
 .tienda-card {
-  background: var(--ct-white);
+  background: var(--color-superficie);
   border: 1px solid var(--ct-border-2);
   border-top: 3px solid var(--ct-border-1);
-  border-radius: 18px;
+  border-radius: 14px;
   padding: 28px 26px 24px;
   display: flex;
   flex-direction: column;
@@ -342,7 +343,7 @@
 
 .tienda-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(13, 27, 56, 0.1);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--color-primario) 10%, transparent);
 }
 
 @keyframes ct-card-in {
@@ -359,7 +360,7 @@
 .tienda-card--skeleton {
   min-height: 220px;
   border-top-color: transparent;
-  background: linear-gradient(100deg, #f0f2f7 30%, #e8ecf2 50%, #f0f2f7 70%);
+  background: linear-gradient(100deg, #f0f2f7 30%, var(--color-borde) 50%, #f0f2f7 70%);
   background-size: 200% 100%;
   animation: ct-skeleton 1.4s ease infinite;
   pointer-events: none;
@@ -457,20 +458,21 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid var(--ct-white);
+  border: 2px solid var(--color-superficie);
   box-shadow: 0 0 0 1px var(--ct-border-1);
 }
 
 .tienda-card__boton {
   margin-top: 20px;
   border: none;
-  background: var(--ct-dark);
-  color: var(--ct-white);
+  background: var(--color-superficie);
+  border: 1px solid var(--ct-border-2);
+  border-radius: 12px;
+  color: var(--ct-dark);
   font-size: 13.5px;
   font-weight: 600;
   font-family: inherit;
   padding: 13px 20px;
-  border-radius: 12px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -512,12 +514,12 @@
 }
 
 .tienda-detalle__header {
-  background: var(--ct-white);
+  background: var(--color-superficie);
   border: 1px solid var(--ct-border-2);
   border-radius: 18px;
   padding: 36px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(13, 27, 56, 0.04);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primario) 4%, transparent);
 }
 
 .tienda-detalle__cabecera {
@@ -542,7 +544,7 @@
 }
 
 .tienda-detalle__info {
-  background: var(--ct-white);
+  background: var(--color-superficie);
   border: 1px solid var(--ct-border-2);
   border-radius: 18px;
   padding: 28px 32px;

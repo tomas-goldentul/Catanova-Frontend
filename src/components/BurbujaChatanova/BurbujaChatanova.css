@@ -6,9 +6,9 @@
   right: 30px;
 
   background:
-    linear-gradient(135deg, #00b894, #00d2a8);
+    linear-gradient(135deg, var(--color-secundario), var(--color-secundario-claro));
 
-  color: white;
+  color: var(--color-sobre-secundario);
 
   width: 62px;
   height: 62px;
@@ -25,7 +25,7 @@
   cursor: pointer;
 
   box-shadow:
-    0 14px 28px rgba(0,184,148,0.30);
+    0 14px 28px color-mix(in srgb, var(--color-secundario) 30%, transparent);
 
   transition: 0.25s;
 }

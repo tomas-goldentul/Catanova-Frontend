@@ -9,9 +9,9 @@
 
 /* Card principal */
 .producto {
-  background: #fff;
+  background: var(--color-superficie);
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-borde);
   padding: 2rem 2.5rem;
   display: flex;
   flex-direction: column;
@@ -24,7 +24,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #374151;
+  color: var(--color-texto);
   padding: 4px;
   font-size: 1.1rem;
   line-height: 1;
@@ -34,19 +34,19 @@
 .producto > h1 {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-texto);
   line-height: 1.25;
 }
 
 .producto > h2 {
   font-size: 0.95rem;
   font-weight: 400;
-  color: #6b7280;
+  color: var(--color-texto-suave);
   margin-top: -1rem;
 }
 
 .producto > h2 span {
-  color: #0ea5a0;
+  color: var(--color-secundario);
   font-weight: 600;
 }
 
@@ -62,16 +62,16 @@
   display: flex;
   flex-direction: column;
   width: 190px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-borde);
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  background: #fff;
+  background: var(--color-superficie);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ImgData:hover {
-  border-color: #0ea5a0;
+  border-color: var(--color-secundario);
   box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
 }
 
@@ -79,7 +79,7 @@
   width: 100%;
   aspect-ratio: 4 / 4;
   object-fit: cover;
-  background: #f3f4f6;
+  background: var(--color-fondo-suave);
 }
 
 /* ── Bloque de datos con botón */
@@ -89,22 +89,22 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.85rem 0.95rem 1rem;
-  background: #fff;
+  background: var(--color-superficie);
   min-height: 120px;
 }
 
 .data p {
   margin: 0;
   font-size: 0.86rem;
-  color: #111827;
+  color: var(--color-texto);
   font-weight: 600;
   line-height: 1.5;
 }
 
 .btnQueBaja {
   width: 100%;
-  background: #0ea5a0;
-  color: #ffffff;
+  background: var(--color-secundario);
+  color: var(--color-sobre-secundario);
   border: none;
   border-radius: 10px;
   padding: 0.75rem 0.9rem;
@@ -130,8 +130,8 @@
 /* ── Analíticas ── */
 .Analiticas {
   flex: 1;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   display: flex;
@@ -149,7 +149,7 @@
 .AnaliticasArriba h3 {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-texto);
 }
 
 .AnaliticasPeriodo {
@@ -160,9 +160,9 @@
 .AnaliticasPeriodoSelect {
   padding: 0.75rem 1rem;
   border-radius: 14px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #111827;
+  border: 1px solid var(--color-borde);
+  background: var(--color-superficie);
+  color: var(--color-texto);
   font-size: 0.95rem;
   cursor: pointer;
   min-width: 180px;
@@ -171,15 +171,15 @@
 .AnaliticasPeriodoSelect:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(14, 165, 160, 0.15);
-  border-color: #0ea5a0;
+  border-color: var(--color-secundario);
 }
 
 .AnaliticasArriba button:hover {
-  border-color: #0ea5a0;
+  border-color: var(--color-secundario);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
   .Analiticas:hover {
-    border-color: #0ea5a000;
+    border-color: color-mix(in srgb, var(--color-secundario) 0%, transparent);
   }
 }
 
@@ -194,40 +194,40 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  background: #f9fafb;
-  border: 1px solid #f0f0f0;
+  background: var(--color-fondo-suave);
+  border: 1px solid var(--color-borde);
   border-radius: 8px;
   padding: 1rem 0.75rem;
 }
 
 .datoInfromativo:hover {
-  border-color: #0ea5a0;
+  border-color: var(--color-secundario);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Los íconos de react-icons dentro de datoInfromativo */
 .datoInfromativo > svg {
-  color: #0ea5a0;
+  color: var(--color-secundario);
   font-size: 1rem;
 }
 
 .datoInfromativo .Precio {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-texto);
   line-height: 1.2;
 }
 
 .datoInfromativo .Subtitulo {
   font-size: 0.72rem;
-  color: #6b7280;
+  color: var(--color-texto-suave);
   font-weight: 400;
 }
 
 /* ── Etiquetas ── */
 .Etiquetas {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   display: flex;
@@ -244,17 +244,17 @@
 .EtiquetasArriba h3 {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-texto);
 }
 
 /* El ícono FaTag */
 .EtiquetasArriba svg {
-  color: #0ea5a0;
+  color: var(--color-secundario);
 }
 
 .EtiquetasDescripcion {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--color-texto-suave);
 }
 
 .EtiquetasAbajo {
@@ -272,9 +272,9 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s, padding-right 0.15s ease;
   font-weight: 500;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #374151;
+  border: 1px solid var(--color-borde);
+  background: var(--color-superficie);
+  color: var(--color-texto);
   position: relative;
 }
 
@@ -284,9 +284,9 @@
 
 /* Etiqueta activa (la seleccionada) */
 .Unidad.normal {
-  background: #0ea5a0;
-  color: #fff;
-  border-color: #0ea5a0;
+  background: var(--color-secundario);
+  color: var(--color-sobre-secundario);
+  border-color: var(--color-secundario);
 }
 
 .Unidad__close {
@@ -297,7 +297,7 @@
   opacity: 0;
   font-size: 0.95rem;
   line-height: 1;
-  color: #374151;
+  color: var(--color-texto);
   background: rgba(15, 23, 42, 0.06);
   padding: 0.12rem 0.35rem;
   border-radius: 999px;
@@ -321,9 +321,9 @@
 
 /* Etiquetas inactivas: hover suave teal */
 .Unidad.hovereada:hover {
-  background: #f0fdfa;
-  border-color: #0ea5a0;
-  color: #0ea5a0;
+  background: var(--color-secundario-suave);
+  border-color: var(--color-secundario);
+  color: var(--color-secundario);
 }
 
 /* ── Acciones ── */
@@ -358,27 +358,27 @@
 
 /* Editar → gris */
 .Accion2 {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #e5e7eb !important;
+  background: var(--color-fondo-suave);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde) !important;
 }
 
 /* Agregar Stock → teal claro */
 .Accion3 {
-  background: #ccfbf1;
-  color: #0d7a75;
+  background: var(--color-secundario-suave);
+  color: var(--color-secundario-oscuro);
 }
 
 /* Modificar Stock → teal sólido */
 .Accion4 {
-  background: #0ea5a0;
-  color: #fff;
+  background: var(--color-secundario);
+  color: var(--color-sobre-secundario);
 }
 
 /* Paneles de edición y stock */
 .producto-panel {
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background: var(--color-fondo-suave);
+  border: 1px solid var(--color-borde);
   border-radius: 18px;
   padding: 1.5rem;
   display: grid;
@@ -391,20 +391,20 @@
   justify-content: space-between;
   gap: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-borde);
 }
 
 .producto-panel__header h3 {
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-texto);
 }
 
 .producto-panel__cerrar {
   border: none;
-  background: #e5e7eb;
-  color: #374151;
+  background: var(--color-borde);
+  color: var(--color-texto);
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -414,7 +414,7 @@
 }
 
 .producto-panel__cerrar:hover {
-  background: #d1d5db;
+  background: var(--color-borde);
 }
 
 .producto-panel__grid {
@@ -429,7 +429,7 @@
   flex-direction: column;
   gap: 0.5rem;
   font-size: 0.85rem;
-  color: #374151;
+  color: var(--color-texto);
 }
 
 .producto-panel__grid input,
@@ -437,11 +437,11 @@
 .EtiquetasAgregar input {
   width: 100%;
   min-height: 42px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-borde);
   border-radius: 12px;
   padding: 0.8rem 0.95rem;
-  background: #fff;
-  color: #111827;
+  background: var(--color-superficie);
+  color: var(--color-texto);
   font-size: 0.95rem;
 }
 
@@ -449,7 +449,7 @@
 .producto-panel input:focus,
 .EtiquetasAgregar input:focus {
   outline: none;
-  border-color: #0ea5a0;
+  border-color: var(--color-secundario);
   box-shadow: 0 0 0 3px rgba(14, 165, 160, 0.1);
 }
 
@@ -479,13 +479,13 @@
 }
 
 .producto-panel__btn--secundario {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--color-fondo-suave);
+  color: var(--color-texto);
 }
 
 .producto-panel__btn--principal {
-  background: #0ea5a0;
-  color: #fff;
+  background: var(--color-secundario);
+  color: var(--color-sobre-secundario);
 }
 
 .EtiquetasAgregar {
@@ -506,8 +506,8 @@
   gap: 0.35rem;
   border: none;
   border-radius: 12px;
-  background: #0ea5a0;
-  color: #fff;
+  background: var(--color-secundario);
+  color: var(--color-sobre-secundario);
   padding: 0.85rem 1rem;
   font-weight: 700;
   cursor: pointer;

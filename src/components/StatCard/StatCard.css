@@ -1,7 +1,7 @@
 .cartaEstadistica {
-    --stat-color: #00c9a7;
-    background: #ffffff;
-    border: 1px solid #ececee;
+    --stat-color: var(--color-secundario-claro);
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
     border-radius: 16px;
     padding: 20px;
     display: flex;
@@ -31,7 +31,7 @@
 
 .cartaEstadistica:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(13, 27, 56, 0.08);
+    box-shadow: 0 8px 25px color-mix(in srgb, var(--color-primario) 8%, transparent);
 }
 
 .cartaEstadisticaEncabezado {
@@ -48,7 +48,7 @@
     align-items: center;
     justify-content: center;
     color: var(--stat-color);
-    background: color-mix(in srgb, var(--stat-color) 10%, #ffffff);
+    background: color-mix(in srgb, var(--stat-color) 10%, var(--color-superficie));
     flex-shrink: 0;
 }
 
@@ -64,7 +64,7 @@
 .cartaEstadisticaValor {
     font-size: 30px;
     font-weight: 800;
-    color: #0d1b38;
+    color: var(--color-primario);
     letter-spacing: -0.5px;
     line-height: 1;
     margin-top: 2px;
@@ -79,7 +79,7 @@
 }
 
 .cartaEstadisticaTendencia--positiva {
-    color: #059669;
+    color: var(--color-secundario);
 }
 
 .cartaEstadisticaTendencia--negativa {

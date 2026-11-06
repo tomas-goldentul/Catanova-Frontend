@@ -44,7 +44,7 @@
 }
 
 .campo-direccion-input.is-valida {
-  border-color: #12b76a;
+  border-color: var(--color-secundario);
 }
 
 .campo-direccion-ok {
@@ -52,7 +52,7 @@
   top: 50%;
   right: 12px;
   transform: translateY(-50%);
-  color: #12b76a;
+  color: var(--color-secundario);
 }
 
 .campo-direccion-lista {

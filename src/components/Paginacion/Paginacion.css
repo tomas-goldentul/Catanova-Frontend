@@ -8,12 +8,12 @@
 .paginacion__btn {
     width: 40px;
     height: 40px;
-    border: 1.5px solid #f0f1f5;
+    border: 1.5px solid var(--color-fondo-suave);
     border-radius: 12px;
-    background: #ffffff;
+    background: var(--color-superficie);
     font-size: 14px;
     font-weight: 600;
-    color: #9ca3af;
+    color: var(--color-texto-suave);
     cursor: pointer;
     font-family: inherit;
     display: flex;
@@ -23,16 +23,16 @@
 }
 
 .paginacion__btn:hover {
-    border-color: #00c9a7;
-    color: #00c9a7;
-    background: rgba(0, 201, 167, 0.04);
+    border-color: var(--color-secundario-claro);
+    color: var(--color-secundario-claro);
+    background: color-mix(in srgb, var(--color-secundario) 4%, transparent);
 }
 
 .paginacion__btn--activo {
-    background: linear-gradient(135deg, #00c9a7, #00b894);
-    border-color: #00c9a7;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 201, 167, 0.3);
+    background: linear-gradient(135deg, var(--color-secundario-claro), var(--color-secundario));
+    border-color: var(--color-secundario-claro);
+    color: var(--color-sobre-secundario);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-secundario) 30%, transparent);
     transform: scale(1.05);
 }
 

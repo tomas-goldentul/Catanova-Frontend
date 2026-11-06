@@ -69,8 +69,8 @@
 }
 
 .crear-pedido-cerrar:hover {
-  background: #f9fafb;
-  border-color: #98a2b3;
+  background: var(--color-fondo-suave);
+  border-color: var(--color-texto-suave);
   color: var(--text);
 }
 
@@ -169,7 +169,7 @@
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 5px;
-  background: #f2f4f7;
+  background: var(--color-fondo-suave);
   margin-bottom: 4px;
 }
 
@@ -183,7 +183,7 @@
   border-radius: 10px;
   padding: 0 16px;
   background: transparent;
-  color: #475467;
+  color: var(--color-texto-suave);
   font: inherit;
   font-size: 14px;
   font-weight: 750;
@@ -196,7 +196,7 @@
 }
 
 .crear-pedido-entrega-switch .active {
-  background: #ffffff;
+  background: var(--color-superficie);
   color: var(--text);
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
 }
@@ -236,7 +236,7 @@
 }
 
 .crear-pedido-agregar-btn:hover {
-  background: #1f2937;
+  background: var(--color-primario);
 }
 
 .crear-pedido-toggle-manual {
@@ -269,7 +269,7 @@
 .crear-pedido-tabla th {
   border-bottom: 1px solid var(--border);
   padding: 10px 14px;
-  background: #f9fafb;
+  background: var(--color-fondo-suave);
   color: var(--subtle);
   font-size: 12px;
   font-weight: 800;
@@ -278,7 +278,7 @@
 }
 
 .crear-pedido-tabla td {
-  border-bottom: 1px solid #f1f2f4;
+  border-bottom: 1px solid var(--color-borde);
   padding: 10px 14px;
   color: var(--text);
   font-size: 14px;
@@ -312,7 +312,7 @@
   height: 32px;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: #ffffff;
+  background: var(--color-superficie);
   color: #b42318;
   cursor: pointer;
 }
@@ -366,12 +366,12 @@
 .crear-pedido-btn-secundario {
   border: 1px solid var(--border-strong);
   background: var(--panel);
-  color: #344054;
+  color: var(--color-texto);
 }
 
 .crear-pedido-btn-secundario:hover {
-  background: #f9fafb;
-  border-color: #98a2b3;
+  background: var(--color-fondo-suave);
+  border-color: var(--color-texto-suave);
 }
 
 .crear-pedido-btn-principal {
@@ -382,8 +382,8 @@
 }
 
 .crear-pedido-btn-principal:hover {
-  background: #1f2937;
-  border-color: #1f2937;
+  background: var(--color-primario);
+  border-color: var(--color-primario);
 }
 
 .crear-pedido-selector-usuario {
@@ -425,8 +425,8 @@
 }
 
 .crear-pedido-nuevo-usuario-btn:hover {
-  background: #f9fafb;
-  border-color: #98a2b3;
+  background: var(--color-fondo-suave);
+  border-color: var(--color-texto-suave);
 }
 
 .crear-pedido-nuevo-usuario-btn:disabled {
@@ -446,7 +446,7 @@
   border-radius: 14px;
   margin-top: 16px;
   padding: 16px;
-  background: #f9fafb;
+  background: var(--color-fondo-suave);
 }
 
 .crear-pedido-alta-usuario-titulo {
@@ -492,11 +492,11 @@
 .crear-pedido-btn-alta-secundario {
   border: 1px solid var(--border-strong);
   background: var(--panel);
-  color: #344054;
+  color: var(--color-texto);
 }
 
 .crear-pedido-btn-alta-secundario:hover {
-  background: #f2f4f7;
+  background: var(--color-fondo-suave);
 }
 
 .crear-pedido-btn-alta-principal {
@@ -506,7 +506,7 @@
 }
 
 .crear-pedido-btn-alta-principal:hover {
-  background: #1f2937;
+  background: var(--color-primario);
 }
 
 .crear-pedido-btn-alta-secundario:disabled,

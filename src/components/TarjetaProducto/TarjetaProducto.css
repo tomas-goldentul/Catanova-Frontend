@@ -1,6 +1,6 @@
 .tarjetaProducto {
-    background: #ffffff;
-    border: 1px solid #ececee;
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
     border-radius: 16px;
     overflow: visible;
     position: relative;
@@ -9,7 +9,7 @@
 }
 
 .tarjetaProducto:hover {
-    box-shadow: 0 12px 40px rgba(13, 27, 56, 0.1);
+    box-shadow: 0 12px 40px color-mix(in srgb, var(--color-primario) 10%, transparent);
     transform: translateY(-5px);
     border-color: transparent;
 }
@@ -38,8 +38,8 @@
     height: 34px;
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.92);
-    border: 1px solid #e5e7eb;
-    color: #6b7280;
+    border: 1px solid var(--color-borde);
+    color: var(--color-texto-suave);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -48,9 +48,9 @@
 }
 
 .tarjetaProductoMenuBtn:hover {
-    background: #ffffff;
-    color: #0d1b38;
-    box-shadow: 0 4px 14px rgba(13, 27, 56, 0.12);
+    background: var(--color-superficie);
+    color: var(--color-primario);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primario) 12%, transparent);
 }
 
 .tarjetaProductoMenu {
@@ -58,10 +58,10 @@
     top: 40px;
     right: 0;
     min-width: 176px;
-    background: #ffffff;
-    border: 1px solid #f0f1f5;
+    background: var(--color-superficie);
+    border: 1px solid var(--color-fondo-suave);
     border-radius: 12px;
-    box-shadow: 0 16px 40px rgba(13, 27, 56, 0.16);
+    box-shadow: 0 16px 40px color-mix(in srgb, var(--color-primario) 16%, transparent);
     padding: 6px;
     animation: tarjetaMenuFade 0.18s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -90,7 +90,7 @@
     font-family: inherit;
     font-size: 13px;
     font-weight: 600;
-    color: #374151;
+    color: var(--color-texto);
     transition: background 0.15s;
 }
 
@@ -99,7 +99,7 @@
 }
 
 .tarjetaProductoMenuItem:hover {
-    background: #f5f7fa;
+    background: var(--color-fondo-pagina);
 }
 
 .tarjetaProductoMenuItem--peligro {
@@ -135,9 +135,9 @@
 }
 
 .tarjetaProductoDatoD--no-publicado {
-    background: #f3f4f6;
-    color: #6b7280;
-    border: 1px solid #e5e7eb;
+    background: var(--color-fondo-suave);
+    color: var(--color-texto-suave);
+    border: 1px solid var(--color-borde);
 }
 
 .tarjetaProductoDatoD--stock-bajo {
@@ -148,14 +148,14 @@
 
 /* ── Imagen ── */
 .tarjetaProductoImagen {
-    background: linear-gradient(145deg, #eef1f5, #e8ecf1);
+    background: linear-gradient(145deg, #eef1f5, var(--color-borde));
     height: 180px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    color: #9ca3af;
+    color: var(--color-texto-suave);
     overflow: hidden;
     position: relative;
     border-radius: 16px 16px 0 0;
@@ -192,7 +192,7 @@
     font-size: 15px;
     font-weight: 700;
     margin-bottom: 6px;
-    color: #111827;
+    color: var(--color-texto);
     line-height: 1.3;
 }
 
@@ -209,7 +209,7 @@
     font-weight: 800;
     font-family: 'DM Mono', monospace;
     margin-bottom: 16px;
-    color: #111827;
+    color: var(--color-texto);
     letter-spacing: -0.5px;
 }
 
@@ -226,8 +226,8 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    background: linear-gradient(135deg, #00a88c, #008f78);
-    color: #ffffff;
+    background: linear-gradient(135deg, var(--color-secundario-oscuro), var(--color-secundario-oscuro));
+    color: var(--color-sobre-secundario);
     border: none;
     border-radius: 10px;
     padding: 10px 16px;
@@ -236,13 +236,13 @@
     cursor: pointer;
     font-family: inherit;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(0, 201, 167, 0.22);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-secundario) 22%, transparent);
 }
 
 .tarjetaProductoAgregar:hover {
-    background: linear-gradient(135deg, #008f78, #007d69);
+    background: linear-gradient(135deg, var(--color-secundario-oscuro), var(--color-secundario-mas-oscuro));
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(0, 201, 167, 0.3);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--color-secundario) 30%, transparent);
 }
 
 .tarjetaProductoVer {

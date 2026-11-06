@@ -13,7 +13,7 @@
 
 /* ===== Modal ===== */
 .rvm-modal {
-  background: #ffffff;
+  background: var(--color-superficie);
   border-radius: 16px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
   width: 100%;
@@ -38,7 +38,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #059669;
+  color: var(--color-secundario);
   margin-bottom: 0.25rem;
 }
 
@@ -46,7 +46,7 @@
   margin: 0;
   font-size: 1.3rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-texto);
 }
 
 .rvm-close {
@@ -54,7 +54,7 @@
   border: none;
   cursor: pointer;
   font-size: 1.1rem;
-  color: #94a3b8;
+  color: var(--color-texto-suave);
   padding: 0.2rem 0.4rem;
   border-radius: 6px;
   line-height: 1;
@@ -63,8 +63,8 @@
 }
 
 .rvm-close:hover {
-  color: #0f172a;
-  background: #f1f5f9;
+  color: var(--color-texto);
+  background: var(--color-fondo-suave);
 }
 
 /* ===== Form ===== */
@@ -80,12 +80,12 @@
   gap: 0.5rem;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-texto);
 }
 
 .rvm-stock-hint {
   font-weight: 400;
-  color: #6b7280;
+  color: var(--color-texto-suave);
   font-size: 0.78rem;
 }
 
@@ -93,11 +93,11 @@
 .rvm-input {
   width: 100%;
   padding: 0.6rem 0.85rem;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--color-borde);
   border-radius: 10px;
   font-size: 0.9rem;
-  color: #1e293b;
-  background: #f8fafc;
+  color: var(--color-texto);
+  background: var(--color-fondo-suave);
   transition: border-color 0.15s, box-shadow 0.15s;
   box-sizing: border-box;
   appearance: none;
@@ -106,9 +106,9 @@
 .rvm-select:focus,
 .rvm-input:focus {
   outline: none;
-  border-color: #059669;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
-  background: #ffffff;
+  border-color: var(--color-secundario);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secundario) 12%, transparent);
+  background: var(--color-superficie);
 }
 
 .rvm-select:disabled,
@@ -120,7 +120,7 @@
 /* ===== Divider ===== */
 .rvm-divider {
   border: none;
-  border-top: 1.5px solid #f1f5f9;
+  border-top: 1.5px solid var(--color-fondo-suave);
   margin: 0.25rem 0;
 }
 
@@ -134,18 +134,18 @@
 
 .rvm-opcional {
   font-weight: 400;
-  color: #94a3b8;
+  color: var(--color-texto-suave);
   font-size: 0.76rem;
 }
 
 .rvm-nuevo-usuario-btn {
   background: none;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--color-borde);
   border-radius: 8px;
   padding: 0.3rem 0.75rem;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #059669;
+  color: var(--color-secundario);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s, border-color 0.15s;
@@ -153,8 +153,8 @@
 }
 
 .rvm-nuevo-usuario-btn:hover:not(:disabled) {
-  background: #f0fdf4;
-  border-color: #059669;
+  background: var(--color-secundario-suave);
+  border-color: var(--color-secundario);
 }
 
 .rvm-nuevo-usuario-btn:disabled {
@@ -164,8 +164,8 @@
 
 /* ===== Alta rápida de usuario ===== */
 .rvm-alta-usuario {
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
+  background: var(--color-fondo-suave);
+  border: 1.5px solid var(--color-borde);
   border-radius: 12px;
   padding: 1rem;
   display: flex;
@@ -176,7 +176,7 @@
 .rvm-alta-usuario__desc {
   margin: 0;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--color-texto-suave);
 }
 
 .rvm-alta-usuario__grid {
@@ -207,8 +207,8 @@
 
 /* ===== Resumen ===== */
 .rvm-resumen {
-  background: #f0fdf4;
-  border: 1.5px solid #bbf7d0;
+  background: var(--color-secundario-suave);
+  border: 1.5px solid var(--color-secundario-suave);
   border-radius: 10px;
   padding: 0.85rem 1rem;
   display: flex;
@@ -222,14 +222,14 @@
   justify-content: space-between;
   align-items: center;
   font-size: 0.88rem;
-  color: #374151;
+  color: var(--color-texto);
 }
 
 .rvm-resumen-total {
   padding-top: 0.45rem;
-  border-top: 1px solid #bbf7d0;
+  border-top: 1px solid var(--color-secundario-suave);
   font-size: 1rem;
-  color: #065f46;
+  color: var(--color-secundario-mas-oscuro);
 }
 
 .rvm-resumen-total strong {
@@ -240,7 +240,7 @@
 /* ===== Mensajes ===== */
 .rvm-msg {
   font-size: 0.88rem;
-  color: #64748b;
+  color: var(--color-texto-suave);
   text-align: center;
   padding: 0.5rem 0;
 }
@@ -278,19 +278,19 @@
 }
 
 .rvm-btn--cancel {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-fondo-suave);
+  color: var(--color-texto-suave);
 }
 
 .rvm-btn--cancel:hover:not(:disabled) {
-  background: #e2e8f0;
+  background: var(--color-borde);
 }
 
 .rvm-btn--confirm {
-  background: #059669;
-  color: #ffffff;
+  background: var(--color-secundario);
+  color: var(--color-sobre-secundario);
 }
 
 .rvm-btn--confirm:hover:not(:disabled) {
-  background: #047857;
+  background: var(--color-secundario-oscuro);
 }

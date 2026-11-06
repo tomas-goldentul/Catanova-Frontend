@@ -7,7 +7,7 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(13, 27, 56, 0.58);
+    background: color-mix(in srgb, var(--color-primario) 58%, transparent);
     backdrop-filter: blur(5px);
     overflow-y: auto;
 }
@@ -16,9 +16,9 @@
     width: min(900px, 100%);
     max-height: calc(100vh - 48px);
     overflow-y: auto;
-    background: #ffffff;
+    background: var(--color-superficie);
     border-radius: 22px;
-    box-shadow: 0 24px 80px rgba(13, 27, 56, 0.24);
+    box-shadow: 0 24px 80px color-mix(in srgb, var(--color-primario) 24%, transparent);
     color: #18243b;
 }
 
@@ -33,7 +33,7 @@
 
 .editarProductoEyebrow,
 .editarProductoPreviewLabel {
-    color: #00a884;
+    color: var(--color-secundario);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.3px;
@@ -104,7 +104,7 @@
     border: 1px solid #dfe5ed;
     border-radius: 11px;
     outline: none;
-    background: #fbfcfe;
+    background: var(--color-fondo-suave);
     color: #18243b;
     font: inherit;
     font-size: 14px;
@@ -114,9 +114,9 @@
 
 .editarProductoCampo input:focus,
 .editarProductoCampo textarea:focus {
-    border-color: #00b894;
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.12);
+    border-color: var(--color-secundario);
+    background: var(--color-superficie);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secundario) 12%, transparent);
 }
 
 .editarProductoCampo textarea {
@@ -135,13 +135,13 @@
     align-items: center;
     border: 1px solid #dfe5ed;
     border-radius: 11px;
-    background: #fbfcfe;
+    background: var(--color-fondo-suave);
     overflow: hidden;
 }
 
 .editarProductoInputPrefijo:focus-within {
-    border-color: #00b894;
-    box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.12);
+    border-color: var(--color-secundario);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secundario) 12%, transparent);
 }
 
 .editarProductoInputPrefijo > span {
@@ -203,7 +203,7 @@
     padding: 9px 11px;
     border: 1px solid #e0e6ee;
     border-radius: 10px;
-    background: #ffffff;
+    background: var(--color-superficie);
     color: #526077;
     font-size: 12px;
     cursor: pointer;
@@ -215,7 +215,7 @@
 }
 
 .editarProductoCategoria.seleccionada {
-    border-color: #00b894;
+    border-color: var(--color-secundario);
     background: #edfbf7;
     color: #007f63;
 }
@@ -224,7 +224,7 @@
     width: 14px;
     height: 14px;
     margin: 0;
-    accent-color: #00b894;
+    accent-color: var(--color-secundario);
 }
 
 .editarProductoCheck {
@@ -241,7 +241,7 @@
     padding: 18px;
     border: 1px solid #e8edf3;
     border-radius: 17px;
-    background: #f8fafc;
+    background: var(--color-fondo-suave);
 }
 
 .editarProductoPreviewLabel {
@@ -257,7 +257,7 @@
     height: 205px;
     object-fit: contain;
     border-radius: 12px;
-    background: #ffffff;
+    background: var(--color-superficie);
 }
 
 .editarProductoImagenVacia {
@@ -269,12 +269,12 @@
     padding: 12px;
     border: 1px dashed #d4dce7;
     border-radius: 12px;
-    background: #ffffff;
+    background: var(--color-superficie);
     text-align: center;
 }
 
 .editarProductoImagenVacia span {
-    color: #00b894;
+    color: var(--color-secundario);
     font-size: 42px;
 }
 
@@ -350,19 +350,19 @@
 
 .editarProductoCancelar {
     border: 1px solid #dfe5ed;
-    background: #ffffff;
+    background: var(--color-superficie);
     color: #566176;
 }
 
 .editarProductoCancelar:hover {
-    background: #f5f7fa;
+    background: var(--color-fondo-pagina);
 }
 
 .editarProductoGuardar {
-    border: 1px solid #00b894;
-    background: #00b894;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 184, 148, 0.18);
+    border: 1px solid var(--color-secundario);
+    background: var(--color-secundario);
+    color: var(--color-sobre-secundario);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-secundario) 18%, transparent);
 }
 
 .editarProductoGuardar:hover {
