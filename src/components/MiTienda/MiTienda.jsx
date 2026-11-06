@@ -51,7 +51,7 @@ const IconFotos = () => (
   </svg>
 );
 
-function crearCards(onIrAGaleria, onIrAEnvios, onIrAVentas) {
+function crearCards(onIrAGaleria, onIrAEnvios, onIrAVentas, onIrAEstadisticas) {
   return [
   {
     icon: <IconProductos />,
@@ -74,7 +74,8 @@ function crearCards(onIrAGaleria, onIrAEnvios, onIrAVentas) {
     title: "Estadísticas",
     description: "Analizá el rendimiento de tu negocio con métricas en tiempo real.",
     accentBg: "#e0f2fe",
-    accentColor: "#0369a1"
+    accentColor: "#0369a1",
+    onClick: onIrAEstadisticas
   },
   {
     icon: <IconEnvios />,
@@ -101,8 +102,8 @@ function crearCards(onIrAGaleria, onIrAEnvios, onIrAVentas) {
   ];
 }
 
-function MiTienda({ onIrAGaleria, onIrAEnvios, onVerTiendaPublica, onIrAVentas }) {
-  const cards = crearCards(onIrAGaleria, onIrAEnvios, onIrAVentas);
+function MiTienda({ onIrAGaleria, onIrAEnvios, onVerTiendaPublica, onIrAVentas, onIrAEstadisticas }) {
+  const cards = crearCards(onIrAGaleria, onIrAEnvios, onIrAVentas, onIrAEstadisticas);
 
   return (
     <>

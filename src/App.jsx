@@ -12,6 +12,7 @@ import Pedidos from './components/Pedidos/Pedidos';
 import Envios from './components/Envios/Envios';
 import CatalogoTiendas from './components/CatalogoTiendas/CatalogoTiendas';
 import Ventas from './components/RegistrarVenta/Ventas';
+import Estadisticas from './components/Estadisticas/Estadisticas';
 
 function App() {
   const [tab, setTab] = useState(localStorage.getItem('token') ? 'tienda' : 'login');
@@ -75,6 +76,7 @@ function App() {
           onIrAEnvios={() => irAEnvios()}
           onVerTiendaPublica={() => navegar('catalogo')}
           onIrAVentas={() => navegar('ventas')}
+          onIrAEstadisticas={() => navegar('estadisticas')}
         />
       )}
       {tab === 'envios' && (
@@ -129,6 +131,10 @@ function App() {
 
       {tab === 'ventas' && (
         <Ventas onVolver={() => navegar('tienda')} />
+      )}
+
+      {tab === 'estadisticas' && (
+        <Estadisticas onVolver={() => navegar('tienda')} />
       )}
 
       {tab === 'EditarTienda' && (

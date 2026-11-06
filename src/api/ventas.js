@@ -90,7 +90,10 @@ export async function getCantidadVentasProducto(id) {
 }
 
 export async function getVentasPorTienda(idTienda) {
-  const res = await fetch(`${BASE_URL}/tienda/${idTienda}`);
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${BASE_URL}/tienda/${idTienda}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
   return res.json();
 }
