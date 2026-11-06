@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getTodasLasTiendas, abrirTienda, cerrarTienda } from "../../api/tiendas.js";
 import "./CatalogoTiendas.css";
 
@@ -63,7 +64,6 @@ export default function TiendaDetalle() {
       });
     };
     // Este efecto debe correr solo al montar/desmontar para este id.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (cargando) {

@@ -44,7 +44,7 @@ export async function insertVista(datosVista) {
   });
 
   const text = await res.text();
-  let data = {};
+  let data;
   try {
     data = text ? JSON.parse(text) : {};
   } catch {

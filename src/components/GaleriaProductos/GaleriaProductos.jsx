@@ -6,8 +6,7 @@ import Paginacion from '../Paginacion/Paginacion';
 import AgregarProducto from '../AgregarProducto/AgregarProducto';
 import FiltroProductos from './FiltroProductos';
 import EditarProducto from './EditarProducto';
-import { getTodosLosProductos, getTodosProductosPorTienda, updateEstadoProducto, borrarProducto, actualizarProducto } from '../../api/productos';
-import { asociarProductoACategoria } from '../../api/categorias'; 
+import { getTodosLosProductos, getTodosProductosPorTienda, updateEstadoProducto, borrarProducto } from '../../api/productos';
 import { IconoBuscar, IconoFiltrar, IconoMas, IconoPaquete, IconoTienda, IconoOjoTachado, IconoInventario } from '../Icons/Icons';
 import './GaleriaProductos.css';
 

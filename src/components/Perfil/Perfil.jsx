@@ -114,7 +114,7 @@ const leerUsuarioLocal = () => {
   try {
     const crudo = localStorage.getItem('user');
     return crudo ? JSON.parse(crudo) : null;
-  } catch (e) {
+  } catch {
     return null;
   }
 };
@@ -137,9 +137,6 @@ function Perfil({ abierto, onCerrar }) {
   useEffect(() => {
     if (!abierto) return undefined;
     let activo = true;
-    setCargando(true);
-    setError('');
-    setPerfil(null);
 
     const cargar = async () => {
       try {

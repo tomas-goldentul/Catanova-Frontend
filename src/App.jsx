@@ -116,8 +116,6 @@ function App() {
           onVolver={() => navegar('catalogo')}
         />
       )}
-      {tab === 'categorias' && <GestionCategorias />}
-
       <Chatbot />
 
       {tab === 'catalogoTiendas' && (
@@ -135,24 +133,6 @@ function App() {
 
       {tab === 'estadisticas' && (
         <Estadisticas onVolver={() => navegar('tienda')} />
-      )}
-
-      {tab === 'EditarTienda' && (
-        <EditarTienda
-          idTienda={Number(localStorage.getItem('id_tienda'))}
-          onGuardar={async (datos) => {
-            await actualizarTienda(datos.id_tienda, datos);
-
-            // Actualizar los datos de la tienda
-            setInfoTienda({
-              nombre: datos.nombre,
-              slogan: datos.slogan,
-            });
-
-            // Volver a la pestaña anterior
-            setTab('Catalogo');
-          }}
-        />
       )}
 
     </div>

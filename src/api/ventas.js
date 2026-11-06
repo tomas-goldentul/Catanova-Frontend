@@ -44,10 +44,10 @@ export async function insertVenta(datosVenta) {
   });
 
   const text = await res.text();
-  let data = {};
+  let data;
   try {
     data = text ? JSON.parse(text) : {};
-  } catch (e) {
+  } catch {
     data = { _raw: text };
   }
 
@@ -106,10 +106,10 @@ export async function registrarVentaManual(datosVenta) {
   });
 
   const text = await res.text();
-  let data = {};
+  let data;
   try {
     data = text ? JSON.parse(text) : {};
-  } catch (e) {
+  } catch {
     data = { _raw: text };
   }
 

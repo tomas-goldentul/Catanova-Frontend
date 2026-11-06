@@ -18,6 +18,56 @@ import {
 import './Producto.css';
 import { getImagenUrl } from '../../api/helper.js';
 
+// ——— Helpers puros (no dependen del estado del componente) ———
+
+const normalizeVenta = (venta) => {
+    const cantidad = Number(venta.cantidad ?? venta.cantidad_vendida ?? venta.cantidadVendida ?? 1);
+    const precio = Number(venta.precio ?? venta.precio_unitario ?? venta.precioUnitario ?? 0);
+    const total = Number(venta.total ?? venta.importe ?? venta.monto ?? (precio * cantidad));
+    const productoId = venta.id_producto ?? venta.producto_id ?? venta.productoId ?? venta.id_producto_venta ?? venta.id;
+
+    return { cantidad, precio, total, productoId, fecha: new Date(venta.fecha ?? venta.createdAt ?? venta.fecha_venta ?? null) };
+};
+
+const normalizeContador = (registro) => {
+    const cantidad = Number(registro.cantidad ?? registro.total ?? registro.cantidad_vistas ?? registro.cantidad_favoritos ?? 1);
+    const productoId = registro.id_producto ?? registro.producto_id ?? registro.productoId ?? registro.idProducto ?? registro.id;
+    return { cantidad, productoId, fecha: new Date(registro.fecha ?? registro.createdAt ?? registro.fecha_vista ?? registro.fecha_favorito ?? null) };
+};
+
+const esRegistroDelProducto = (registro, idProducto) => {
+    if (!registro || !idProducto) return false;
+    return String(registro.productoId) === String(idProducto);
+};
+
+const extraerLista = (respuesta) => {
+    if (Array.isArray(respuesta)) return respuesta;
+    if (Array.isArray(respuesta?.data)) return respuesta.data;
+    if (respuesta && typeof respuesta === 'object') return [respuesta];
+    return [];
+};
+
+const estaEnPeriodo = (fecha, periodoSeleccionado) => {
+    if (!fecha || Number.isNaN(fecha.getTime())) return false;
+
+    const ahora = new Date();
+    const limite = new Date(ahora);
+
+    if (periodoSeleccionado === '7dias') {
+        limite.setDate(ahora.getDate() - 7);
+    } else if (periodoSeleccionado === 'mes') {
+        limite.setMonth(ahora.getMonth() - 1);
+    } else if (periodoSeleccionado === '1anio') {
+        limite.setFullYear(ahora.getFullYear() - 1);
+    } else if (periodoSeleccionado === '2anios') {
+        limite.setFullYear(ahora.getFullYear() - 2);
+    } else {
+        return true;
+    }
+
+    return fecha >= limite;
+};
+
 function Producto({ productoId, onVolver }) {
     const [producto, setProducto] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -70,17 +120,20 @@ function Producto({ productoId, onVolver }) {
         loadProducto();
     }, [productoId]);
 
-    useEffect(() => {
-        if (!producto) return;
-
-        setFormProducto({
-            nombre: producto.nombre,
-            tipo: producto.tipo,
-            precio: producto.precio,
-            imagen: producto.imagen,
-        });
-        setStockNuevo(producto.stock);
-    }, [producto]);
+    // Cuando cambia el producto (carga o edición), el formulario se resincroniza con sus valores.
+    const [productoSincronizado, setProductoSincronizado] = useState(producto);
+    if (producto !== productoSincronizado) {
+        setProductoSincronizado(producto);
+        if (producto) {
+            setFormProducto({
+                nombre: producto.nombre,
+                tipo: producto.tipo,
+                precio: producto.precio,
+                imagen: producto.imagen,
+            });
+            setStockNuevo(producto.stock);
+        }
+    }
 
     useEffect(() => {
         if (!producto?.id) return;
@@ -107,106 +160,60 @@ function Producto({ productoId, onVolver }) {
         loadEtiquetas();
     }, [producto?.id]);
 
-    const normalizeVenta = (venta) => {
-        const cantidad = Number(venta.cantidad ?? venta.cantidad_vendida ?? venta.cantidadVendida ?? 1);
-        const precio = Number(venta.precio ?? venta.precio_unitario ?? venta.precioUnitario ?? 0);
-        const total = Number(venta.total ?? venta.importe ?? venta.monto ?? (precio * cantidad));
-        const productoId = venta.id_producto ?? venta.producto_id ?? venta.productoId ?? venta.id_producto_venta ?? venta.id;
-
-        return { cantidad, precio, total, productoId, fecha: new Date(venta.fecha ?? venta.createdAt ?? venta.fecha_venta ?? null) };
-    };
-
-    const normalizeContador = (registro) => {
-        const cantidad = Number(registro.cantidad ?? registro.total ?? registro.cantidad_vistas ?? registro.cantidad_favoritos ?? 1);
-        const productoId = registro.id_producto ?? registro.producto_id ?? registro.productoId ?? registro.idProducto ?? registro.id;
-        return { cantidad, productoId, fecha: new Date(registro.fecha ?? registro.createdAt ?? registro.fecha_vista ?? registro.fecha_favorito ?? null) };
-    };
-
-    const esRegistroDelProducto = (registro, idProducto) => {
-        if (!registro || !idProducto) return false;
-        return String(registro.productoId) === String(idProducto);
-    };
-
-    const extraerLista = (respuesta) => {
-        if (Array.isArray(respuesta)) return respuesta;
-        if (Array.isArray(respuesta?.data)) return respuesta.data;
-        if (respuesta && typeof respuesta === 'object') return [respuesta];
-        return [];
-    };
-
-    const estaEnPeriodo = (fecha, periodoSeleccionado) => {
-        if (!fecha || Number.isNaN(fecha.getTime())) return false;
-
-        const ahora = new Date();
-        const limite = new Date(ahora);
-
-        if (periodoSeleccionado === '7dias') {
-            limite.setDate(ahora.getDate() - 7);
-        } else if (periodoSeleccionado === 'mes') {
-            limite.setMonth(ahora.getMonth() - 1);
-        } else if (periodoSeleccionado === '1anio') {
-            limite.setFullYear(ahora.getFullYear() - 1);
-        } else if (periodoSeleccionado === '2anios') {
-            limite.setFullYear(ahora.getFullYear() - 2);
-        } else {
-            return true;
-        }
-
-        return fecha >= limite;
-    };
-
-    const cargarVentasHistoricas = async () => {
-        if (!producto) return;
-
-        setCargandoVentas(true);
-        try {
-            let ventas = [];
-            let vistas = [];
-            let favoritos = [];
-
-            if (periodo === '7dias') {
-                ventas = await getVentasUltimos7Dias();
-            } else if (periodo === 'mes') {
-                ventas = await getVentasUltimoMes();
-            } else if (periodo === '1anio') {
-                ventas = await getVentasUltimoAno();
-            } else if (periodo === '2anios') {
-                ventas = await getVentasUltimos2Anios();
-            }
-
-            const [vistasRespuesta, favoritosRespuesta] = await Promise.all([
-                getVistas(),
-                getFavoritos(),
-            ]);
-
-            const ventasFiltradas = extraerLista(ventas).map(normalizeVenta).filter(v => esRegistroDelProducto(v, producto.id));
-            const vistasFiltradas = extraerLista(vistasRespuesta)
-                .map(normalizeContador)
-                .filter(v => esRegistroDelProducto(v, producto.id) && estaEnPeriodo(v.fecha, periodo));
-            const favoritosFiltradas = extraerLista(favoritosRespuesta)
-                .map(normalizeContador)
-                .filter(v => esRegistroDelProducto(v, producto.id) && estaEnPeriodo(v.fecha, periodo));
-
-            const ventasSum = ventasFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
-            const gananciasSum = ventasFiltradas.reduce((sum, item) => sum + item.total, 0);
-            const vistasSum = vistasFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
-            const favoritosSum = favoritosFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
-
-            setVentasHistoricas({
-                ventas: ventasSum,
-                ganancias: gananciasSum,
-                vistas: vistasSum,
-                favoritos: favoritosSum,
-            });
-        } catch (err) {
-            setVentasHistoricas({ ventas: '-', ganancias: '-', vistas: producto.vistas ?? '-', favoritos: producto.favoritos ?? '-' });
-        } finally {
-            setCargandoVentas(false);
-        }
-    };
-
     useEffect(() => {
+        if (!producto) return undefined;
+        let activo = true;
+
+        const cargarVentasHistoricas = async () => {
+            setCargandoVentas(true);
+            try {
+                let ventas = [];
+
+                if (periodo === '7dias') {
+                    ventas = await getVentasUltimos7Dias();
+                } else if (periodo === 'mes') {
+                    ventas = await getVentasUltimoMes();
+                } else if (periodo === '1anio') {
+                    ventas = await getVentasUltimoAno();
+                } else if (periodo === '2anios') {
+                    ventas = await getVentasUltimos2Anios();
+                }
+
+                const [vistasRespuesta, favoritosRespuesta] = await Promise.all([
+                    getVistas(),
+                    getFavoritos(),
+                ]);
+
+                const ventasFiltradas = extraerLista(ventas).map(normalizeVenta).filter(v => esRegistroDelProducto(v, producto.id));
+                const vistasFiltradas = extraerLista(vistasRespuesta)
+                    .map(normalizeContador)
+                    .filter(v => esRegistroDelProducto(v, producto.id) && estaEnPeriodo(v.fecha, periodo));
+                const favoritosFiltradas = extraerLista(favoritosRespuesta)
+                    .map(normalizeContador)
+                    .filter(v => esRegistroDelProducto(v, producto.id) && estaEnPeriodo(v.fecha, periodo));
+
+                const ventasSum = ventasFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
+                const gananciasSum = ventasFiltradas.reduce((sum, item) => sum + item.total, 0);
+                const vistasSum = vistasFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
+                const favoritosSum = favoritosFiltradas.reduce((sum, item) => sum + item.cantidad, 0);
+
+                if (!activo) return;
+                setVentasHistoricas({
+                    ventas: ventasSum,
+                    ganancias: gananciasSum,
+                    vistas: vistasSum,
+                    favoritos: favoritosSum,
+                });
+            } catch {
+                if (!activo) return;
+                setVentasHistoricas({ ventas: '-', ganancias: '-', vistas: producto.vistas ?? '-', favoritos: producto.favoritos ?? '-' });
+            } finally {
+                if (activo) setCargandoVentas(false);
+            }
+        };
+
         cargarVentasHistoricas();
+        return () => { activo = false; };
     }, [producto, periodo]);
 
     const periodos = [

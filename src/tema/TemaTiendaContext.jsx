@@ -1,8 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getTiendaPorId } from '../api/tiendas';
 import { PALETA_DEFAULT, aplicarTokens, derivarTokens, paletaDesdeTienda } from './paleta';
 
-const TemaTiendaContext = createContext(null);
+import { TemaTiendaContext } from './temaTiendaContexto';
 
 function aplicarPaleta(paleta) {
   aplicarTokens(derivarTokens(paleta));
@@ -78,12 +78,4 @@ export function TemaTiendaProvider({ children }) {
       {children}
     </TemaTiendaContext.Provider>
   );
-}
-
-export function useTemaTienda() {
-  const ctx = useContext(TemaTiendaContext);
-  if (!ctx) {
-    throw new Error('useTemaTienda debe usarse dentro de TemaTiendaProvider');
-  }
-  return ctx;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BuscadorTiendas from "./BuscadorTiendas";
 import FiltrosTiendas from "./FiltrosTiendas";
 import TiendaCard from "./TiendaCard";

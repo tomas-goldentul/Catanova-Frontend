@@ -108,7 +108,7 @@ export default function Login({ onLogin }) {
 
         try {
           if (finalUser) localStorage.setItem('user', JSON.stringify(finalUser));
-        } catch (e) {
+        } catch {
           // Ignorar errores de almacenamiento local.
         }
 
@@ -121,7 +121,7 @@ export default function Login({ onLogin }) {
         const finalUser = result.usuario || result.user || null;
         try {
           if (finalUser) localStorage.setItem('user', JSON.stringify(finalUser));
-        } catch (e) {
+        } catch {
           // Ignorar errores de almacenamiento local.
         }
         setUserLocal(finalUser);

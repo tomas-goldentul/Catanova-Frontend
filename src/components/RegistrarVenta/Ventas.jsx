@@ -129,7 +129,8 @@ function Ventas({ onVolver }) {
 
   const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errorCarga, setError] = useState('');
+  const error = idTienda ? errorCarga : 'No se encontró la tienda. Por favor iniciá sesión nuevamente.';
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -141,10 +142,7 @@ function Ventas({ onVolver }) {
 
   // Cargar ventas
   useEffect(() => {
-    if (!idTienda) {
-      setError('No se encontró la tienda. Por favor iniciá sesión nuevamente.');
-      return;
-    }
+    if (!idTienda) return undefined;
 
     let montado = true;
     async function cargar() {

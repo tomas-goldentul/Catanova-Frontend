@@ -8,7 +8,6 @@ import {
   FiCreditCard,
   FiEdit3,
   FiEye,
-  FiFileText,
   FiMapPin,
   FiMoreVertical,
   FiPackage,
@@ -77,12 +76,6 @@ function Pedidos({ onVerSeguimiento }) {
     setError('');
     setMostrarCrearPedido(false);
     setPagina(1);
-  };
-  const cambiarVista = (nuevaVista) => {
-    setVista(nuevaVista);
-    setPagina(1);
-    setMenuAbierto('');
-    guardarVista(nuevaVista);
   };
   const abrirCambioEstado = (pedido) => {
     const detalle = normalizarPedido(pedido);
@@ -795,7 +788,7 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
         const lista = Array.isArray(res) ? res : (res?.productos ?? []);
         if (mounted) setCatalogoProductos(lista);
-      } catch (e) {
+      } catch {
         // silencioso
       }
     })();
@@ -1173,7 +1166,6 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
                   </thead>
                   <tbody>
                     {productos.map((producto) => {
-                      const nombre = producto.nombre_producto || producto.nombre || producto.producto?.nombre || 'Producto sin nombre';
                       const cantidad = Number(producto.cantidad) || 1;
                       const precioUnitario = Number(producto.precio_unitario || producto.precio || 0);
                       const precioTotal = precioUnitario > 0 ? precioUnitario * cantidad : Number(producto.precio_total || 0);
@@ -1475,57 +1467,6 @@ function guardarIdUsuarioEnSesion(idUsuario) {
   } catch {
     // Ignorar errores de almacenamiento local.
   }
-}
-
-function obtenerVistaDesdeSesion() {
-  return obtenerTipoSesion() === 'vendedor' ? 'tienda' : 'usuario';
-}
-
-function obtenerVistaInicial() {
-  const guardada = localStorage.getItem('pedidos_vista');
-  if (guardada === 'usuario' || guardada === 'tienda') return guardada;
-  return obtenerVistaDesdeSesion();
-}
-
-function guardarVista(vista) {
-  localStorage.setItem('pedidos_vista', vista);
-}
-
-function obtenerTipoSesion() {
-  const fuente = obtenerSesionActual();
-  const valores = [
-    fuente.rol,
-    fuente.role,
-    fuente.tipo,
-    fuente.tipoUsuario,
-    fuente.tipo_usuario,
-    fuente.perfil,
-    fuente.cuenta,
-    fuente.accountType,
-  ]
-    .filter(Boolean)
-    .map((valor) => String(valor).toLowerCase());
-
-  if (
-    fuente.esVendedor ||
-    fuente.isSeller ||
-    fuente.vendedor ||
-    fuente.tienda ||
-    obtenerTiendaIdDesdeFuente(fuente) ||
-    valores.some((valor) => ['vendedor', 'seller', 'tienda', 'store', 'comercio', 'admin_tienda'].includes(valor))
-  ) {
-    return 'vendedor';
-  }
-
-  if (
-    fuente.esComprador ||
-    fuente.isBuyer ||
-    valores.some((valor) => ['comprador', 'buyer', 'cliente', 'customer', 'usuario', 'user'].includes(valor))
-  ) {
-    return 'comprador';
-  }
-
-  return 'desconocido';
 }
 
 function obtenerSesionActual() {

@@ -28,11 +28,11 @@ const DESTINOS = {
 };
 
 const leerSesion = () => {
-  let usuario = null;
+  let usuario;
   try {
     const crudo = localStorage.getItem('user');
     usuario = crudo ? JSON.parse(crudo) : null;
-  } catch (e) {
+  } catch {
     usuario = null;
   }
   return { logueado: Boolean(localStorage.getItem('token')), usuario };
@@ -190,7 +190,7 @@ function Navbar({ onLogoClick, tabActiva, onNavegar, bloqueado = false }) {
       </div>
     </nav>
 
-    <Perfil abierto={perfilAbierto} onCerrar={() => setPerfilAbierto(false)} />
+    {perfilAbierto && <Perfil abierto onCerrar={() => setPerfilAbierto(false)} />}
     </>
   );
 }

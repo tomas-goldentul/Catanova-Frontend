@@ -4,7 +4,7 @@ import {
   getSlogan,
   getTodasLasTiendas,
 } from '../../api/tiendas';
-import { useTemaTienda } from '../../tema/TemaTiendaContext';
+import { useTemaTienda } from '../../tema/temaTiendaContexto';
 import { PALETA_DEFAULT } from '../../tema/paleta';
 import './EditarTienda.css';
 
@@ -69,9 +69,10 @@ function EditarTienda({ idTienda, onGuardar, onCancelar }) {
     colorFondo: PALETA_DEFAULT.fondo,
   });
 
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(Boolean(idTienda));
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
+  const errorVisible = idTienda ? error : 'No se encontró una tienda válida.';
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
@@ -115,11 +116,7 @@ function EditarTienda({ idTienda, onGuardar, onCancelar }) {
       }
     }
 
-    if (!idTienda) {
-      setError('No se encontró una tienda válida.');
-      setCargando(false);
-      return;
-    }
+    if (!idTienda) return;
 
     cargarTienda();
   }, [idTienda]);
@@ -372,7 +369,7 @@ function EditarTienda({ idTienda, onGuardar, onCancelar }) {
               </div>
             </div>
 
-            {error && <p className="editar-tienda__error">{error}</p>}
+            {errorVisible && <p className="editar-tienda__error">{errorVisible}</p>}
             {mensaje && <p className="editar-tienda__mensaje">{mensaje}</p>}
 
             <div className="editar-tienda__acciones">

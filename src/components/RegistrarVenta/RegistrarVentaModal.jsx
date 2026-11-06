@@ -90,14 +90,18 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
         setProductos(disponibles);
         setUsuarios(usuariosDeLaTienda);
 
-        if (disponibles.length > 0 && !disponibles.some((p) => String(p.id_producto) === String(idProductoSeleccionado))) {
-          setIdProductoSeleccionado(String(disponibles[0].id_producto));
+        if (disponibles.length > 0) {
+          setIdProductoSeleccionado((actual) =>
+            disponibles.some((p) => String(p.id_producto) === String(actual))
+              ? actual
+              : String(disponibles[0].id_producto)
+          );
         }
 
-        if (idUsuarioSeleccionado && !usuariosDeLaTienda.some((u) => String(u.id_usuario) === String(idUsuarioSeleccionado))) {
-          setIdUsuarioSeleccionado('');
-        }
-      } catch (err) {
+        setIdUsuarioSeleccionado((actual) =>
+          actual && !usuariosDeLaTienda.some((u) => String(u.id_usuario) === String(actual)) ? '' : actual
+        );
+      } catch {
         if (montado) setErrorDatos('No se pudieron cargar los productos y clientes de la tienda.');
       } finally {
         if (montado) setLoadingDatos(false);
@@ -108,11 +112,12 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
     return () => { montado = false; };
   }, [idTienda]);
 
-  // Resetear cantidad al cambiar producto
-  useEffect(() => {
+  // Al cambiar de producto se resetea la cantidad y el error.
+  const seleccionarProducto = (id) => {
+    setIdProductoSeleccionado(id);
     setCantidad(1);
     setErrorGuardado('');
-  }, [idProductoSeleccionado]);
+  };
 
   // ——— Alta de usuario rápida ———
   const cambiarNuevoUsuario = (campo, valor) => {
@@ -266,7 +271,7 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
               id="rvm-producto"
               className="rvm-select"
               value={idProductoSeleccionado}
-              onChange={(e) => setIdProductoSeleccionado(e.target.value)}
+              onChange={(e) => seleccionarProducto(e.target.value)}
               disabled={guardando}
             >
               {productos.map((p) => (

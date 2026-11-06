@@ -1,4 +1,3 @@
-import React from "react";
 
 /**
  * Barra de búsqueda de tiendas por nombre o slogan.

@@ -4,11 +4,11 @@ import './Chatbot.css';
 import { enviarMensajeAsistente } from '../../api/asistente';
 
 const leerSesion = () => {
-  let usuario = null;
+  let usuario;
   try {
     const crudo = localStorage.getItem('user');
     usuario = crudo ? JSON.parse(crudo) : null;
-  } catch (e) {
+  } catch {
     usuario = null;
   }
   return {
@@ -52,11 +52,18 @@ const SUGERENCIAS = {
 
 const MODALES = { vendedor: 'Vendedor', comprador: 'Comprador' };
 
+const nombreDeSesion = (sesion) => sesion.usuario?.nombre?.trim() || sesion.usuario?.name?.trim() || '';
+const saludoInicial = (modo, sesion) => ({ rol: 'asistente', texto: saludoDe(modo, nombreDeSesion(sesion), sesion.logueado) });
+
 function Chatbot() {
   const [abierto, setAbierto] = useState(false);
   const [sesion, setSesion] = useState(leerSesion);
   const [modo, setModo] = useState(() => modoDeSesion(leerSesion()));
-  const [mensajes, setMensajes] = useState([]);
+  const [mensajes, setMensajes] = useState(() => {
+    const inicial = leerSesion();
+    return [saludoInicial(modoDeSesion(inicial), inicial)];
+  });
+  const modoRef = useRef(modo);
   const [entrada, setEntrada] = useState('');
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
@@ -69,13 +76,12 @@ function Chatbot() {
       const nueva = leerSesion();
       const nuevoModo = modoDeSesion(nueva);
       setSesion(nueva);
-      setModo((actual) => {
-        if (actual !== nuevoModo) {
-          setMensajes([]);
-          return nuevoModo;
-        }
-        return actual;
-      });
+      // Si cambia el tipo de cuenta, el chat arranca de cero con el saludo del nuevo modo.
+      if (modoRef.current !== nuevoModo) {
+        modoRef.current = nuevoModo;
+        setModo(nuevoModo);
+        setMensajes([saludoInicial(nuevoModo, nueva)]);
+      }
     };
     window.addEventListener('catanova:auth', sincronizar);
     window.addEventListener('storage', sincronizar);
@@ -84,15 +90,6 @@ function Chatbot() {
       window.removeEventListener('storage', sincronizar);
     };
   }, []);
-
-  useEffect(() => {
-    if (mensajes.length === 0) {
-      const nombre = sesion.usuario?.nombre?.trim() || sesion.usuario?.name?.trim() || '';
-      setMensajes([
-        { rol: 'asistente', texto: saludoDe(modo, nombre, sesion.logueado) },
-      ]);
-    }
-  }, [modo, sesion]);
 
   useEffect(() => {
     finListaRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -169,14 +166,10 @@ function Chatbot() {
   };
 
   const limpiar = () => {
-    setMensajes([]);
     setError('');
     setReintento(null);
-    const nombre = sesion.usuario?.nombre?.trim() || sesion.usuario?.name?.trim() || '';
-    setMensajes([{ rol: 'asistente', texto: saludoDe(modo, nombre, sesion.logueado) }]);
+    setMensajes([saludoInicial(modo, sesion)]);
   };
-
-  const nombre = sesion.usuario?.nombre?.trim() || sesion.usuario?.name?.trim() || sesion.usuario?.email?.trim() || '';
 
   return (
     <div className="chatbot">

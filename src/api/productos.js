@@ -43,10 +43,10 @@ export async function subirImagen(archivo) {
   });
 
   const text = await res.text();
-  let data = {};
+  let data;
   try {
     data = text ? JSON.parse(text) : {};
-  } catch (e) {
+  } catch {
     data = { _raw: text };
   }
 
@@ -68,10 +68,10 @@ export async function insertProducto(datosProducto) {
     body: JSON.stringify(datosProducto),
   });
   const text = await res.text();
-  let data = {};
+  let data;
   try {
     data = text ? JSON.parse(text) : {};
-  } catch (e) {
+  } catch {
     data = { _raw: text };
   }
 

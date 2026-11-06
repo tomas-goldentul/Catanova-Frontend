@@ -10,10 +10,10 @@ async function request(path, options = {}) {
   }
   const res = await fetch(url, Object.assign({}, options, { headers }));
   const text = await res.text().catch(() => '');
-  let json = {};
+  let json;
   try {
     json = text ? JSON.parse(text) : {};
-  } catch (e) {
+  } catch {
     json = { raw: text };
   }
 
