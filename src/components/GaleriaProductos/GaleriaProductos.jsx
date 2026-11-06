@@ -16,19 +16,25 @@ const parsearActivo = (valor) => {
     return false;
 };
 
-const normalizarProducto = (producto) => ({
-    id: producto.id_producto ?? producto.id ?? producto._id ?? producto.productoId,
-    nombre: producto.nombre ?? 'Sin nombre',
-    imagen: producto.imagen ?? producto.foto ?? producto.imagenUrl ?? producto.imagen_url ?? producto.image ?? producto.url ?? '',
-    talle: producto.talle ?? producto.talla ?? 'Sin talle',
-    stock: Number(producto.stock ?? 0),
-    precio: typeof producto.precio === 'number'
-        ? `$${producto.precio.toLocaleString('es-AR')}`
-        : (typeof producto.precio === 'string'
-            ? `$${Number(producto.precio).toLocaleString('es-AR')}`
-            : '$0'),
-    activo: parsearActivo(producto.activo ?? producto.estado),
-});
+const normalizarProducto = (producto) => {
+    const descripcion = [producto.descripcion, producto.detalle, producto.descripcion_breve, producto.talle, producto.talla]
+        .find((valor) => typeof valor === 'string' ? valor.trim() !== '' : valor != null && valor !== '');
+
+    return {
+        id: producto.id_producto ?? producto.id ?? producto._id ?? producto.productoId,
+        nombre: producto.nombre ?? 'Sin nombre',
+        imagen: producto.imagen ?? producto.foto ?? producto.imagenUrl ?? producto.imagen_url ?? producto.image ?? producto.url ?? '',
+        descripcion: descripcion ?? 'Sin descripción',
+        talle: descripcion ?? 'Sin descripción',
+        stock: Number(producto.stock ?? 0),
+        precio: typeof producto.precio === 'number'
+            ? `$${producto.precio.toLocaleString('es-AR')}`
+            : (typeof producto.precio === 'string'
+                ? `$${Number(producto.precio).toLocaleString('es-AR')}`
+                : '$0'),
+        activo: parsearActivo(producto.activo ?? producto.estado),
+    };
+};
 
 const PRODUCTOS_POR_PAGINA = 6;
 

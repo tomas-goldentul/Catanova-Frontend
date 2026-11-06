@@ -399,18 +399,33 @@ function Catalogo({ onVerProducto }) {
               idTienda
             );
 
+            const normalizarMetricas = (valor, fallback = 0) => {
+              const numero = Number(valor);
+              return Number.isFinite(numero) ? numero : fallback;
+            };
+
             const productosConAnaliticas = await Promise.all(
-              productos.map(async p => ({
-                id: p.id_producto ?? p.id,
-                nombre: p.nombre ?? "Producto",
-                precio: Number(p.precio) || 0,
-                precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
-                stock: p.stock,
-                imagen: p.imagen,
-                ventas: await getCantidadVentasProducto(p.id_producto ?? p.id),
-                vistas: await getCantidadVistasProducto(p.id_producto ?? p.id),
-                favoritos: await getCantidadFavoritosProducto(p.id_producto ?? p.id),
-              }))
+              productos.map(async p => {
+                const idProducto = p.id_producto ?? p.id;
+
+                const [ventas, vistas, favoritos] = await Promise.all([
+                  getCantidadVentasProducto(idProducto).catch(() => 0),
+                  getCantidadVistasProducto(idProducto).catch(() => 0),
+                  getCantidadFavoritosProducto(idProducto).catch(() => 0),
+                ]);
+
+                return {
+                  id: idProducto,
+                  nombre: p.nombre ?? "Producto",
+                  precio: Number(p.precio) || 0,
+                  precioUnitario: Number(p.precioUnitario ?? p.precio) || 0,
+                  stock: p.stock ?? 0,
+                  imagen: p.imagen,
+                  ventas: normalizarMetricas(ventas),
+                  vistas: normalizarMetricas(vistas),
+                  favoritos: normalizarMetricas(favoritos),
+                };
+              })
             );
 
             return {

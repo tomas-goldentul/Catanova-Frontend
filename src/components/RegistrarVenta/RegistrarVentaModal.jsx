@@ -4,7 +4,7 @@ import { registrarVentaManual } from '../../api/ventas';
 import { getUsuariosPorTienda, crearUsuarioParaTienda } from '../../api/usuarios';
 import './RegistrarVentaModal.css';
 
-const METODOS_PAGO = ['Efectivo', 'Tarjeta de débito', 'Tarjeta de crédito', 'Transferencia'];
+const METODOS_PAGO = ['Efectivo', 'Mercado Pago', 'Tarjeta'];
 const NUEVO_USUARIO_VACIO = { nombre: '', apellido: '', telefono: '' };
 
 const normalizarIdUsuario = (valor) => {
@@ -18,6 +18,19 @@ const normalizarIdUsuario = (valor) => {
   const numero = Number(texto);
   return Number.isFinite(numero) && numero > 0 ? numero : null;
 };
+
+const normalizarListaProductos = (lista, idTienda) =>
+  (Array.isArray(lista) ? lista : [])
+    .filter((p) => Number(p?.id_tienda ?? p?.tienda_id ?? 0) === Number(idTienda))
+    .filter((p) => p.activo && !p.eliminado && Number(p.stock ?? 0) > 0);
+
+const normalizarListaUsuarios = (lista, idTienda) =>
+  (Array.isArray(lista) ? lista : [])
+    .filter((u) => {
+      const tiendaUsuario = Number(u?.id_tienda ?? u?.tienda_id ?? u?.idTienda ?? 0);
+      const tieneTiendaEnRespuesta = u?.id_tienda !== undefined || u?.tienda_id !== undefined || u?.idTienda !== undefined;
+      return !tieneTiendaEnRespuesta || tiendaUsuario === Number(idTienda);
+    });
 
 const nombreUsuario = (u) =>
   [u?.nombre, u?.apellido].filter(Boolean).join(' ').trim() || 'Usuario sin nombre';
@@ -66,22 +79,26 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
       try {
         const [listaProductos, listaUsuarios] = await Promise.all([
           getTodosProductosPorTienda(idTienda),
-          getUsuariosPorTienda(idTienda).catch(() => []), // usuarios es opcional, no falla
+          getUsuariosPorTienda(idTienda).catch(() => []),
         ]);
 
         if (!montado) return;
 
-        const disponibles = (Array.isArray(listaProductos) ? listaProductos : []).filter(
-          (p) => p.activo && !p.eliminado && Number(p.stock) > 0
-        );
+        const disponibles = normalizarListaProductos(listaProductos, idTienda);
+        const usuariosDeLaTienda = normalizarListaUsuarios(listaUsuarios, idTienda);
+
         setProductos(disponibles);
-        if (disponibles.length > 0) {
+        setUsuarios(usuariosDeLaTienda);
+
+        if (disponibles.length > 0 && !disponibles.some((p) => String(p.id_producto) === String(idProductoSeleccionado))) {
           setIdProductoSeleccionado(String(disponibles[0].id_producto));
         }
 
-        setUsuarios(Array.isArray(listaUsuarios) ? listaUsuarios : []);
+        if (idUsuarioSeleccionado && !usuariosDeLaTienda.some((u) => String(u.id_usuario) === String(idUsuarioSeleccionado))) {
+          setIdUsuarioSeleccionado('');
+        }
       } catch (err) {
-        if (montado) setErrorDatos('No se pudieron cargar los productos.');
+        if (montado) setErrorDatos('No se pudieron cargar los productos y clientes de la tienda.');
       } finally {
         if (montado) setLoadingDatos(false);
       }
@@ -120,12 +137,15 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
         nombre,
         apellido,
         telefono: nuevoUsuario.telefono.trim(),
+        direccion: '',
         id_tienda: Number(idTienda),
       });
-      if (!creado?.id_usuario) throw new Error('El servidor no devolvió el usuario creado.');
 
-      setUsuarios((prev) => [...prev, creado]);
-      setIdUsuarioSeleccionado(String(creado.id_usuario));
+      const usuarioCreado = creado?.data ?? creado;
+      if (!usuarioCreado?.id_usuario) throw new Error('El servidor no devolvió el usuario creado.');
+
+      setUsuarios((prev) => [...prev, usuarioCreado]);
+      setIdUsuarioSeleccionado(String(usuarioCreado.id_usuario));
       setNuevoUsuario(NUEVO_USUARIO_VACIO);
       setMostrarAltaUsuario(false);
     } catch (err) {
@@ -141,7 +161,7 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
     setErrorGuardado('');
 
     if (!productoActual) {
-      setErrorGuardado('Seleccioná un producto.');
+      setErrorGuardado('Seleccioná un producto válido de la tienda.');
       return;
     }
 
@@ -156,16 +176,25 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
     }
 
     const idUsuarioNormalizado = normalizarIdUsuario(idUsuarioSeleccionado);
+    if (idUsuarioSeleccionado && idUsuarioNormalizado === null) {
+      setErrorGuardado('Seleccioná un cliente real de la tienda.');
+      return;
+    }
+
+    const usuarioSeleccionado = idUsuarioNormalizado !== null
+      ? usuarios.find((u) => Number(u.id_usuario) === Number(idUsuarioNormalizado)) || null
+      : null;
+
+    if (idUsuarioNormalizado !== null && !usuarioSeleccionado) {
+      setErrorGuardado('El cliente asignado no existe en la base de datos de esta tienda.');
+      return;
+    }
 
     setGuardando(true);
     try {
-      const usuarioSeleccionado = usuarios.find(
-        (u) => String(u.id_usuario) === String(idUsuarioSeleccionado)
-      ) || null;
-
       const venta = await registrarVentaManual({
-        id_producto: productoActual.id_producto,
-        id_tienda: idTienda,
+        id_producto: Number(productoActual.id_producto),
+        id_tienda: Number(idTienda),
         cantidad: cantidadNum,
         precio_unitario: Number(productoActual.precio),
         metodo_pago: metodoPago,
@@ -175,6 +204,7 @@ function RegistrarVentaModal({ idTienda, onVentaRegistrada, onCancelar }) {
       onVentaRegistrada(
         {
           ...venta,
+          id_tienda: Number(idTienda),
           ...(idUsuarioNormalizado !== null && {
             id_usuario: idUsuarioNormalizado,
           }),

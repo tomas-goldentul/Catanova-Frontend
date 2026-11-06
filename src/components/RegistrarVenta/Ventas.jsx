@@ -1,13 +1,26 @@
 import { useEffect, useState } from 'react';
 import { getVentasPorTienda } from '../../api/ventas';
+import { getTodosProductosPorTienda } from '../../api/productos';
+import { getUsuariosPorTienda } from '../../api/usuarios';
 import RegistrarVentaModal from './RegistrarVentaModal';
 import './Ventas.css';
 
 // ——— Helpers ———
 
 function obtenerClienteVenta(venta) {
-  const nombreCliente = venta?.nombre_cliente || venta?.cliente || venta?.nombre || '';
-  const idUsuario = venta?.id_usuario ?? venta?.usuario_id ?? venta?.idUsuario ?? null;
+  const nombreCliente =
+    venta?.nombre_cliente ||
+    venta?.cliente ||
+    venta?.nombre ||
+    venta?.usuario?.nombre ||
+    '';
+
+  const idUsuario =
+    venta?.id_usuario ??
+    venta?.usuario_id ??
+    venta?.idUsuario ??
+    venta?.usuario?.id_usuario ??
+    null;
 
   if (idUsuario !== null && idUsuario !== undefined && idUsuario !== '' && idUsuario !== 'null') {
     return nombreCliente || 'Cliente asociado';
@@ -16,6 +29,19 @@ function obtenerClienteVenta(venta) {
   if (nombreCliente) return nombreCliente;
 
   return null;
+}
+
+function esVentaDeTienda(venta, idTienda) {
+  if (!idTienda) return false;
+
+  const idTiendaVenta = Number(
+    venta?.id_tienda ??
+    venta?.tienda_id ??
+    venta?.idTienda ??
+    0
+  );
+
+  return idTiendaVenta === Number(idTienda);
 }
 
 function formatFecha(fechaStr) {
@@ -111,6 +137,10 @@ function Ventas({ onVolver }) {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
+  const ventasDeLaTienda = Array.isArray(ventas)
+    ? ventas.filter((venta) => esVentaDeTienda(venta, idTienda))
+    : [];
+
   // Cargar ventas
   useEffect(() => {
     if (!idTienda) {
@@ -123,8 +153,36 @@ function Ventas({ onVolver }) {
       setLoading(true);
       setError('');
       try {
-        const data = await getVentasPorTienda(idTienda);
-        if (montado) setVentas(Array.isArray(data) ? data : []);
+        const [ventasData, productosData, usuariosData] = await Promise.all([
+          getVentasPorTienda(idTienda).catch(() => []),
+          getTodosProductosPorTienda(idTienda).catch(() => []),
+          getUsuariosPorTienda(idTienda).catch(() => []),
+        ]);
+
+        if (!montado) return;
+
+        const idsProductos = new Set(
+          (Array.isArray(productosData) ? productosData : [])
+            .map((p) => Number(p?.id_producto ?? p?.id ?? 0))
+            .filter((id) => id > 0)
+        );
+
+        const idsUsuarios = new Set(
+          (Array.isArray(usuariosData) ? usuariosData : [])
+            .map((u) => Number(u?.id_usuario ?? u?.id ?? 0))
+            .filter((id) => id > 0)
+        );
+
+        const ventasValidas = (Array.isArray(ventasData) ? ventasData : []).filter((venta) => {
+          const idProducto = Number(venta?.id_producto ?? venta?.producto_id ?? venta?.productoId ?? 0);
+          const idUsuario = Number(venta?.id_usuario ?? venta?.usuario_id ?? venta?.idUsuario ?? 0);
+          const mismaTienda = Number(venta?.id_tienda ?? venta?.tienda_id ?? venta?.idTienda ?? 0) === Number(idTienda);
+          const productoExiste = idsProductos.has(idProducto);
+          const usuarioValido = idUsuario === 0 || idsUsuarios.has(idUsuario);
+          return mismaTienda && productoExiste && usuarioValido;
+        });
+
+        setVentas(ventasValidas);
       } catch (err) {
         if (montado) setError(err.message || 'No se pudieron cargar las ventas.');
       } finally {
@@ -136,14 +194,14 @@ function Ventas({ onVolver }) {
   }, [idTienda, refreshKey]);
 
   // KPIs calculados
-  const totalVentas = ventas.length;
-  const facturadoTotal = ventas.reduce((acc, v) => acc + Number(v.total ?? 0), 0);
-  const unidadesVendidas = ventas.reduce((acc, v) => acc + Number(v.cantidad ?? 0), 0);
+  const totalVentas = ventasDeLaTienda.length;
+  const facturadoTotal = ventasDeLaTienda.reduce((acc, v) => acc + Number(v.total ?? 0), 0);
+  const unidadesVendidas = ventasDeLaTienda.reduce((acc, v) => acc + Number(v.cantidad ?? 0), 0);
 
   const handleVentaRegistrada = (nuevaVenta, nombreProducto, nombreCliente = null) => {
-    // Construir la fila optimista mientras llega el re-fetch
     const filaOptimista = {
       ...nuevaVenta,
+      id_tienda: idTienda,
       nombre_producto: nombreProducto,
       ...(nombreCliente && { nombre_cliente: nombreCliente }),
     };
@@ -207,7 +265,7 @@ function Ventas({ onVolver }) {
         {error && <p className="ventas-msg ventas-msg--error">{error}</p>}
 
         {/* Tabla de historial */}
-        {!loading && !error && ventas.length === 0 && (
+        {!loading && !error && ventasDeLaTienda.length === 0 && (
           <div className="ventas-empty">
             <IconEmpty />
             <p>No hay ventas registradas todavía.</p>
@@ -222,7 +280,7 @@ function Ventas({ onVolver }) {
           </div>
         )}
 
-        {!loading && !error && ventas.length > 0 && (
+        {!loading && !error && ventasDeLaTienda.length > 0 && (
           <div className="ventas-table-wrap">
             <table className="ventas-table" aria-label="Historial de ventas">
               <thead>
@@ -239,7 +297,7 @@ function Ventas({ onVolver }) {
                 </tr>
               </thead>
               <tbody>
-                {ventas.map((v, idx) => {
+                {ventasDeLaTienda.map((v, idx) => {
                   const clienteVenta = obtenerClienteVenta(v);
 
                   return (
