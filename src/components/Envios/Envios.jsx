@@ -39,18 +39,20 @@ import {
 import { getImagenUrl } from '../../api/helper';
 import CampoDireccion from '../Pedidos/CampoDireccion';
 import { DetallesPedidoPorId } from '../Pedidos/Pedidos';
+import RepartidorSelect from '../Pedidos/RepartidorSelect';
+import ClienteSelect from '../Pedidos/ClienteSelect';
 import { diaEnArgentina, formatearFechaEstimada, situacionEntrega } from './fechaEstimada';
 import '../Pedidos/Pedidos.css';
 import './Envios.css';
 
-const ESTADOS = ['Todos', 'Pendiente', 'En preparación', 'Enviado', 'Entregado'];
+const ESTADOS = ['Todos', 'Pendiente', 'En preparación', 'Enviado', 'Entregado', 'Cancelado'];
 const ESTADOS_CON_ENVIO_CREABLE = ['Pendiente', 'En preparación'];
 const ITEMS_POR_PAGINA = 6;
 // "Ver en tiempo real": el back no tiene websockets, se vuelve a consultar el seguimiento.
 const INTERVALO_TIEMPO_REAL_MS = 25000;
 const ZONA_HORARIA = 'America/Argentina/Buenos_Aires';
 
-function Envios({ pedidoInicial = null, onVolver, onIrALogin }) {
+function Envios({ pedidoInicial = null, onVolver, onIrALogin, autoCrearEnvio = false }) {
   const [envios, setEnvios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -142,6 +144,20 @@ function Envios({ pedidoInicial = null, onVolver, onIrALogin }) {
       {aviso && <p className="envios-aviso" role="status"><FiCheckCircle aria-hidden="true" />{aviso}</p>}
     </>
   );
+
+  useEffect(() => {
+    if (pedidoInicial && autoCrearEnvio) {
+      const objetivo = {
+        id_pedido: Number(pedidoInicial),
+        direccion: '',
+        nombre_comprador: '',
+        repartidor: '',
+        fecha_entrega_estimada: '',
+        fecha_pedido: '',
+      };
+      setEnvioEnFormulario(objetivo);
+    }
+  }, [pedidoInicial, autoCrearEnvio]);
 
   if (pedidoEnSeguimiento) {
     return (
@@ -920,30 +936,21 @@ function EnvioFormModal({ objetivo, onCerrar, onGuardado }) {
             disabled={guardando}
           />
 
-          <label className="envio-campo">
-            <span>Nombre del comprador</span>
-            <input
-              type="text"
-              value={nombreComprador}
-              onChange={(event) => setNombreComprador(event.target.value)}
-              maxLength={MAX_TEXTO_ENVIO}
-              placeholder="Escribí aquí"
-              disabled={guardando}
-            />
-          </label>
+          <ClienteSelect
+            label="Nombre del comprador"
+            value={nombreComprador}
+            onChange={setNombreComprador}
+            disabled={guardando}
+            idTienda={Number(localStorage.getItem('id_tienda')) || null}
+          />
 
-          <label className="envio-campo">
-            <span>Nombre del repartidor</span>
-            <input
-              type="text"
-              value={repartidor}
-              onChange={(event) => setRepartidor(event.target.value)}
-              maxLength={MAX_TEXTO_ENVIO}
-              placeholder="Escribí aquí"
-              disabled={guardando}
-              autoFocus
-            />
-          </label>
+          <RepartidorSelect
+            label="Nombre del repartidor"
+            value={repartidor}
+            onChange={setRepartidor}
+            disabled={guardando}
+            idTienda={Number(localStorage.getItem('id_tienda')) || null}
+          />
 
           <label className="envio-campo">
             <span>Entrega estimada <small>(opcional)</small></span>

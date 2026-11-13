@@ -104,14 +104,17 @@ function normalizarProductosPedido(productos) {
   return [...porProducto].map(([id_producto, cantidad]) => ({ id_producto, cantidad }));
 }
 
-export const ESTADOS_PEDIDO = ['Pendiente', 'En preparación', 'Enviado', 'Entregado'];
+export const ESTADOS_PEDIDO = ['Pendiente', 'En preparación', 'Enviado', 'Entregado', 'Cancelado'];
 
 export async function actualizarEstadoPedido(id, estado) {
   if (!id || id === 'Sin ID') {
     throw new Error('No se pudo identificar el pedido. El ID está ausente o inválido.');
   }
-  if (!ESTADOS_PEDIDO.includes(estado)) {
-    throw new Error(`Estado inválido. Valores permitidos: ${ESTADOS_PEDIDO.join(', ')}.`);
+
+  const estadoNormalizado = estado;
+
+  if (!estadoNormalizado || !ESTADOS_PEDIDO.includes(estadoNormalizado)) {
+    throw new Error("El campo 'estado' es obligatorio. Valores permitidos: Pendiente, En preparación, Enviado, Entregado, Cancelado.");
   }
 
   const token = localStorage.getItem('token');
@@ -121,7 +124,7 @@ export async function actualizarEstadoPedido(id, estado) {
   const response = await fetch(`${API_URL}/pedidos/${encodeURIComponent(id)}/estado`, {
     method: 'PATCH',
     headers,
-    body: JSON.stringify({ estado }),
+    body: JSON.stringify({ estado: estadoNormalizado }),
   });
 
   const payload = await response.json().catch(() => ({}));

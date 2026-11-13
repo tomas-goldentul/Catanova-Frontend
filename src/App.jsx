@@ -20,6 +20,7 @@ function App() {
   const [tiendaSeleccionada, setTiendaSeleccionada] = useState(null);
   // Pedido cuyo seguimiento se abre directo al entrar a Envíos (desde "Ver seguimiento" en Pedidos).
   const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(null);
+  const [autoCrearEnvio, setAutoCrearEnvio] = useState(false);
 
   // Reactivo al login/logout para mostrar u ocultar el Navbar y bloquear rutas.
   const [logueado, setLogueado] = useState(Boolean(localStorage.getItem('token')));
@@ -48,8 +49,10 @@ function App() {
     navegar('comprar');
   };
 
-  const irAEnvios = (idPedido = null) => {
-    setPedidoEnSeguimiento(idPedido);
+  const irAEnvios = (pedidoOrId = null) => {
+    const payload = typeof pedidoOrId === 'object' && pedidoOrId ? pedidoOrId : { id_pedido: pedidoOrId, autoCrearEnvio: false };
+    setPedidoEnSeguimiento(payload.id_pedido ?? null);
+    setAutoCrearEnvio(Boolean(payload.autoCrearEnvio));
     navegar('envios');
   };
 
@@ -82,6 +85,7 @@ function App() {
       {tab === 'envios' && (
         <Envios
           pedidoInicial={pedidoEnSeguimiento}
+          autoCrearEnvio={autoCrearEnvio}
           onVolver={() => navegar('tienda')}
           onIrALogin={() => navegar('login')}
         />

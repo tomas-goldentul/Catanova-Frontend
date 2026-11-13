@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { cargarVentasTienda } from './cargarVentasTienda';
+import { calcularTotalVenta, normalizarDetallesVenta, crearPedidoDesdeVenta } from '../../api/ventas';
 import RegistrarVentaModal from './RegistrarVentaModal';
+import CampoDireccion from '../Pedidos/CampoDireccion';
+import { formatoDireccionValido } from '../../api/direcciones';
+import './RegistrarVentaModal.css';
 import './Ventas.css';
 
 // ——— Helpers ———
@@ -136,6 +140,12 @@ function Ventas({ onVolver }) {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
+  const [ventaPedido, setVentaPedido] = useState(null);
+  const [direccionPedido, setDireccionPedido] = useState('');
+  const [direccionPedidoValida, setDireccionPedidoValida] = useState(false);
+  const [guardandoPedido, setGuardandoPedido] = useState(false);
+  const [errorPedido, setErrorPedido] = useState('');
+
   const ventasDeLaTienda = Array.isArray(ventas)
     ? ventas.filter((venta) => esVentaDeTienda(venta, idTienda))
     : [];
@@ -165,19 +175,66 @@ function Ventas({ onVolver }) {
 
   // KPIs calculados
   const totalVentas = ventasDeLaTienda.length;
-  const facturadoTotal = ventasDeLaTienda.reduce((acc, v) => acc + Number(v.total ?? 0), 0);
-  const unidadesVendidas = ventasDeLaTienda.reduce((acc, v) => acc + Number(v.cantidad ?? 0), 0);
+  const facturadoTotal = ventasDeLaTienda.reduce((acc, v) => acc + Number(calcularTotalVenta(v) ?? 0), 0);
+  const unidadesVendidas = ventasDeLaTienda.reduce(
+    (acc, v) => acc + normalizarDetallesVenta(v).reduce((s, d) => s + Number(d.cantidad ?? 0), 0),
+    0
+  );
 
   const handleVentaRegistrada = (nuevaVenta, nombreProducto, nombreCliente = null) => {
     const filaOptimista = {
       ...nuevaVenta,
       id_tienda: idTienda,
-      nombre_producto: nombreProducto,
       ...(nombreCliente && { nombre_cliente: nombreCliente }),
     };
     setVentas((prev) => [filaOptimista, ...prev]);
     setMostrarModal(false);
-    setToastMsg(`Venta de "${nombreProducto}" registrada correctamente`);
+    setToastMsg(`Venta registrada correctamente: ${nombreProducto}`);
+  };
+
+  const abrirModalPedido = (venta) => {
+    if (!venta?.id_venta) return;
+    const dirInicial = String(venta?.direccion || '').trim();
+    setVentaPedido(venta);
+    setDireccionPedido(dirInicial);
+    setDireccionPedidoValida(dirInicial ? formatoDireccionValido(dirInicial) : false);
+    setErrorPedido('');
+  };
+
+  const cerrarModalPedido = () => {
+    if (guardandoPedido) return;
+    setVentaPedido(null);
+    setDireccionPedido('');
+    setDireccionPedidoValida(false);
+    setErrorPedido('');
+  };
+
+  const confirmarAgregarPedido = async () => {
+    if (!ventaPedido?.id_venta) return;
+    const dir = direccionPedido.trim();
+    if (!dir) {
+      setErrorPedido('La dirección es obligatoria para crear el pedido.');
+      return;
+    }
+    if (!direccionPedidoValida) {
+      setErrorPedido('Seleccioná una dirección válida del desplegable de sugerencias.');
+      return;
+    }
+    setGuardandoPedido(true);
+    setErrorPedido('');
+    try {
+      const res = await crearPedidoDesdeVenta(ventaPedido.id_venta, { direccion: dir, metodo_pago: ventaPedido.metodo_pago || null });
+      const idPedido = res?.id_pedido ?? res?.data?.id_pedido;
+      setVentas((prev) => prev.map((v) => (String(v.id_venta) === String(ventaPedido.id_venta) ? { ...v, id_pedido: idPedido ?? v.id_pedido } : v)));
+      setToastMsg(`Pedido ${idPedido ? `#${idPedido}` : ''} creado y asociado a la venta #${ventaPedido.id_venta}`.trim());
+      setVentaPedido(null);
+      setDireccionPedido('');
+      setDireccionPedidoValida(false);
+    } catch (err) {
+      setErrorPedido(err.message || 'No se pudo crear el pedido.');
+    } finally {
+      setGuardandoPedido(false);
+    }
   };
 
   return (
@@ -256,12 +313,12 @@ function Ventas({ onVolver }) {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Producto</th>
+                  <th>Productos</th>
                   <th>Cliente</th>
-                  <th>Cantidad</th>
-                  <th>Precio unit.</th>
+                  <th>Unidades</th>
                   <th>Total</th>
                   <th>Método de pago</th>
+                  <th>Pedido</th>
                   <th>Fecha</th>
                   <th>Hora</th>
                 </tr>
@@ -269,13 +326,26 @@ function Ventas({ onVolver }) {
               <tbody>
                 {ventasDeLaTienda.map((v, idx) => {
                   const clienteVenta = obtenerClienteVenta(v);
+                  const detalles = normalizarDetallesVenta(v);
+                  const unidades = detalles.reduce((s, d) => s + Number(d.cantidad ?? 0), 0);
+                  const total = calcularTotalVenta(v);
+                  const idPedido = v?.id_pedido ?? v?.pedido?.id_pedido ?? null;
 
                   return (
                     <tr key={v.id_venta ?? idx}>
-                      <td className="ventas-td--id">
-                        {v.id_venta ? `#${v.id_venta}` : '—'}
+                      <td className="ventas-td--id">{v.id_venta ? `#${v.id_venta}` : '—'}</td>
+                      <td className="ventas-td--nombre">
+                        {detalles.length > 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {detalles.map((d, i) => (
+                              <span key={d.id_detalleventa ?? `${d.id_producto}-${i}`}>
+                                {d.nombre_producto || `Producto #${d.id_producto}`} × {d.cantidad}{' '}
+                                <span style={{ color: '#64748b' }}>({formatPrecio(d.precio_unitario)} c/u)</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : '—'}
                       </td>
-                      <td className="ventas-td--nombre">{v.nombre_producto || '—'}</td>
                       <td className="ventas-td--cliente">
                         {clienteVenta ? (
                           <span className="ventas-badge ventas-badge--cliente">{clienteVenta}</span>
@@ -283,13 +353,25 @@ function Ventas({ onVolver }) {
                           <span className="ventas-td--sin-cliente">Presencial</span>
                         )}
                       </td>
-                      <td className="ventas-td--num">{v.cantidad}</td>
-                      <td className="ventas-td--num">{formatPrecio(v.precio_unitario)}</td>
-                      <td className="ventas-td--total">{formatPrecio(v.total)}</td>
+                      <td className="ventas-td--num">{unidades}</td>
+                      <td className="ventas-td--total">{formatPrecio(total)}</td>
                       <td>
-                        <span className="ventas-badge ventas-badge--metodo">
-                          {v.metodo_pago || 'Sin especificar'}
-                        </span>
+                        <span className="ventas-badge ventas-badge--metodo">{v.metodo_pago || 'Sin especificar'}</span>
+                      </td>
+                      <td>
+                        {idPedido ? (
+                          <span className="ventas-badge ventas-badge--metodo">Pedido #{idPedido}</span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="ventas-btn ventas-btn--secondary"
+                            style={{ padding: '4px 8px', fontSize: 12 }}
+                            onClick={() => abrirModalPedido(v)}
+                            disabled={!v.id_venta}
+                          >
+                            Agregar pedido
+                          </button>
+                        )}
                       </td>
                       <td className="ventas-td--fecha">{formatFecha(v.fecha)}</td>
                       <td className="ventas-td--hora">{formatHora(v.fecha)}</td>
@@ -309,6 +391,59 @@ function Ventas({ onVolver }) {
           onVentaRegistrada={handleVentaRegistrada}
           onCancelar={() => setMostrarModal(false)}
         />
+      )}
+
+      {ventaPedido && (
+        <div className="rvm-backdrop" role="presentation" onMouseDown={cerrarModalPedido}>
+          <div
+            className="rvm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ventas-pedido-titulo"
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{ maxWidth: 520 }}
+          >
+            <div className="rvm-header">
+              <div>
+                <span className="rvm-kicker">Pedido</span>
+                <h2 id="ventas-pedido-titulo">Agregar pedido a la venta #{ventaPedido.id_venta}</h2>
+              </div>
+              <button type="button" className="rvm-close" aria-label="Cerrar" onClick={cerrarModalPedido} disabled={guardandoPedido}>
+                ✕
+              </button>
+            </div>
+
+            <div className="rvm-form" style={{ gap: 12 }}>
+              <p className="rvm-alta-usuario__desc" style={{ margin: 0, lineHeight: 1.5 }}>
+                Se creará el pedido con los productos de la venta (sin descontar stock nuevamente) y quedará vinculado a esta venta.
+              </p>
+              <div className="ventas-campo-direccion">
+                <CampoDireccion
+                  label="Dirección de entrega"
+                  value={direccionPedido}
+                  valida={direccionPedidoValida}
+                  onChange={(texto, valida) => {
+                    setDireccionPedido(texto);
+                    setDireccionPedidoValida(valida);
+                    if (errorPedido) setErrorPedido('');
+                  }}
+                  disabled={guardandoPedido}
+                />
+              </div>
+
+              {errorPedido && <p className="rvm-msg rvm-msg--error" role="alert" style={{ margin: 0 }}>{errorPedido}</p>}
+
+              <div className="rvm-actions" style={{ marginTop: 4 }}>
+                <button type="button" className="rvm-btn rvm-btn--cancel" onClick={cerrarModalPedido} disabled={guardandoPedido}>
+                  Cancelar
+                </button>
+                <button type="button" className="rvm-btn rvm-btn--confirm" onClick={confirmarAgregarPedido} disabled={guardandoPedido || !direccionPedidoValida}>
+                  {guardandoPedido ? 'Creando pedido...' : 'Crear y vincular pedido'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

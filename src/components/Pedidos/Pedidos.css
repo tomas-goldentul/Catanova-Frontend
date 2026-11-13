@@ -918,6 +918,140 @@
   color: #ffffff;
 }
 
+.repartidor-field {
+  display: grid;
+  gap: 7px;
+}
+
+.repartidor-field span {
+  color: var(--color-texto);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.repartidor-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  padding: 0 8px 0 12px;
+  background: var(--color-superficie);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.repartidor-input-row:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.repartidor-input-row input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  outline: 0;
+}
+
+.repartidor-input-row button {
+  flex-shrink: 0;
+  min-height: 32px;
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  border-radius: 9px;
+  background: #ecfeff;
+  color: var(--brand-oscuro, #0f766e);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.repartidor-input-row button:hover:not(:disabled) {
+  background: #cffafe;
+}
+
+.repartidor-field small {
+  color: var(--subtle);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.repartidor-error {
+  color: #b42318;
+}
+
+.cliente-field {
+  display: grid;
+  gap: 7px;
+}
+
+.cliente-field span {
+  color: var(--color-texto);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.cliente-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  padding: 0 8px 0 12px;
+  background: var(--color-superficie);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cliente-input-row:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.cliente-input-row input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  outline: 0;
+}
+
+.cliente-input-row button {
+  flex-shrink: 0;
+  min-height: 32px;
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  border-radius: 9px;
+  background: #ecfeff;
+  color: var(--brand-oscuro, #0f766e);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cliente-input-row button:hover:not(:disabled) {
+  background: #cffafe;
+}
+
+.cliente-field small {
+  color: var(--subtle);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.cliente-error {
+  color: #b42318;
+}
+
 @media (max-width: 1080px) {
   .pedidos-control-panel {
     grid-template-columns: 1fr;

@@ -33,9 +33,11 @@ import { getTodosLosProductos, getTodosProductosPorTienda } from '../../api/prod
 import { diaEnArgentina, formatearFechaEstimada } from '../Envios/fechaEstimada';
 import { obtenerUsuarioPorCuenta } from '../../api/usuarios';
 import './Pedidos.css';
+import CampoDireccion from './CampoDireccion';
+import RepartidorSelect from './RepartidorSelect';
 
-// El estado se guarda en la columna "estado" de pedidos; "Cancelado" se deduce
-// en el front (pedido sin productos).
+// El estado se guarda en la columna "estado" de pedidos. "Cancelado" también puede venir del backend.
+// Se conserva la deducción en front para pedidos sin productos por compatibilidad.
 const ESTADOS = ['Todos', 'Pendiente', 'En preparación', 'Enviado', 'Entregado', 'Cancelado'];
 // Mismo orden que el back: Pendiente (al crearse) → En preparación → Enviado → Entregado.
 // "Enviado" no se elige a mano: se pone al crear el envío.
@@ -79,7 +81,6 @@ function Pedidos({ onVerSeguimiento }) {
   };
   const abrirCambioEstado = (pedido) => {
     const detalle = normalizarPedido(pedido);
-    // No se puede cambiar el estado de pedidos cancelados o entregados.
     if (detalle.estado === 'Cancelado' || detalle.estado === 'Entregado') return;
     setPedidoParaActualizar({ id: detalle.id, estadoActual: detalle.estado });
     setErrorEstado('');
@@ -98,6 +99,20 @@ function Pedidos({ onVerSeguimiento }) {
     setErrorEstado('');
 
     try {
+      const pedidoId = pedidoParaActualizar.id;
+      if (nuevoEstado === 'Enviado') {
+        setPedidoParaActualizar(null);
+        setPedidoSeleccionado(null);
+        setMenuAbierto('');
+        setMostrarCrearPedido(false);
+        if (typeof onVerSeguimiento === 'function') {
+          onVerSeguimiento({ id_pedido: pedidoId, autoCrearEnvio: true });
+        }
+        return;
+      }
+
+      // "Cancelado" se envía al backend, que valida reglas y restaura stock.
+
       await actualizarEstadoPedido(pedidoParaActualizar.id, nuevoEstado);
       setPedidos((actuales) => actuales.map((pedido) => {
         if (String(normalizarPedido(pedido).id) !== String(pedidoParaActualizar.id)) return pedido;
@@ -146,10 +161,11 @@ function Pedidos({ onVerSeguimiento }) {
     const pendientes = normalizados.filter((pedido) => pedido.estado === 'Pendiente').length;
     const enPreparacion = normalizados.filter((pedido) => pedido.estado === 'En preparación').length;
     const entregados = normalizados.filter((pedido) => pedido.estado === 'Entregado').length;
+    const cerrados = normalizados.filter((pedido) => pedido.estado === 'Cerrado').length;
     const cancelados = normalizados.filter((pedido) => pedido.estado === 'Cancelado').length;
     const facturado = normalizados.reduce((acc, pedido) => acc + pedido.total, 0);
 
-    return { total: normalizados.length, pendientes, enPreparacion, entregados, cancelados, facturado };
+    return { total: normalizados.length, pendientes, enPreparacion, entregados, cerrados, cancelados, facturado };
   }, [pedidosDisponibles]);
 
   useEffect(() => {
@@ -215,6 +231,7 @@ function Pedidos({ onVerSeguimiento }) {
           <KpiCard label="Pendientes" value={metricas.pendientes} tone="warning" />
           <KpiCard label="En preparación" value={metricas.enPreparacion} tone="neutral" />
           <KpiCard label="Entregados" value={metricas.entregados} tone="info" />
+          <KpiCard label="Cerrados" value={metricas.cerrados} tone="neutral" />
           <KpiCard label="Cancelados" value={metricas.cancelados} tone="danger" />
           <KpiCard label="Facturado" value={formatearPrecio(metricas.facturado)} tone="success" />
         </div>
@@ -484,9 +501,7 @@ function Pedidos({ onVerSeguimiento }) {
 
               {pedidoParaActualizar.estadoActual === 'Entregado' || pedidoParaActualizar.estadoActual === 'Cancelado' ? (
                 <p className="pedido-modal-info">
-                  {pedidoParaActualizar.estadoActual === 'Cancelado'
-                    ? <>Este pedido está <strong>Cancelado</strong> y su estado no se puede modificar.</>
-                    : <>Este pedido ya fue marcado como <strong>Entregado</strong>. No se puede revertir.</>}
+                  Este pedido está <strong>{pedidoParaActualizar.estadoActual}</strong> y su estado no se puede modificar.
                 </p>
               ) : (
                 <p className="pedido-modal-info">
@@ -1306,15 +1321,13 @@ function EditarPedidoModal({ pedido, vista, onClose, onGuardar }) {
 
               {vista === 'tienda' && (
                 <div className="editar-campo">
-                  <label htmlFor="repartidor">Repartidor</label>
-                  <input
-                    id="repartidor"
-                    type="text"
-                    name="repartidor"
+                  <RepartidorSelect
+                    label="Repartidor"
                     value={formData.repartidor}
-                    onChange={handleChange}
-                    placeholder="Nombre del repartidor"
+                    onChange={(nombre) => setFormData((prev) => ({ ...prev, repartidor: nombre }))
+                    }
                     disabled={guardando}
+                    idTienda={Number(localStorage.getItem('id_tienda')) || null}
                   />
                 </div>
               )}
@@ -1376,10 +1389,9 @@ function MetaItem({ icon, label, value, accent = false }) {
 }
 
 // Progreso total sobre 2 barras: En preparación al mínimo, Pendiente a la mitad, Entregado al máximo.
-const PROGRESO_POR_ESTADO = { Pendiente: 0.25, 'En preparación': 0.5, Enviado: 0.75, Entregado: 1 };
+const PROGRESO_POR_ESTADO = { Pendiente: 0.25, 'En preparación': 0.5, Enviado: 0.75, Entregado: 1, Cancelado: 0 };
 
 // "Enviado" solo se pone creando el envío (sección Envíos); desde "Enviado" solo se puede entregar.
-// Cancelados y entregados ya no se editan ni cambian de estado.
 function estadoModificable(estado) {
   return estado !== 'Cancelado' && estado !== 'Entregado';
 }
@@ -1387,7 +1399,8 @@ function estadoModificable(estado) {
 function opcionesDeEstado(estadoActual) {
   if (estadoActual === 'Entregado' || estadoActual === 'Cancelado') return [];
   if (estadoActual === 'Enviado') return ['Entregado'];
-  return PASOS_PROGRESO.filter((opcion) => opcion !== estadoActual);
+  const opciones = ['Pendiente', 'En preparación', 'Enviado', 'Entregado', 'Cancelado'];
+  return opciones.filter((opcion) => opcion !== estadoActual);
 }
 
 function ProgressBar({ estado }) {
@@ -1610,12 +1623,12 @@ function normalizarEstado(pedido) {
   const detallesBase = pedido?.detalles || pedido?.productos || pedido?.items || pedido?.detalle || [];
   const detalles = Array.isArray(detallesBase) ? detallesBase : [];
 
-  if (pedido?.estado === 'Cancelado') return 'Cancelado';
+  if (pedido?.estado === 'Cancelado' || pedido?.estado === 'Cerrado') return 'Cancelado';
 
   if (detalles.length === 0) {
     return 'Cancelado';
   }
-  
+
   if (Array.isArray(detalles) && detalles.every((item) => {
     const idProducto = Number(item?.id_producto ?? item?.idProducto ?? item?.producto_id ?? item?.productoId ?? item?.id ?? 0);
     const cantidad = Number(item?.cantidad ?? item?.qty ?? 0);
@@ -1624,7 +1637,6 @@ function normalizarEstado(pedido) {
     return 'Cancelado';
   }
 
-  // El backend guarda el estado en la columna "estado".
   if (ESTADOS_PEDIDO.includes(pedido.estado)) return pedido.estado;
 
   if (typeof pedido.entregado === 'boolean') {
@@ -1711,6 +1723,7 @@ function estadoRank(estado) {
 }
 
 function estadoLabel(estado) {
+  if (estado === 'Cerrado') return 'Cancelado';
   return estado === 'Cancelado' ? 'Cancelado' : estado;
 }
 
