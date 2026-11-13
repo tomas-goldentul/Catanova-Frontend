@@ -136,7 +136,7 @@ function App() {
       )}
 
       {tab === 'estadisticas' && (
-        <Estadisticas onVolver={() => navegar('tienda')} />
+        <Estadisticas onVolver={() => navegar('tienda')} onIrAPedidos={() => navegar('pedidos')} />
       )}
 
     </div>

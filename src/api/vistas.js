@@ -36,6 +36,24 @@ export async function getVista(id) {
   return res.json();
 }
 
+// Registra una vista de producto. El token es opcional: con sesión el back toma el usuario
+// del token, no cuenta a la tienda dueña ni repeticiones del mismo usuario en 30 minutos.
+// Respuesta: { registrada: true, ... } o { registrada: false, motivo: "repetida" | "propia" }.
+export async function registrarVistaProducto(idProducto) {
+  const token = localStorage.getItem("token");
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${BASE_URL}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ id_producto: Number(idProducto) }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `Error ${res.status}: ${res.statusText}`);
+  return data;
+}
+
 export async function insertVista(datosVista) {
   const res = await fetch(`${BASE_URL}/`, {
     method: "POST",

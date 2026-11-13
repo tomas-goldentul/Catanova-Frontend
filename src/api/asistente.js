@@ -1,6 +1,7 @@
 const API_URL = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const RUTAS = ['/asistente/chat', '/chat/gemini', '/api/asistente/chat'];
+// Es la única ruta que existe en el back (las otras daban 404).
+const RUTAS = ['/asistente/chat'];
 
 function extraerTexto(payload) {
   if (typeof payload === 'string') return payload;

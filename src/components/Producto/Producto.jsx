@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaArrowLeft, FaChartLine, FaEye, FaDollarSign, FaHeart, FaTag, FaTrash, FaPen, FaSyncAlt, FaClipboardList, FaPlus, FaTimes } from 'react-icons/fa';
 import Footer from '../Footer/Footer';
 import { getProductoPorId, actualizarProducto, borrarProducto, agregarStock, editarStock } from '../../api/productos';
@@ -14,6 +14,7 @@ import {
 } from '../../api/favoritos';
 import {
   getVistas,
+  registrarVistaProducto,
 } from '../../api/vistas';
 import './Producto.css';
 import { getImagenUrl } from '../../api/helper.js';
@@ -118,6 +119,15 @@ function Producto({ productoId, onVolver }) {
         }
 
         loadProducto();
+    }, [productoId]);
+
+    // Registra una vista por cada vez que se abre el detalle (el back filtra dueño y repetidas).
+    // El ref evita el doble registro del StrictMode en desarrollo.
+    const vistaRegistrada = useRef(null);
+    useEffect(() => {
+        if (!productoId || vistaRegistrada.current === productoId) return;
+        vistaRegistrada.current = productoId;
+        registrarVistaProducto(productoId).catch(() => {});
     }, [productoId]);
 
     // Cuando cambia el producto (carga o edición), el formulario se resincroniza con sus valores.
